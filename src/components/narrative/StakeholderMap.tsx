@@ -77,7 +77,23 @@ export function StakeholderMap() {
 
   return (
     <div className="grid h-full gap-4 lg:grid-cols-[1fr_360px]">
-      <div className="glow-light relative rounded-card border border-line">
+      <div className="space-y-3 md:hidden" aria-label="Stakeholders and conflicts">
+        <div className="flex flex-wrap gap-2">
+          {(Object.keys(NODES) as NodeId[]).map((id) => (
+            <button key={id} onClick={() => setSel({ kind: "node", id })} aria-pressed={sel.kind === "node" && sel.id === id} className={cx("min-h-11 rounded-pill border px-3 text-small", sel.kind === "node" && sel.id === id ? "border-teal bg-teal text-white" : "border-line bg-white text-ink")}>
+              {NODES[id].label}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {CONFLICTS.map((c) => (
+            <button key={c.id} onClick={() => setSel({ kind: "conflict", id: c.id })} aria-pressed={sel.kind === "conflict" && sel.id === c.id} className={cx("min-h-11 rounded-pill border border-dashed px-3 text-small", sel.kind === "conflict" && sel.id === c.id ? "border-teal bg-teal text-white" : "border-quartz bg-white text-ink")}>
+              {c.short}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="glow-light relative hidden rounded-card border border-line md:block">
         <svg viewBox="0 0 720 440" className="h-full max-h-[540px] w-full" role="group" aria-label="Stakeholder map. Select a person or a conflict line.">
           {/* conflict lines */}
           {CONFLICTS.map((c) => {
@@ -99,11 +115,11 @@ export function StakeholderMap() {
                   className="cursor-pointer"
                   onClick={() => setSel({ kind: "conflict", id: c.id })}
                 />
-                <foreignObject x={mx - 100} y={my - 14} width={200} height={28}>
+                <foreignObject x={mx - 100} y={my - 15} width={200} height={30}>
                   <button
                     onClick={() => setSel({ kind: "conflict", id: c.id })}
                     className={cx(
-                      "mx-auto block max-w-full truncate rounded-pill border px-2 text-xs leading-6",
+                      "mx-auto block max-w-full truncate rounded-pill border px-2 text-xs leading-7",
                       active ? "border-teal bg-teal text-white" : "border-quartz bg-white text-ink hover:bg-surface-alt",
                     )}
                     aria-pressed={active}

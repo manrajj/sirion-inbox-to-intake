@@ -28,10 +28,10 @@ export function MailClient() {
   return (
     <div className="flex h-full min-h-0 flex-col" data-tour="inbox">
       <div className="flex items-center justify-between gap-2 border-b border-line bg-surface-alt px-4 py-2">
-        <span className="text-small text-ink-muted">Mail · sam.okafor@halden.example</span>
+        <span className="truncate text-small text-ink-muted">Mail · sam.okafor@halden.example</span>
         <span className="flex items-center gap-2">
           <HonestyChip kind="mocked" title="Mock of the Outlook and Gmail add-in" />
-          <span className="text-xs text-ink-muted">Mock of the Outlook and Gmail add-in</span>
+          <span className="hidden text-xs text-ink-muted sm:inline">Mock of the Outlook and Gmail add-in</span>
         </span>
       </div>
       <div className="flex min-h-0 flex-1">
@@ -52,7 +52,7 @@ export function MailClient() {
         </aside>
 
         {/* Message list */}
-        <ul className={cx("thin-scroll w-[250px] shrink-0 overflow-y-auto border-r border-line", sidebarOpen && "hidden md:block")} aria-label="Messages">
+        <ul className={cx("thin-scroll hidden w-[250px] shrink-0 overflow-y-auto border-r border-line md:block")} aria-label="Messages">
           {rows.map(({ t, latest, count, hasAttachment }) => {
             const active = t.id === openThread.id;
             return (
@@ -81,11 +81,28 @@ export function MailClient() {
 
         {/* Reading pane */}
         <section className={cx("flex min-w-0 flex-1 flex-col", sidebarOpen && "hidden md:flex")} aria-label="Reading pane">
+          <label className="border-b border-line px-4 py-2 md:hidden">
+            <span className="sr-only">Choose a conversation</span>
+            <select
+              value={openThread.id}
+              onChange={(e) => {
+                const r = rows.find((x) => x.t.id === e.target.value);
+                if (r) actions.openMessage(r.latest.id);
+              }}
+              className="min-h-11 w-full rounded-chip border border-line bg-white px-2 text-small text-ink"
+            >
+              {rows.map(({ t, latest }) => (
+                <option key={t.id} value={t.id}>
+                  {latest.from.name}: {t.subject}
+                </option>
+              ))}
+            </select>
+          </label>
           <div className="flex items-center justify-between gap-2 border-b border-line px-4 py-2">
             <h2 className="truncate text-h3 text-ink">{openThread.subject}</h2>
             <div className="flex shrink-0 items-center gap-1">
               {[Reply, Forward, Star].map((I, i) => (
-                <span key={i} className="inline-flex h-9 w-9 items-center justify-center rounded-chip text-ink-muted" aria-hidden>
+                <span key={i} className="hidden h-9 w-9 items-center justify-center rounded-chip text-ink-muted sm:inline-flex" aria-hidden>
                   <I size={16} strokeWidth={1.5} />
                 </span>
               ))}

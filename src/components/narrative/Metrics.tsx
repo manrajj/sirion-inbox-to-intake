@@ -124,7 +124,7 @@ export function Metrics() {
     <div className="grid gap-4 pt-4 lg:grid-cols-[1fr_380px]">
       <section aria-label="Input metrics">
         <h3 className="mb-2 text-h3 text-ink">Input metrics <span className="text-small text-ink-muted">(pilot targets are assumptions to test)</span></h3>
-        <table className="w-full text-left text-small">
+        <div className="thin-scroll overflow-x-auto"><table className="w-full min-w-[560px] text-left text-small">
           <thead className="bg-surface-alt text-xs text-ink-muted">
             <tr>
               <th className="px-3 py-2 font-normal">Metric</th>
@@ -141,7 +141,7 @@ export function Metrics() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </section>
       <section aria-label="Guardrails" className="rounded-card bg-surface-alt p-4">
         <h3 className="mb-2 text-h3 text-ink">Guardrails and counter metrics</h3>
@@ -201,7 +201,7 @@ export function Metrics() {
       <p className="mb-3 text-small text-ink">
         Ease drives adoption. Avoided cost of error is the business case. Time saved alone is small (about 28 to 166 hours a year on assumed inputs), so the case does not rest on it.
       </p>
-      <table className="w-full text-left text-small">
+      <div className="thin-scroll overflow-x-auto"><table className="w-full min-w-[560px] text-left text-small">
         <thead className="bg-surface-alt text-xs text-ink-muted">
           <tr>
             {["Case", "Spend renegotiated or newly bought that year", "Deals with a dropped price or uplift term", "Average overpayment on those deals", "Annual cost of error"].map((h) => (
@@ -218,7 +218,7 @@ export function Metrics() {
             </tr>
           ))}
         </tbody>
-      </table>
+      </table></div>
       <div className="mt-3 flex flex-wrap gap-2">
         <SourceTag type="Illustrative">every input is an assumption to measure in a pilot</SourceTag>
         <SourceTag type="Sourced">about $28M SaaS spend: Vertice $9,450 and Zylo $9,455 per employee, x 3,000</SourceTag>

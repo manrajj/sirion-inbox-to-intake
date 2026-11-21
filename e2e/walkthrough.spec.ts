@@ -1,10 +1,13 @@
 import { test, expect } from "@playwright/test";
 import { watchErrors, expectNoErrors } from "./helpers";
 
-test("walkthrough: every chapter seeks cleanly and the end card hands over", async ({ page }) => {
+test("walkthrough: every chapter seeks cleanly offline and the end card hands over", async ({ page, context }) => {
   const errors = watchErrors(page);
   await page.goto("/");
   await page.evaluate(() => sessionStorage.clear());
+  await page.waitForLoadState("networkidle");
+  // The film needs no network once the page has loaded.
+  await context.setOffline(true);
   await page.click('[data-tour="watch"]');
   const film = page.getByRole("tablist", { name: "Chapters" });
   await expect(film).toBeVisible();

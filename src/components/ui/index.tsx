@@ -273,13 +273,13 @@ export function Tabs({
 }) {
   return (
     <RTabs.Root value={value} onValueChange={onValueChange} defaultValue={tabs[0].id} className={className}>
-      <RTabs.List className={cx("flex gap-1 border-b border-line", listClassName)} aria-label="Sections">
+      <RTabs.List className={cx("thin-scroll flex gap-1 overflow-x-auto border-b border-line", listClassName)} aria-label="Sections">
         {tabs.map((t) => (
           <RTabs.Trigger
             key={t.id}
             value={t.id}
             data-tour={t.tour}
-            className="-mb-px min-h-11 border-b-2 border-transparent px-4 text-small text-ink-muted hover:text-ink data-[state=active]:border-teal data-[state=active]:text-teal"
+            className="-mb-px min-h-11 shrink-0 whitespace-nowrap border-b-2 border-transparent px-4 text-small text-ink-muted hover:text-ink data-[state=active]:border-teal data-[state=active]:text-teal"
           >
             {t.label}
           </RTabs.Trigger>

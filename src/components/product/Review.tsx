@@ -150,8 +150,8 @@ function CoreRow({ field }: { field: CoreFieldView }) {
   const missing = field.value === null;
   return (
     <div className="flex min-h-12 flex-wrap items-center gap-x-3 gap-y-1 border-b border-line py-1.5" data-tour={`core-${field.key}`}>
-      <div className="w-40 shrink-0 text-small text-ink-muted">{field.label}</div>
-      <div className="min-w-0 flex-1">
+      <div className="w-full shrink-0 text-small text-ink-muted sm:w-40">{field.label}</div>
+      <div className="min-w-[160px] flex-1">
         {field.conflictOptions ? (
           <div>
             <p className="mb-1 flex items-center gap-1.5 text-xs text-ink">
@@ -226,7 +226,7 @@ function TermRow({ term }: { term: TermView }) {
   return (
     <div className="border-b border-line py-1.5" data-tour={`term-${term.key}`}>
       <div className="flex min-h-11 flex-wrap items-center gap-x-3 gap-y-1" data-tour={`term-head-${term.key}`}>
-        <button className="flex w-40 shrink-0 items-center gap-1 text-left text-small text-ink-muted hover:text-ink" onClick={() => setOpen(!open)} aria-expanded={open} data-tour={`toggle-${term.key}`}>
+        <button className="flex w-full shrink-0 items-center gap-1 text-left text-small text-ink-muted hover:text-ink sm:w-40" onClick={() => setOpen(!open)} aria-expanded={open} data-tour={`toggle-${term.key}`}>
           {open ? <ChevronDown size={14} strokeWidth={1.5} aria-hidden /> : <ChevronRight size={14} strokeWidth={1.5} aria-hidden />}
           {term.label}
         </button>

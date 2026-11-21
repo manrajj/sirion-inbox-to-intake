@@ -55,6 +55,12 @@ export function Film() {
   const [cursor, setCursor] = useState({ x: -60, y: -60, down: false });
   const [elapsed, setElapsed] = useState(0);
 
+  // Fetch the product and metrics routes up front, so the film keeps working if the network drops.
+  useEffect(() => {
+    router.prefetch("/product/");
+    router.prefetch("/metrics/");
+  }, [router]);
+
   const runId = useRef(0);
   const pos = useRef({ chapter: 0, step: 0, actionDone: false, stepStart: 0, stepMs: 0, base: 0 });
   const targetEl = useRef<HTMLElement | null>(null);
@@ -253,7 +259,7 @@ export function Film() {
           style={{ transform: `translate(${cursor.x}px, ${cursor.y}px) scale(${cursor.down ? 0.85 : 1})`, transition: `transform ${travel}ms ease-in-out` }}
         >
           <svg width="22" height="26" viewBox="0 0 22 26">
-            <path d="M2 2 L2 21 L7.5 16 L11 24 L14.5 22.5 L11 14.8 L18.5 14.8 Z" fill="#ffffff" stroke="#0b1821" strokeWidth="1.5" strokeLinejoin="round" />
+            <path d="M2 2 L2 21 L7.5 16 L11 24 L14.5 22.5 L11 14.8 L18.5 14.8 Z" fill="var(--surface)" stroke="var(--ink)" strokeWidth="1.5" strokeLinejoin="round" />
           </svg>
         </div>
       )}
