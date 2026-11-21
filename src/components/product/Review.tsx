@@ -225,7 +225,7 @@ function TermRow({ term }: { term: TermView }) {
   const canConfirm = term.status === "accepted" || term.status === "offEmail";
   return (
     <div className="border-b border-line py-1.5" data-tour={`term-${term.key}`}>
-      <div className="flex min-h-11 flex-wrap items-center gap-x-3 gap-y-1">
+      <div className="flex min-h-11 flex-wrap items-center gap-x-3 gap-y-1" data-tour={`term-head-${term.key}`}>
         <button className="flex w-40 shrink-0 items-center gap-1 text-left text-small text-ink-muted hover:text-ink" onClick={() => setOpen(!open)} aria-expanded={open} data-tour={`toggle-${term.key}`}>
           {open ? <ChevronDown size={14} strokeWidth={1.5} aria-hidden /> : <ChevronRight size={14} strokeWidth={1.5} aria-hidden />}
           {term.label}

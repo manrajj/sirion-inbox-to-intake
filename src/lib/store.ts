@@ -301,7 +301,12 @@ export const actions = {
     const w = state.deals[state.dealId].pendingWarning;
     if (w) actions.addMessages(w.messageIds, w.via, true);
   },
+  /** The walkthrough steps the reading itself, so the film never races a timer. */
+  setReading(n: number) {
+    setDeal((d) => ({ ...d, reading: n }));
+  },
   runReading() {
+    if (state.film) return;
     const id = state.dealId;
     const stepMs = state.film ? 500 : 500;
     [2, 3].forEach((n, i) =>

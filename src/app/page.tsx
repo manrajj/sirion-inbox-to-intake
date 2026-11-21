@@ -1,1 +1,5 @@
-export default function Page(){return <div className='p-10'>start</div>}
+import { StartHero } from "@/components/narrative/StartHero";
+
+export default function Page() {
+  return <StartHero />;
+}

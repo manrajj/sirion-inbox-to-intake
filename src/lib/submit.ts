@@ -13,7 +13,7 @@ export class MockSirion {
   private seq = 4410;
   created = 0;
 
-  constructor(private latencyMs = 700) {}
+  constructor(public latencyMs = 700) {}
 
   /** Simulates a timeout on the response, after the server has recorded the request. */
   async submit(key: string, dealId: string, payload: unknown, opts: { simulateTimeout?: boolean } = {}): Promise<SirionRequest> {
