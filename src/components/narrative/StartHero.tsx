@@ -38,14 +38,14 @@ export function StartHero() {
           <p className="mt-6 max-w-prose text-small text-ink-on-stage">
             AI outputs are pre-written examples of what the model returns. The checks that decide what counts as agreed run live in your browser.
           </p>
-          <a href="/walkthrough.mp4" className="mt-2 inline-flex min-h-11 items-center gap-2 text-small text-lilac underline-offset-4 hover:underline">
+          <a href={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/walkthrough.mp4`} className="mt-2 inline-flex min-h-11 items-center gap-2 text-small text-lilac underline-offset-4 hover:underline">
             <FilmIcon size={15} strokeWidth={1.5} aria-hidden /> Can't run it? Watch the recording.
           </a>
         </div>
         <figure className="relative hidden lg:block" aria-label="The Sirion sidebar beside a supplier email">
           <div className="overflow-hidden rounded-card border border-ink-muted shadow-glow">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/hero.png" alt="Mock inbox with the Sirion sidebar showing what's agreed so far for deal DL-1042" width={1040} height={1200} className="block h-auto w-full" />
+            <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/hero.png`} alt="Mock inbox with the Sirion sidebar showing what's agreed so far for deal DL-1042" width={1040} height={1200} className="block h-auto w-full" />
           </div>
           <figcaption className="mt-3 text-xs text-ink-on-stage">Mock of the Outlook and Gmail add-in. Synthetic data.</figcaption>
         </figure>
