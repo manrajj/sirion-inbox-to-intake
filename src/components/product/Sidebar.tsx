@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   X,
   Check,
@@ -26,7 +26,7 @@ import {
   Link2,
   Unlink,
 } from "lucide-react";
-import { actions, useApp, useDealView, threadOf, threadAttachments } from "@/lib/store";
+import { actions, useApp, useDealView, threadOf, threadAttachments, relatedThreads } from "@/lib/store";
 import { getDeal } from "@data/index";
 import { domainOf } from "@/lib/checks";
 import type { TermView } from "@/lib/derive";
@@ -40,59 +40,57 @@ import { SirionMark } from "./SirionMark";
 const READ_STEPS = ["Reading the emails", "Reading the quote PDF", "Checking each term against its source"];
 
 /**
- * Says, in plain words, why the open email belongs to this deal. The rules are the
- * deal-match checks in checks.ts: the sender's domain is the deal's supplier, the
- * thread names the deal's quote, or you already added the thread yourself.
+ * Says, in plain words, how the open email relates to the deal. The rules are the
+ * deal-match checks: the sender's domain is the deal's supplier, the thread names the
+ * deal's quote, or it is an internal thread about the same supplier.
  */
 function MatchReason() {
   const dealId = useApp((s) => s.dealId);
   const openId = useApp((s) => s.openMessageId);
+  const picked = useApp((s) => !!s.deals[s.dealId].pickedDealId);
   const view = useDealView();
   const deal = getDeal(dealId);
   const thread = threadOf(deal, openId);
   const msgs = thread.messageIds.map((id) => deal.messages.find((m) => m.id === id)!);
   const emails = msgs.filter((m) => m.kind === "email");
-  const preAdded = deal.preAdded.find((p) => emails.some((m) => m.id === p.messageId));
   const domains = new Set(emails.map((m) => domainOf(m.from.email)));
   const quote = msgs.map((m) => m.body).join(" ").match(/Q-[A-Z]{2}-\d{3,}/)?.[0];
   const fromSupplier = domains.has(deal.supplier.domain);
   const fromRival = deal.rival && domains.has(deal.rival.domain);
+  const added = emails.every((m) => view.addedIds.has(m.id));
+  const first = deal.supplier.name.split(" ")[0];
+  const b = (x: string) => <b className="font-medium">{x}</b>;
 
   let ok = true;
   let text: React.ReactNode;
-  if (fromRival && !fromSupplier) {
-    ok = false;
-    text = (
+  if (!picked) {
+    text = fromRival ? (
+      <>No Sirion deal for this email. It is from {b(deal.rival!.domain)}.</>
+    ) : (
       <>
-        Not part of {dealId}: sent from <b className="font-medium">{deal.rival!.domain}</b>, and this deal&apos;s supplier is {deal.supplier.name}.
+        No Sirion deal for this email yet. It is from {b(fromSupplier ? deal.supplier.domain : "your team")}
+        {quote ? <>, about quote {b(quote)}</> : null}.
       </>
     );
+  } else if (fromRival && !fromSupplier) {
+    ok = false;
+    text = <>Not part of {dealId}: sent from {b(deal.rival!.domain)}, and this deal&apos;s supplier is {deal.supplier.name}.</>;
   } else if (fromSupplier) {
     text = (
       <>
-        Matched because it comes from <b className="font-medium">{deal.supplier.domain}</b>, the supplier on {dealId}
-        {quote ? (
-          <>
-            , and mentions quote <b className="font-medium">{quote}</b>
-          </>
-        ) : null}
-        .
+        Part of {dealId}: it comes from {b(deal.supplier.domain)}, the supplier on this deal{quote ? <>, and names quote {b(quote)}</> : null}.
       </>
     );
-  } else if (preAdded && emails.every((m) => view.addedIds.has(m.id))) {
-    text = (
-      <>
-        You added this thread to {dealId} on {fmtDate(preAdded.addedAt)}.
-      </>
-    );
+  } else if (added) {
+    text = <>Part of {dealId}: an internal thread that mentions {first}, added when you created the deal.</>;
   } else {
-    text = <>Mentions {deal.supplier.name}, the supplier on {dealId}.</>;
+    text = <>Mentions {first}, the supplier on {dealId}.</>;
   }
   return (
     <p
       className={cx(
         "mx-3 mb-1 flex items-start gap-1.5 rounded-[6px] px-2.5 py-1.5 text-xs leading-[18px]",
-        ok ? "bg-surface-alt text-ink-muted" : "bg-tone-warn-bg text-tone-warn-fg",
+        ok ? "bg-white text-ink-muted" : "bg-tone-warn-bg text-tone-warn-fg",
       )}
       data-tour="match-reason"
     >
@@ -120,16 +118,18 @@ export function Sidebar() {
   const pdfsLeft = notAdded.length - emailsLeft;
   const submitted = !!ds.submit.requestId;
   const reading = ds.reading > 0;
+  const picked = !!ds.pickedDealId;
+  const related = relatedThreads(deal);
   const counts = [emailsLeft ? `${emailsLeft} email${emailsLeft === 1 ? "" : "s"}` : "", pdfsLeft ? `${pdfsLeft} PDF` : ""].filter(Boolean).join(", ");
 
   return (
-    <aside className="flex w-full shrink-0 flex-col overflow-hidden rounded-[8px] border border-mail-line bg-white shadow-card md:w-[340px]" aria-label="Sirion add-in" data-tour="sidebar">
+    <aside className="flex w-full shrink-0 flex-col overflow-hidden rounded-[8px] border border-addin-line bg-addin-bg shadow-card md:w-[340px]" aria-label="Sirion add-in" data-tour="sidebar">
       {/* Tab header, as Outlook shows add-ins */}
-      <header className="flex h-10 shrink-0 items-end border-b border-mail-line bg-mail-pane pl-2 text-mail-text">
-        <span className="flex h-10 items-center gap-1.5 border-b-2 border-mail-blue px-2 text-small font-semibold">
+      <header className="flex h-10 shrink-0 items-end border-b border-addin-line bg-white pl-2 text-mail-text">
+        <span className="flex h-10 items-center gap-1.5 border-b-2 border-teal px-2 text-small font-semibold">
           <SirionMark size={13} />
           Sirion for Outlook
-          <Pin size={14} strokeWidth={2} className="fill-current text-mail-blue" aria-hidden />
+          <Pin size={14} strokeWidth={2} className="fill-current text-teal" aria-hidden />
           <button onClick={() => actions.toggleSidebar(false)} className="inline-flex h-8 w-7 items-center justify-center rounded-[4px] text-mail-muted hover:bg-mail-blue-soft" aria-label="Close Sirion">
             <X size={15} strokeWidth={1.75} />
           </button>
@@ -147,9 +147,9 @@ export function Sidebar() {
         <span className="inline-flex h-8 w-8 items-center justify-center" aria-hidden>
           <FolderOpen size={15} strokeWidth={1.5} />
         </span>
-        <span className="mx-auto inline-flex items-center gap-1.5 text-small text-ink" data-tour="deal-chip">
+        <span className={cx("mx-auto inline-flex items-center gap-1.5 text-small", picked ? "text-ink" : "text-ink-muted")} data-tour="deal-chip">
           <Briefcase size={14} strokeWidth={1.5} aria-hidden />
-          {dealId} · {deal.supplier.name}
+          {picked ? `${dealId} · ${deal.supplier.name}` : "No deal yet"}
         </span>
         <span className="inline-flex h-8 w-8 items-center justify-center" aria-hidden>
           <SlidersHorizontal size={15} strokeWidth={1.5} />
@@ -167,13 +167,28 @@ export function Sidebar() {
         ) : panel === "home" ? (
           <section aria-label="Suggestions" className="fade-in">
             <div className="flex flex-col items-center pb-4 pt-5">
-              <span className="inline-flex h-12 w-14 items-center justify-center rounded-[10px] shadow-card">
+              <span className="inline-flex h-12 w-14 items-center justify-center rounded-[10px] bg-white shadow-card">
                 <SirionMark size={24} />
               </span>
               <span className="mt-1.5 text-[10px] font-medium uppercase tracking-wider text-ink-muted">Intake</span>
               <p className="mt-3 text-small text-ink-muted">Suggestions for your email</p>
             </div>
-            <ul className="divide-y divide-line overflow-hidden rounded-[8px] border border-line">
+            {!picked ? (
+              <>
+                <ul className="overflow-hidden rounded-[8px] border border-addin-line bg-white">
+                  <Suggestion
+                    tour="create-deal"
+                    label={`Create a deal for ${deal.supplier.name}`}
+                    meta={`${related.length} threads`}
+                    onClick={() => actions.createDeal()}
+                  />
+                </ul>
+                <p className="mt-2 px-1 text-xs leading-[18px] text-ink-muted" data-tour="create-deal-note">
+                  Creates the deal in Sirion and adds {related.length} threads: the {deal.supplier.name.split(" ")[0]} emails with the quote, and {related.length - 1} internal thread{related.length - 1 === 1 ? "" : "s"} that mention {deal.supplier.name.split(" ")[0]}. You can remove any of them later.
+                </p>
+              </>
+            ) : (
+            <ul className="divide-y divide-line overflow-hidden rounded-[8px] border border-addin-line bg-white">
               <Suggestion
                 tour="add-to-sirion"
                 done={notAdded.length === 0}
@@ -189,6 +204,7 @@ export function Sidebar() {
                 onClick={() => actions.setView("sirion")}
               />
             </ul>
+            )}
           </section>
         ) : (
           <Answer />
@@ -219,20 +235,32 @@ function Answer() {
   const agreed = view.terms.filter((t) => t.status === "accepted" || t.status === "offEmail");
   const conflicts = view.terms.filter((t) => t.needsDecision);
   const nothing = !view.terms.some((t) => t.steps.length);
+  // A short "assessing" beat before the answer, as an assistant shows while it works.
+  const [thinking, setThinking] = useState(true);
+  useEffect(() => {
+    const id = setTimeout(() => setThinking(false), 1100);
+    return () => clearTimeout(id);
+  }, []);
   return (
     <section aria-label="Assistant" className="fade-in">
-      <div className="-mx-3 mb-3 flex h-10 items-center gap-2 border-b border-line px-3">
+      <div className="-mx-3 mb-3 flex h-10 items-center gap-2 border-b border-addin-line px-3">
         <button onClick={() => actions.setPanel("home")} className="inline-flex h-8 w-8 items-center justify-center rounded-[4px] text-ink hover:bg-surface-alt" aria-label="Back to suggestions" data-tour="panel-back">
           <ArrowLeft size={16} strokeWidth={1.5} />
         </button>
         <span className="text-small font-medium text-ink">Assistant</span>
       </div>
-      <p className="rounded-[10px] bg-surface-alt px-3 py-2.5 text-small text-ink">What's agreed so far on this deal?</p>
-      <div className="mt-1 flex justify-end text-ink-muted" aria-hidden>
+      <p className="rounded-[12px] bg-white px-3.5 py-3 text-small leading-5 text-ink shadow-card" data-tour="assistant-prompt">
+        What&apos;s agreed so far on this deal? List each term with the sentence it came from.
+      </p>
+      <div className="mt-1.5 flex justify-end text-ink-muted" aria-hidden>
         <Copy size={13} strokeWidth={1.5} />
       </div>
-      <div className="mt-2">
-        {nothing ? (
+      <div className="mt-3">
+        {thinking ? (
+          <p className="assess-shimmer text-small text-ink-muted" role="status" data-tour="assessing">
+            Assessing query
+          </p>
+        ) : nothing ? (
           <p className="text-small text-ink">Nothing yet. I only read emails you add to the deal. Add this thread first.</p>
         ) : (
           <>
@@ -328,6 +356,7 @@ function Composer() {
   const dealId = useApp((s) => s.dealId);
   const ds = useApp((s) => s.deals[s.dealId]);
   const atOpen = useApp((s) => s.atOpen);
+  const panel = useApp((s) => s.panel);
   const view = useDealView();
   const deal = getDeal(dealId);
   const [q, setQ] = useState("");
@@ -382,14 +411,14 @@ function Composer() {
           {note}
         </p>
       )}
-      <div className="rounded-[10px] bg-surface-alt p-2 focus-within:ring-1 focus-within:ring-teal">
+      <div className="rounded-[10px] border border-addin-line bg-white p-2 focus-within:ring-1 focus-within:ring-teal">
         <button
           onClick={() => setShowSources((v) => !v)}
-          className="flex min-h-9 w-full items-center gap-2 rounded-[6px] bg-white px-2.5 text-left text-xs text-ink-muted"
+          className="flex min-h-9 w-full items-center gap-2 rounded-[6px] bg-addin-bg px-2.5 text-left text-xs text-ink-muted"
           aria-expanded={showSources}
           data-tour="added-items"
         >
-          <Paperclip size={13} strokeWidth={1.5} aria-hidden /> {live.length} file{live.length === 1 ? "" : "s"} in {dealId}
+          <Paperclip size={13} strokeWidth={1.5} aria-hidden /> {ds.pickedDealId ? `${live.length} file${live.length === 1 ? "" : "s"} in ${dealId}` : "No files yet"}
         </button>
         {showSources && (
           <ul className="thin-scroll mt-1 max-h-[180px] overflow-y-auto rounded-[6px] bg-white p-1" aria-label={`Added to ${dealId}`} data-tour="added-list">
@@ -426,7 +455,7 @@ function Composer() {
               ask();
             }
           }}
-          placeholder="Ask Sirion about this deal. Type @ to add sources."
+          placeholder={panel === "home" ? "Ask Sirion about this deal. Type @ to add sources." : "Ask a follow-up. Type @ to add sources."}
           className="mt-1.5 w-full resize-none bg-transparent px-1 text-small leading-5 text-ink outline-none placeholder:text-ink-muted"
           aria-label="Ask Sirion about this deal. Type @ to add sources."
           aria-expanded={atOpen}

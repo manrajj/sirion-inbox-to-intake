@@ -42,6 +42,9 @@
   --mail-text: #242424;
   --mail-muted: #616161;
   --mail-line: #e0e0e0;
+  /* The Sirion add-in's own tint, so it reads apart from Outlook's greys */
+  --addin-bg: #e4efed;
+  --addin-line: #c9dcd9;
   /* Microsoft 365 app colours for the Outlook app rail (DECISIONS C7) */
   --ms-calendar: #0f6cbd;
   --ms-people: #5b5fc7;

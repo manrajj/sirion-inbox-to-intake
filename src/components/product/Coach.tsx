@@ -23,17 +23,19 @@ export function useCoach(): Coach {
   const submitted = !!ds.submit.requestId;
   const conflict = view.terms.find((t) => t.needsDecision);
 
+  const picked = !!ds.pickedDealId;
   if (submitted) return { stage: 4, target: null, label: "" };
   if (s.view === "sirion") {
     if (view.core.some((c) => c.value === null))
       return { stage: 2, target: "submit-fix", label: mainAdded ? "Some fields are empty. Fill them in." : "Add the Brightline emails first" };
     if (conflict) return { stage: 2, target: `options-${conflict.key}`, label: "The email and the quote disagree. Pick one." };
-    return { stage: 3, target: "confirm-check", label: "Everything is filled in. Check it and submit." };
+    return { stage: 3, target: "submit", label: "Everything is filled in. Check it and submit." };
   }
   if (s.view === "inbox") {
-    if (!s.sidebarOpen) return { stage: mainAdded ? 2 : 0, target: "open-sidebar", label: mainAdded ? "Open Sirion again" : "Start here: open the Sirion add-in" };
+    if (!s.sidebarOpen) return { stage: picked ? 2 : 0, target: "open-sidebar", label: picked ? "Open Sirion again" : "Start here: open the Sirion add-in" };
     if (ds.pendingWarning) return { stage: 1, target: "mismatch-cancel", label: "Wrong supplier. Don't add it." };
     if (ds.reading) return { stage: 1, target: null, label: "" };
+    if (!picked) return { stage: 1, target: "create-deal", label: "Create the deal in Sirion" };
     if (!mainAdded) {
       if (s.openMessageId && deal.messages.find((m) => m.id === s.openMessageId)?.threadId !== deal.messages.find((m) => m.id === deal.openMessageId)?.threadId)
         return { stage: 1, target: "thread-t-bl", label: "Open the Brightline email" };

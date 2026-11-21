@@ -7,7 +7,7 @@ import { useSyncExternalStore } from "react";
 import { DEALS, EXAMPLES, getDeal } from "@data/index";
 import type { AddedItem, Deal, Message, Resolution } from "./types";
 import { deriveDeal, emptyDecisions, buildPayload, type OwnerDecisions, type DealView } from "./derive";
-import { domainMismatch } from "./checks";
+import { domainMismatch, domainOf, BUYER_DOMAIN } from "./checks";
 import { sirion, hash } from "./submit";
 
 export type View = "inbox" | "sirion" | "legal";
@@ -54,7 +54,7 @@ export interface AppState {
 }
 
 const DEMO_START = Date.parse("2026-11-18T09:30:00Z");
-const KEY = "sirion-i2i-v2";
+const KEY = "sirion-i2i-v3";
 
 function freshDeal(d: Deal): DealState {
   const added: AddedItem[] = d.preAdded.map((p) => ({ ...p, via: "pre-added" }));
@@ -160,6 +160,21 @@ const initialSnapshot = state;
 // ---------- derived
 
 const viewCache = new Map<string, { key: unknown; view: DealView }>();
+/**
+ * The threads a new deal starts with: the open supplier thread, plus internal threads
+ * that name the same supplier. A rival supplier's thread is never included.
+ */
+export function relatedThreads(deal: Deal) {
+  const word = deal.supplier.name.split(" ")[0].toLowerCase();
+  return deal.threads.filter((t) => {
+    const msgs = t.messageIds.map((id) => deal.messages.find((m) => m.id === id)!);
+    const domains = new Set(msgs.map((m) => domainOf(m.from.email)));
+    if (domains.has(deal.supplier.domain)) return true;
+    const internal = [...domains].every((d) => d === BUYER_DOMAIN);
+    return internal && msgs.some((m) => (m.subject + " " + m.body).toLowerCase().includes(word));
+  });
+}
+
 export function dealView(s: AppState, id = s.dealId): DealView {
   const ds = s.deals[id];
   const cached = viewCache.get(id);
@@ -239,6 +254,45 @@ export const actions = {
   },
   setView(view: View) {
     set((s) => ({ ...s, view, source: null, toast: null }));
+    if (view === "sirion") actions.preselectConflicts();
+  },
+  /**
+   * When the email and the quote disagree, the request opens with the value from the
+   * negotiation's last word preselected (the first option), shown as a choice the
+   * owner can switch. It is logged as a preselection, not as the owner's decision.
+   */
+  preselectConflicts() {
+    const view = dealView(state);
+    view.terms
+      .filter((t) => t.needsDecision && !t.resolution && t.conflict?.options[0])
+      .forEach((t) => {
+        const o = t.conflict!.options[0];
+        setDeal((d) =>
+          log(
+            { ...d, decisions: { ...d.decisions, resolutions: { ...d.decisions.resolutions, [t.key]: { type: "picked", value: o.value, messageId: o.messageId } }, preselected: { ...(d.decisions.preselected ?? {}), [t.key]: true } } },
+            "Sirion",
+            "Preselected",
+            `${t.key}: ${o.value} (the later message); the owner can switch`,
+          ),
+        );
+      });
+  },
+  /**
+   * The first click in the add-in: create the deal in Sirion from the open email, then
+   * add its thread and the internal threads about the same supplier.
+   */
+  createDeal() {
+    const deal = getDeal(state.dealId);
+    actions.pickDeal(deal.id, "owner");
+    const ids = relatedThreads(deal).flatMap((t) => t.messageIds);
+    actions.addMessages(ids, "thread");
+    const msgs = ids.map((id) => deal.messages.find((m) => m.id === id)!);
+    const pdfs = msgs.filter((m) => m.kind === "pdf").length;
+    const emails = msgs.length - pdfs;
+    set((s) => ({
+      ...s,
+      toast: { text: `${deal.id} created in Sirion. Added ${emails} emails and ${pdfs} PDF from ${relatedThreads(deal).length} threads.`, n: (s.toast?.n ?? 0) + 1 },
+    }));
   },
   setPanel(panel: Panel) {
     set((s) => ({ ...s, panel }));
@@ -380,7 +434,7 @@ export const actions = {
     tick(6);
     setDeal((d) =>
       log(
-        { ...d, decisions: { ...d.decisions, resolutions: { ...d.decisions.resolutions, [key]: resolution }, confirmedTerms: { ...d.decisions.confirmedTerms, [key]: false } } },
+        { ...d, decisions: { ...d.decisions, resolutions: { ...d.decisions.resolutions, [key]: resolution }, confirmedTerms: { ...d.decisions.confirmedTerms, [key]: false }, preselected: { ...(d.decisions.preselected ?? {}), [key]: false } } },
         "Manraj Singh",
         resolution ? (resolution.type === "open" ? "Marked open for Legal" : resolution.type === "picked" ? "Resolved with evidence" : "Logged term agreed on a call") : "Cleared resolution",
         `${key}${resolution && resolution.type === "open" ? `: ${resolution.reason}` : resolution && "value" in resolution ? `: ${resolution.value}` : ""}`,

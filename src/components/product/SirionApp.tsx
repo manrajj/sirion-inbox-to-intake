@@ -101,11 +101,9 @@ export function SirionRequest() {
   const ds = useApp((s) => s.deals[s.dealId]);
   const view = useDealView();
   const deal = getDeal(dealId);
-  const [checked, setChecked] = useState(false);
   const submitted = !!ds.submit.requestId;
   const term = (k: string) => view.terms.find((t) => t.key === k)!;
   const core = (k: string) => view.core.find((c) => c.key === k)!;
-  const filled = view.core.filter((c) => c.value !== null).length;
   const conflict = view.terms.find((t) => t.needsDecision);
   const blocked = view.blockers.some((b) => b.kind === "conflict" || b.kind === "core-missing" || b.kind === "entity");
   const missing = view.core.filter((c) => c.value === null);
@@ -133,9 +131,7 @@ export function SirionRequest() {
       ? { text: `Pick the ${conflict.label.toLowerCase()}: the email and the quote disagree.`, fix: { label: "Show me", run: () => goTo(`options-${conflict.key}`) } }
       : entity
         ? { text: entity.label }
-        : !checked
-          ? { text: "Tick the box to say you checked the values." }
-          : null;
+        : null;
 
   if (submitted) return <Created />;
 
@@ -227,27 +223,14 @@ export function SirionRequest() {
             </section>
 
             <section className="rounded-card bg-white p-4 shadow-card" data-tour="summary" aria-label="Submit">
-              <dl className="space-y-1.5 text-small">
-                {[
-                  ["Filled from email", `${filled} of 7`],
-                  ["Typed by hand", String(view.typedByHand)],
-                  // Only meaningful once the fields are in: before that every term looks "not discussed".
-                  ...(missing.length ? [] : [["Left for Legal to settle", String(view.openForLegal.length)]]),
-                ].map(([k, v]) => (
-                  <div key={k} className="flex justify-between gap-3">
-                    <dt className="text-ink-muted">{k}</dt>
-                    <dd className="font-medium text-ink">{v}</dd>
-                  </div>
-                ))}
-              </dl>
-              <label className="mt-3 flex cursor-pointer items-start gap-2.5 border-t border-line pt-3 text-small text-ink" data-tour="confirm-check">
-                <input type="checkbox" checked={checked} onChange={(e) => setChecked(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--brand-primary)]" />
-                I checked these values against their sources
-              </label>
+              <p className="text-small text-ink">
+                {missing.length ? "Not ready yet." : "Ready to submit."}{" "}
+                <span className="text-ink-muted">Every value links to the email it came from.</span>
+              </p>
               <Button
                 variant="primary"
                 className="mt-3 w-full"
-                disabled={blocked || !checked || ds.submit.status === "pending"}
+                disabled={blocked || ds.submit.status === "pending"}
                 onClick={() => actions.confirmAndSubmit()}
                 data-tour="submit"
                 aria-describedby={why ? "submit-why" : undefined}
@@ -267,6 +250,7 @@ export function SirionRequest() {
                   </span>
                 </div>
               )}
+              {!why && <p className="mt-2 text-xs text-ink-muted">Submitting confirms you checked these values.</p>}
               {ds.submit.status === "failed" && <p className="mt-2 text-xs text-tone-danger-fg">{ds.submit.error} Retry is safe.</p>}
             </section>
           </div>
@@ -277,6 +261,7 @@ export function SirionRequest() {
 }
 
 function ConflictRow({ t }: { t: TermView }) {
+  const preselected = useApp((s) => !!s.deals[s.dealId].decisions.preselected?.[t.key]);
   const opts = t.conflict?.options ?? [];
   const picked = t.resolution?.type === "picked" ? t.resolution.value : null;
   const where = (id: string, author: string) => (id.startsWith("pdf") ? "Quote PDF" : `${author.split(" ")[0]}'s email`);
@@ -285,6 +270,7 @@ function ConflictRow({ t }: { t: TermView }) {
       <span className="text-small text-ink-muted">{t.label}</span>
       <div>
         {!picked && <p className="mb-1.5 text-small text-ink">The email and the quote disagree. Which holds?</p>}
+        {picked && preselected && <p className="mb-1.5 text-xs text-ink-muted">The email and the quote disagree. Sirion picked the later message; switch if that&apos;s wrong.</p>}
         <div className="inline-flex rounded-button border border-line-strong p-0.5" role="radiogroup" aria-label={`${t.label}: pick a value`} data-tour={`options-${t.key}`}>
           {opts.map((o, i) => {
             const on = picked === o.value;
@@ -326,18 +312,6 @@ function Created() {
           <p className="mt-2 text-small text-ink-muted">
             {view.deal.supplier.name} · {value} · routed to {view.route?.queue ?? "Legal"}
           </p>
-          <dl className="mt-6 grid grid-cols-3 gap-2 border-t border-line pt-5" data-tour="typed-count">
-            {[
-              [`${view.core.filter((c) => c.value !== null).length}/7`, "fields from email"],
-              [String(view.typedByHand), "typed by hand"],
-              [String(view.openForLegal.length), "left for Legal"],
-            ].map(([n, l]) => (
-              <div key={l}>
-                <dt className="text-h1 text-ink">{n}</dt>
-                <dd className="text-xs text-ink-muted">{l}</dd>
-              </div>
-            ))}
-          </dl>
           <div className="mt-6 flex justify-center gap-3">
             <Button variant="secondary" onClick={() => actions.setView("inbox")} icon={<ArrowLeft size={15} strokeWidth={1.5} aria-hidden />}>
               Back to Outlook

@@ -84,6 +84,8 @@ export interface OwnerDecisions {
   typedCore: Record<string, string | undefined>;
   pickedCore: Record<string, string | undefined>;
   recordComplete: boolean;
+  /** Conflicts Sirion preselected (the later message), until the owner picks. */
+  preselected?: Record<string, boolean>;
 }
 
 export const emptyDecisions = (): OwnerDecisions => ({

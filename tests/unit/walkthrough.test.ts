@@ -17,7 +17,7 @@ describe("walkthrough script drives the real store", () => {
     sirion.latencyMs = 0;
     const before = sirion.count();
     const steps = CHAPTERS.find((c) => c.id === "submit")!.steps;
-    for (const st of steps.slice(0, 4)) await st.do?.();
+    for (const st of steps) if (st.target !== "receipt") await st.do?.();
     await Promise.all([actions.submit(), actions.submit()]);
     await actions.submit();
     expect(sirion.count() - before).toBeLessThanOrEqual(1);

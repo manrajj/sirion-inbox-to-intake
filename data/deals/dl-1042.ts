@@ -21,8 +21,10 @@ export const DL1042: Deal = {
     { id: "t-fin", subject: "Budget check: Brightline analytics", label: "Finance budget check (internal)", messageIds: ["fn-01", "fn-02"] },
     { id: "t-cx", subject: "Corvex quote: analytics platform", label: "Corvex quote (rival)", messageIds: ["cx-01"] },
   ],
-  // Manraj opened DL-1042 on 18 Nov, after picking Brightline, and added the two internal threads then.
-  preAdded: ["rq-01", "rq-02", "rq-03", "rq-04", "fn-01", "fn-02"].map((messageId) => ({ messageId, addedBy: "Manraj Singh", addedAt: "2026-11-18T09:02:00Z" })),
+  // The story starts with no deal in Sirion: Manraj's first click in the add-in creates DL-1042
+  // and adds the supplier thread plus the internal threads about the same supplier.
+  startsWithoutDeal: true,
+  preAdded: [],
   repository: {
     records: [
       { id: "MSA-2025-0187", type: "Master subscription agreement", entity: "Brightline Analytics Ltd", signed: "2025-03-14", expires: "2028-03-13" },
@@ -69,7 +71,7 @@ Priya`,
       subject: "RE: Request: marketing analytics platform",
       body: `Hi Priya,
 
-We are going with Brightline. The deal is agreed by email. I have opened request DL-1042 in Sirion and will send it to Legal today.
+We are going with Brightline. The deal is agreed by email. I will raise the intake request in Sirion today so Legal can start.
 
 Manraj`,
     },

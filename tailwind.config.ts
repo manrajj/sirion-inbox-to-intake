@@ -44,6 +44,7 @@ const config: Config = {
         word: "var(--ms-word)",
         excel: "var(--ms-excel)",
       },
+      addin: { bg: "var(--addin-bg)", line: "var(--addin-line)" },
       teal: "var(--brand-primary)",
       lilac: "var(--brand-secondary)",
       amethyst: { DEFAULT: "var(--brand-accent)", hover: "var(--brand-accent-hover)" },

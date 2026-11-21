@@ -5,7 +5,6 @@
 
 import { actions, getState } from "@/lib/store";
 import { sirion } from "@/lib/submit";
-import { getDeal } from "@data/index";
 
 export interface Step {
   target?: string;
@@ -23,13 +22,6 @@ export interface Chapter {
   steps: Step[];
 }
 
-const deal = () => getDeal("DL-1042");
-/** The Brightline thread: its emails and the quote PDF, as the add-in's first suggestion adds them. */
-const addMainThread = () => {
-  const d = deal();
-  const t = d.threads.find((x) => x.id === "t-bl")!;
-  actions.addMessages(t.messageIds, "thread");
-};
 const UPLIFT_CONFIRM = "Confirmed: we will waive the $5,000 setup fee, and the annual uplift stays at 4%.";
 
 export const CHAPTERS: Chapter[] = [
@@ -53,7 +45,7 @@ export const CHAPTERS: Chapter[] = [
   {
     id: "sidebar",
     title: "Open Sirion",
-    caption: "Sirion sits beside the email, already on deal DL-1042.",
+    caption: "Sirion sits beside the email. There is no deal for it in Sirion yet.",
     steps: [
       { target: "open-sidebar", do: () => actions.toggleSidebar(true), ms: 2500 },
       { target: "sidebar", ms: 3000 },
@@ -61,10 +53,10 @@ export const CHAPTERS: Chapter[] = [
   },
   {
     id: "add",
-    title: "Add the thread",
-    caption: "One click adds the emails and the quote. Nothing is read until you add it.",
+    title: "Create the deal",
+    caption: "One click creates DL-1042 and adds this thread, the quote, and the two internal threads about Brightline.",
     steps: [
-      { target: "add-to-sirion", do: addMainThread, ms: 2200 },
+      { target: "create-deal", do: () => actions.createDeal(), ms: 2400 },
       { target: "reading", do: () => actions.setReading(2), ms: 1500 },
       { target: "reading", do: () => actions.setReading(3), ms: 1500 },
       { target: "toast", do: () => actions.finishReading(), ms: 3000 },
@@ -73,9 +65,10 @@ export const CHAPTERS: Chapter[] = [
   {
     id: "agreed",
     title: "What's agreed",
-    caption: "Every term comes with the sentence it came from.",
+    caption: "Ask what's agreed. Every term comes with the sentence it came from.",
     steps: [
-      { target: "agreed-list", do: () => actions.setPanel("agreed"), ms: 2600 },
+      { target: "assistant-prompt", do: () => actions.setPanel("agreed"), ms: 1400 },
+      { target: "agreed-list", ms: 2400 },
       { target: "cite-mark", do: () => actions.cite("bl-06", UPLIFT_CONFIRM), ms: 3400 },
     ],
   },
@@ -98,20 +91,16 @@ export const CHAPTERS: Chapter[] = [
   },
   {
     id: "conflict",
-    title: "One decision",
-    caption: "The email says Net 45, the quote says Net 30. Manraj picks the later email.",
-    steps: [
-      { target: "options-payment", ms: 2600 },
-      { target: "options-payment", do: () => actions.resolveTerm("payment", { type: "picked", value: "Net 45", messageId: "bl-06" }), ms: 2200 },
-    ],
+    title: "One check",
+    caption: "The email says Net 45, the quote says Net 30. Sirion preselects the later email; Manraj can switch.",
+    steps: [{ target: "options-payment", ms: 3600 }],
   },
   {
     id: "submit",
     title: "Request created",
     caption: "Nothing typed by hand. The intake request is in Sirion.",
     steps: [
-      { target: "confirm-check", click: true, visual: true, ms: 1600 },
-      { target: "submit", do: () => actions.confirmAndSubmit(), ms: 1800 },
+      { target: "submit", do: () => actions.confirmAndSubmit(), ms: 2200 },
       { target: "receipt", ms: 3600 },
     ],
   },

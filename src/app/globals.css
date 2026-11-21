@@ -157,3 +157,20 @@ textarea {
     animation: none;
   }
 }
+
+/* The assistant's "Assessing query" line, as a soft moving sheen */
+.assess-shimmer {
+  background: linear-gradient(90deg, var(--ink-muted) 0%, var(--line-strong) 50%, var(--ink-muted) 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: assess 1.4s linear infinite;
+}
+@keyframes assess {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .assess-shimmer { animation: none; color: var(--ink-muted); background: none; }
+}
