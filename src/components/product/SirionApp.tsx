@@ -18,7 +18,7 @@ import { AboutButton } from "./About";
 export function SirionChrome({ crumb, children }: { crumb: string; children: React.ReactNode }) {
   return (
     <div className="sirion-enter flex h-full min-h-0 flex-col bg-canvas" data-tour="sirion-app">
-      <header className="flex h-12 shrink-0 items-center gap-5 bg-teal px-4 text-white">
+      <header className="flex h-12 shrink-0 items-center gap-3 bg-teal px-3 sm:gap-5 sm:px-4 text-white">
         <SirionLogo size={20} inverse />
         <nav className="hidden items-center gap-1 text-small md:flex" aria-hidden>
           {["Home", "Requests", "Contracts", "Reports"].map((n) => (
@@ -31,7 +31,7 @@ export function SirionChrome({ crumb, children }: { crumb: string; children: Rea
           <Search size={14} strokeWidth={1.5} /> Search
         </span>
         <AboutButton onDark />
-        <span className="rounded-pill border border-white px-2 text-xs leading-5" title="Mock of the Sirion web app">
+        <span className="hidden rounded-pill border border-white px-2 text-xs leading-5 sm:inline" title="Mock of the Sirion web app">
           Mock
         </span>
         <Bell size={17} strokeWidth={1.5} className="hidden sm:block" aria-hidden />

@@ -173,7 +173,8 @@ export function AboutButton({ onDark }: { onDark?: boolean }) {
           : "inline-flex min-h-9 items-center rounded-button border border-amethyst px-3 text-small text-amethyst hover:bg-white"
       }
     >
-      About this prototype
+      <span className="sm:hidden">About</span>
+      <span className="hidden sm:inline">About this prototype</span>
     </button>
   );
 }

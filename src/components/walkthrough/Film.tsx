@@ -52,6 +52,9 @@ export function Film() {
   const [ended, setEnded] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [chapter, setChapter] = useState(0);
+  useEffect(() => {
+    chapterRef.current = chapter;
+  }, [chapter]);
   const [speed, setSpeed] = useState(1);
   const [hasTarget, setHasTarget] = useState(false);
   const [down, setDown] = useState(false);
@@ -75,9 +78,28 @@ export function Film() {
   // transitions), so scrolling, re-renders and screen changes never make them jump.
   const spotRef = useRef<HTMLDivElement>(null);
   const captionRef = useRef<HTMLDivElement>(null);
+  const chapterRef = useRef(0);
   const cursorRef = useRef<HTMLDivElement>(null);
   const targetName = useRef<string | null>(null);
-  const cur = useRef({ x: 0, y: 0, w: 0, h: 0, cx: -60, cy: -60, init: false });
+  const cur = useRef({ x: 0, y: 0, w: 0, h: 0, cx: -60, cy: -60, init: false, name: null as string | null, fadeUntil: 0 });
+  const dockRef = useRef<{ ch: number; at: "top" | "bottom"; moved: boolean; scrolledAt: number }>({ ch: -1, at: "bottom", moved: false, scrolledAt: 0 });
+  const [dock, setDock] = useState<"top" | "bottom">("bottom");
+  const [barVisible, setBarVisible] = useState(true);
+  const dockTimer = useRef(0);
+  const moveDock = useCallback((at: "top" | "bottom") => {
+    dockRef.current.at = at;
+    window.clearTimeout(dockTimer.current);
+    setBarVisible(false);
+    dockTimer.current = window.setTimeout(() => {
+      setDock(at);
+      setBarVisible(true);
+    }, 200);
+  }, []);
+  useEffect(() => {
+    const want = CHAPTERS[chapter]?.dock ?? "bottom";
+    dockRef.current = { ch: chapter, at: dockRef.current.at, moved: false, scrolledAt: 0 };
+    if (want !== dockRef.current.at || want !== dock) moveDock(want);
+  }, [chapter]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!open) return;
     let raf = 0;
@@ -93,27 +115,52 @@ export function Film() {
       if ((!el || !el.isConnected) && spotRef.current) spotRef.current.style.opacity = "0";
       if (el && el.isConnected) {
         const r = el.getBoundingClientRect();
-        // Keep the caption card off the step: if the target sits low, the card moves to the top.
-        const cap = captionRef.current;
-        if (cap) {
-          const capH = (cap.firstElementChild as HTMLElement | null)?.offsetHeight ?? 120;
-          const low = r.bottom > window.innerHeight - capH - 36;
-          const want = low ? "top" : "bottom";
-          if (cap.dataset.at !== want) {
-            cap.dataset.at = want;
-            cap.style.top = low ? "64px" : "auto";
-            cap.style.bottom = low ? "auto" : "20px";
+        // The caption bar is docked to the top or bottom edge. Each chapter names its edge in
+        // the script; only if a target would still end up under the bar does it move, once,
+        // to the other edge, and it stays there for the rest of that chapter.
+        const bar = captionRef.current;
+        if (bar && dockRef.current.ch === chapterRef.current && !dockRef.current.moved) {
+          const h = bar.offsetHeight;
+          const big = r.height > window.innerHeight * 0.6;
+          const covered = dockRef.current.at === "bottom" ? r.bottom > window.innerHeight - h - 8 : r.top < h + 8;
+          if (!big && r.height > 0 && covered) {
+            // First try to scroll the target clear of the bar; move the bar only if that fails.
+            const d = dockRef.current;
+            if (!d.scrolledAt) {
+              d.scrolledAt = performance.now();
+              el.scrollIntoView({ block: "center", behavior: reduced ? "auto" : "smooth" });
+            } else if (performance.now() - d.scrolledAt > 700) {
+              d.moved = true;
+              moveDock(d.at === "bottom" ? "top" : "bottom");
+            }
+          } else if (dockRef.current.scrolledAt && performance.now() - dockRef.current.scrolledAt > 700) {
+            dockRef.current.scrolledAt = 0;
           }
         }
+        // A jump to a far-away target (often on another screen) fades out and back in, instead of sweeping across.
+        if (a.name !== targetName.current) {
+          a.name = targetName.current;
+          const far = Math.hypot(r.x - a.x, r.y - a.y) > 360;
+          if (far && a.init && !reduced) a.fadeUntil = performance.now() + 220;
+        }
+        if (a.fadeUntil && performance.now() < a.fadeUntil) {
+          if (spotRef.current) spotRef.current.style.opacity = "0";
+          raf = requestAnimationFrame(loop);
+          return;
+        }
+        if (a.fadeUntil) {
+          a.fadeUntil = 0;
+          a.init = false; // snap to the new target while hidden
+        }
         if (r.width > 0) {
-          const k = reduced || !a.init ? 1 : 0.16;
+          const k = reduced || !a.init ? 1 : 0.12;
           a.x += (r.x - a.x) * k;
           a.y += (r.y - a.y) * k;
           a.w += (r.width - a.w) * k;
           a.h += (r.height - a.h) * k;
           const tx = r.x + Math.min(r.width / 2, 80);
           const ty = r.y + Math.min(r.height / 2, 22);
-          const kc = reduced ? 1 : 0.1;
+          const kc = reduced ? 1 : 0.08;
           a.cx += (tx - a.cx) * kc;
           a.cy += (ty - a.cy) * kc;
           a.init = true;
@@ -302,34 +349,48 @@ export function Film() {
         </div>
       )}
 
-      {/* Caption card: large, high contrast, with the controls tucked beside it. */}
+      {/* Caption bar: docked to the top or bottom edge, compact, with the controls at its end. */}
       {!ended && (
-        <div ref={captionRef} className="pointer-events-none fixed inset-x-0 bottom-5 z-[70] flex justify-center px-4" aria-live="polite">
-          <div className="pointer-events-auto w-full max-w-[880px] overflow-hidden rounded-card bg-white text-ink shadow-pop">
-            <div className="h-1 bg-surface-alt" aria-hidden>
-              <div className="h-full bg-teal" style={{ width: `${Math.min(100, (elapsed / TOTAL_MS) * 100)}%` }} />
+        <div
+          ref={captionRef}
+          className={cx("fixed inset-x-0 z-[70] border-line bg-white text-ink shadow-pop", dock === "top" ? "top-0 border-b" : "bottom-0 border-t")}
+          style={{
+            opacity: barVisible ? 1 : 0,
+            transform: barVisible ? "translateY(0)" : `translateY(${dock === "top" ? "-100%" : "100%"})`,
+            transition: reduced ? "none" : "opacity 0.2s ease, transform 0.2s ease",
+          }}
+          aria-live="polite"
+        >
+          <div className={cx("absolute inset-x-0 h-[3px] bg-surface-alt", dock === "top" ? "bottom-0" : "top-0")} aria-hidden>
+            <div className="h-full bg-teal transition-[width] duration-300 ease-linear" style={{ width: `${Math.min(100, (elapsed / TOTAL_MS) * 100)}%` }} />
+          </div>
+          <div className="mx-auto flex max-w-[1200px] items-center gap-3 px-3 py-2 sm:gap-5 sm:px-5 sm:py-2.5">
+            <div className="min-w-0 flex-1">
+              <div className="text-xs font-medium text-teal" data-tour="film-step">
+                Step {chapter + 1} of {CHAPTERS.length} · {ch.title}
+              </div>
+              <p key={chapter} className="fade-in text-[15px] font-medium leading-5 text-ink sm:text-[17px] sm:leading-6">
+                {ch.caption}
+              </p>
             </div>
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 px-5 py-4">
-              <div className="min-w-0 flex-1">
-                <div className="text-small font-medium text-teal" data-tour="film-step">
-                  Step {chapter + 1} of {CHAPTERS.length} · {ch.title}
-                </div>
-                <p className="mt-0.5 text-[22px] font-medium leading-7 text-ink">{ch.caption}</p>
-              </div>
-              <div className="flex items-center gap-1">
-                <CtrlButton label="Previous step (Left arrow)" onClick={() => seek(Math.max(0, chapter - 1))}>
-                  <SkipBack size={18} strokeWidth={1.5} />
-                </CtrlButton>
-                <CtrlButton label={playing ? "Pause (Space)" : "Play (Space)"} onClick={() => (playing ? pause() : resume())} primary>
-                  {playing ? <Pause size={18} strokeWidth={1.5} /> : <Play size={18} strokeWidth={1.5} />}
-                </CtrlButton>
-                <CtrlButton label="Next step (Right arrow)" onClick={() => seek(Math.min(CHAPTERS.length - 1, chapter + 1))}>
-                  <SkipForward size={18} strokeWidth={1.5} />
-                </CtrlButton>
-                <button onClick={takeOver} className="ml-2 inline-flex h-11 items-center gap-2 rounded-button border border-line px-4 text-small text-teal hover:bg-surface-alt" data-tour="take-over">
-                  <Hand size={16} strokeWidth={1.5} aria-hidden /> Take over
-                </button>
-              </div>
+            <div className="flex shrink-0 items-center gap-0.5">
+              <CtrlButton label="Previous step (Left arrow)" onClick={() => seek(Math.max(0, chapter - 1))}>
+                <SkipBack size={16} strokeWidth={1.5} />
+              </CtrlButton>
+              <CtrlButton label={playing ? "Pause (Space)" : "Play (Space)"} onClick={() => (playing ? pause() : resume())} primary>
+                {playing ? <Pause size={16} strokeWidth={1.5} /> : <Play size={16} strokeWidth={1.5} />}
+              </CtrlButton>
+              <CtrlButton label="Next step (Right arrow)" onClick={() => seek(Math.min(CHAPTERS.length - 1, chapter + 1))}>
+                <SkipForward size={16} strokeWidth={1.5} />
+              </CtrlButton>
+              <button
+                onClick={takeOver}
+                className="ml-1 inline-flex h-10 items-center gap-1.5 rounded-button border border-line px-2.5 text-small text-teal hover:bg-surface-alt sm:px-3"
+                data-tour="take-over"
+                aria-label="Take over"
+              >
+                <Hand size={15} strokeWidth={1.5} aria-hidden /> <span className="hidden sm:inline">Take over</span>
+              </button>
             </div>
           </div>
         </div>
@@ -341,7 +402,7 @@ export function Film() {
           <div className="glow-stage pointer-events-none absolute inset-0" aria-hidden />
           <div className="relative max-w-[640px] text-center">
             <p className="text-small text-lilac">End of the walkthrough</p>
-            <h2 className="mt-2 text-[34px] leading-[40px] text-ink-on-stage">From an Outlook thread to a Sirion intake request, with nothing retyped.</h2>
+            <h2 className="mt-2 text-[26px] leading-[32px] text-ink-on-stage sm:text-[34px] sm:leading-[40px]">From an Outlook thread to a Sirion intake request, with nothing retyped.</h2>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <button
                 className="inline-flex min-h-12 items-center gap-2 rounded-button bg-teal px-6 text-body text-white hover:opacity-90"
@@ -395,7 +456,7 @@ function CtrlButton({ label, onClick, children, primary }: { label: string; onCl
       aria-label={label}
       title={label}
       className={cx(
-        "inline-flex h-11 w-11 items-center justify-center rounded-button",
+        "inline-flex h-10 w-10 items-center justify-center rounded-button",
         primary ? "bg-teal text-white hover:opacity-90" : "text-ink hover:bg-surface-alt",
       )}
     >

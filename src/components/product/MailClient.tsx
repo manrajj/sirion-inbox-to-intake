@@ -178,7 +178,7 @@ export function MailClient() {
         />
         <span className="flex items-center gap-3 pl-1" aria-label="Organisation: Sirion">
           <SirionLogo size={18} />
-          <span className="text-[16px] font-medium text-mail-text">Outlook</span>
+          <span className="hidden text-[16px] font-medium text-mail-text sm:inline">Outlook</span>
         </span>
         <div className="hidden h-8 w-full max-w-[380px] items-center gap-2 rounded-[6px] border border-mail-line bg-white px-2.5 text-small text-mail-muted md:flex lg:ml-6">
           <Search size={16} strokeWidth={1.75} className="text-mail-text" aria-hidden />

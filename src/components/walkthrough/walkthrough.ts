@@ -19,6 +19,8 @@ export interface Chapter {
   id: string;
   title: string;
   caption: string;
+  /** Which screen edge the caption bar docks to for this chapter, chosen to keep its targets clear. */
+  dock?: "top" | "bottom";
   steps: Step[];
 }
 
@@ -27,6 +29,7 @@ const UPLIFT_CONFIRM = "Confirmed: we will waive the $5,000 setup fee, and the a
 export const CHAPTERS: Chapter[] = [
   {
     id: "pain",
+    dock: "bottom",
     title: "The deal is in email",
     caption: "Manraj agreed a deal with Brightline over six emails and a quote. Now it has to go into Sirion.",
     steps: [
@@ -44,6 +47,7 @@ export const CHAPTERS: Chapter[] = [
   },
   {
     id: "sidebar",
+    dock: "bottom",
     title: "Open Sirion",
     caption: "Sirion sits beside the email. There is no intake request for it yet.",
     steps: [
@@ -53,6 +57,7 @@ export const CHAPTERS: Chapter[] = [
   },
   {
     id: "add",
+    dock: "top",
     title: "Start the request",
     caption: "One click starts a draft intake request and adds this thread, the quote, and the two internal threads about Brightline.",
     steps: [
@@ -64,6 +69,7 @@ export const CHAPTERS: Chapter[] = [
   },
   {
     id: "agreed",
+    dock: "bottom",
     title: "What's agreed",
     caption: "Ask what's agreed. Every term comes with the sentence it came from.",
     steps: [
@@ -74,6 +80,7 @@ export const CHAPTERS: Chapter[] = [
   },
   {
     id: "request",
+    dock: "top",
     title: "Into Sirion",
     caption: "In Sirion, the draft request is already filled in.",
     steps: [
@@ -91,6 +98,7 @@ export const CHAPTERS: Chapter[] = [
   },
   {
     id: "quoted",
+    dock: "top",
     title: "Quoted from the emails",
     caption: "Every value shows where it came from. Click a source to read the exact sentence.",
     steps: [
@@ -102,6 +110,7 @@ export const CHAPTERS: Chapter[] = [
   },
   {
     id: "submit",
+    dock: "top",
     title: "Request created",
     caption: "Nothing typed by hand. The intake request is in Sirion.",
     steps: [
