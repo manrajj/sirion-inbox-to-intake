@@ -24,7 +24,7 @@ export function useCoach(): Coach {
   const conflict = view.terms.find((t) => t.needsDecision);
 
   const picked = !!ds.pickedDealId;
-  if (submitted) return { stage: 4, target: null, label: "" };
+  if (submitted) return { stage: 4, target: "about", label: "Done. Now see the thinking behind it" };
   if (s.view === "sirion") {
     if (view.core.some((c) => c.value === null))
       return { stage: 2, target: "submit-fix", label: mainAdded ? "Some fields are empty. Fill them in." : "Add the Brightline emails first" };
@@ -35,14 +35,14 @@ export function useCoach(): Coach {
     if (!s.sidebarOpen) return { stage: picked ? 2 : 0, target: "open-sidebar", label: picked ? "Open Sirion again" : "Start here: open the Sirion add-in" };
     if (ds.pendingWarning) return { stage: 1, target: "mismatch-cancel", label: "Wrong supplier. Don't add it." };
     if (ds.reading) return { stage: 1, target: null, label: "" };
-    if (!picked) return { stage: 1, target: "create-deal", label: "Create the deal in Sirion" };
+    if (!picked) return { stage: 1, target: "create-deal", label: "Start the intake request here" };
     if (!mainAdded) {
       if (s.openMessageId && deal.messages.find((m) => m.id === s.openMessageId)?.threadId !== deal.messages.find((m) => m.id === deal.openMessageId)?.threadId)
         return { stage: 1, target: "thread-t-bl", label: "Open the Brightline email" };
-      return { stage: 1, target: "add-to-sirion", label: "Add this email thread to the deal" };
+      return { stage: 1, target: "add-to-sirion", label: "Add this email thread to the request" };
     }
     if (s.panel !== "home") return { stage: 2, target: null, label: "" };
-    return { stage: 2, target: "review-in-sirion", label: "Create the request in Sirion" };
+    return { stage: 2, target: "review-in-sirion", label: "Now review and submit it in Sirion" };
   }
   return { stage: 0, target: null, label: "" };
 }

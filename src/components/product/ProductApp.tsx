@@ -8,6 +8,8 @@ import { SirionRequest } from "./SirionApp";
 // "How it decides" (Drawers.tsx) is kept in code but no longer shown here; the autonomy
 // story will come back on the narrative pages.
 import { CoachMark, useCoach } from "./Coach";
+import { AboutDrawer } from "./About";
+import { PreloadLogos } from "./SirionMark";
 
 export function ProductApp() {
   const view = useApp((s) => s.view);
@@ -20,6 +22,8 @@ export function ProductApp() {
         <Toast />
       </div>
       <CoachMark target={coach.target} label={coach.label} />
+      <AboutDrawer />
+      <PreloadLogos />
     </div>
   );
 }
@@ -44,7 +48,7 @@ function Toast() {
           </span>
         </span>
         <button onClick={() => actions.setView("sirion")} className="inline-flex min-h-9 items-center gap-1 rounded-button bg-white px-3 text-small text-teal hover:opacity-90">
-          Create request <ArrowUpRight size={14} strokeWidth={1.75} aria-hidden />
+          Review in Sirion <ArrowUpRight size={14} strokeWidth={1.75} aria-hidden />
         </button>
         <button onClick={() => actions.dismissToast()} className="inline-flex h-11 w-11 items-center justify-center rounded-button text-white" aria-label="Dismiss">
           <X size={15} strokeWidth={1.5} />

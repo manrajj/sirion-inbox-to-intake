@@ -42,6 +42,7 @@ import { Highlighted } from "./SourceText";
 import { Sidebar } from "./Sidebar";
 import { SirionLogo, SirionMark } from "./SirionMark";
 import { startFilm } from "@/components/walkthrough/Film";
+import { AboutButton } from "./About";
 
 // A mock of a web mail client in the Outlook layout: top bar, app rail, command bar,
 // folder pane, message list, reading pane and the add-in pane on the right.
@@ -189,6 +190,7 @@ export function MailClient() {
             title="A mock of Outlook on the web with the Sirion add-in"
             className="hidden bg-white text-ink-muted lg:inline-flex"
           />
+          <AboutButton />
           <button
             onClick={() => startFilm(0)}
             className="ml-1 inline-flex min-h-9 items-center gap-1.5 rounded-button bg-amethyst px-3 text-small text-white hover:bg-amethyst-hover"

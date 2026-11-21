@@ -6,11 +6,11 @@ test("main deal by hand: create the deal, ask what's agreed, open the request in
   await fresh(page);
   await expect(page.locator('[data-coach="open-sidebar"]')).toHaveCount(1);
   await page.click(t("open-sidebar"));
-  await expect(page.locator(t("deal-chip"))).toContainText("No deal yet");
+  await expect(page.locator(t("deal-chip"))).toContainText("No request yet");
   await expect(page.locator('[data-coach="create-deal"]')).toHaveCount(1);
   await page.click(t("create-deal"));
-  await expect(page.locator(t("toast"))).toContainText("DL-1042 created in Sirion. Added 12 emails and 1 PDF from 3 threads.");
-  await expect(page.locator(t("deal-chip"))).toContainText("DL-1042 · Brightline Analytics");
+  await expect(page.locator(t("toast"))).toContainText("Draft request DL-1042 started in Sirion. Added 12 emails and 1 PDF.");
+  await expect(page.locator(t("deal-chip"))).toContainText("Brightline Analytics request · DL-1042");
   await expect(page.locator(t("reading"))).toHaveCount(0, { timeout: 10_000 });
   await expect(page.locator(t("match-reason"))).toContainText("brightline-analytics.example");
 
@@ -47,8 +47,11 @@ test("removing the confirmation email drops the uplift from agreed", async ({ pa
   await created(page);
   await page.click(t("card-agreed"));
   await expect(page.locator(t("agreed-uplift"))).toContainText("4%");
+  await page.click(t("panel-back"));
   await page.click(t("added-items"));
   await page.click(t("remove-bl-06"));
+  await page.click(t("card-agreed"));
+  await expect(page.locator(t("agreed-list"))).toBeVisible();
   await expect(page.locator(t("agreed-uplift"))).toHaveCount(0);
   await expectNoErrors(errors);
 });
@@ -57,7 +60,7 @@ test("adding a rival supplier's email to the deal warns first", async ({ page })
   const errors = watchErrors(page);
   await created(page);
   await page.click(t("thread-t-cx"));
-  await expect(page.locator(t("match-reason"))).toContainText("Not part of DL-1042");
+  await expect(page.locator(t("match-reason"))).toContainText("Not part of this request");
   await page.click(t("add-to-sirion"));
   await expect(page.locator(t("mismatch"))).toBeVisible();
   await page.click(t("mismatch-cancel"));

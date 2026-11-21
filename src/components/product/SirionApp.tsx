@@ -9,6 +9,7 @@ import type { TermView } from "@/lib/derive";
 import { Button, cx, fmtDate } from "@/components/ui";
 import { SourceMessage } from "./SourceText";
 import { SirionLogo } from "./SirionMark";
+import { AboutButton } from "./About";
 
 // A mock of the Sirion web app: solid top bar, grey canvas, a request form in
 // collapsible sections, documents and the submit panel on the right. The owner
@@ -29,6 +30,7 @@ export function SirionChrome({ crumb, children }: { crumb: string; children: Rea
         <span className="ml-auto hidden h-8 w-[220px] items-center gap-2 rounded-chip bg-white px-2 text-small text-ink-muted lg:flex" aria-hidden>
           <Search size={14} strokeWidth={1.5} /> Search
         </span>
+        <AboutButton onDark />
         <span className="rounded-pill border border-white px-2 text-xs leading-5" title="Mock of the Sirion web app">
           Mock
         </span>
@@ -163,7 +165,7 @@ export function SirionRequest() {
     .filter((g) => g.n > 0);
 
   return (
-    <SirionChrome crumb={`Requests / New request (${dealId})`}>
+    <SirionChrome crumb={`Requests / Draft ${dealId}`}>
       <div className="mx-auto max-w-[1120px]">
         <div className="mb-3 flex items-center gap-3 px-1 py-2">
           <div className="min-w-0 flex-1">
@@ -309,8 +311,12 @@ function Created() {
           </span>
           <h1 className="mt-4 text-h1 text-ink">Intake request created</h1>
           <p className="mt-1 text-h3 font-medium text-teal">{ds.submit.requestId}</p>
+          <p className="text-xs text-ink-muted">Submitted from draft {view.deal.id}</p>
           <p className="mt-2 text-small text-ink-muted">
-            {view.deal.supplier.name} · {value} · routed to {view.route?.queue ?? "Legal"}
+            {view.deal.supplier.name} · {value}
+          </p>
+          <p className="mt-1 text-small text-ink" data-tour="route">
+            Routed to {view.route?.queue ?? "Legal"}
           </p>
           <div className="mt-6 flex justify-center gap-3">
             <Button variant="secondary" onClick={() => actions.setView("inbox")} icon={<ArrowLeft size={15} strokeWidth={1.5} aria-hidden />}>

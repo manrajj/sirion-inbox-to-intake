@@ -291,7 +291,7 @@ export const actions = {
     const emails = msgs.length - pdfs;
     set((s) => ({
       ...s,
-      toast: { text: `${deal.id} created in Sirion. Added ${emails} emails and ${pdfs} PDF from ${relatedThreads(deal).length} threads.`, n: (s.toast?.n ?? 0) + 1 },
+      toast: { text: `Draft request ${deal.id} started in Sirion. Added ${emails} emails and ${pdfs} PDF.`, n: (s.toast?.n ?? 0) + 1 },
     }));
   },
   setPanel(panel: Panel) {
@@ -363,7 +363,7 @@ export const actions = {
       const pdfs = toAdd.filter((id) => deal.messages.find((m) => m.id === id)?.kind === "pdf").length;
       const emails = toAdd.length - pdfs;
       const parts = [emails ? `${emails} email${emails === 1 ? "" : "s"}` : "", pdfs ? `${pdfs} PDF${pdfs === 1 ? "" : "s"}` : ""].filter(Boolean).join(" and ");
-      set((s) => ({ ...s, toast: { text: `Added ${parts} to ${ds.pickedDealId} in Sirion`, n: (s.toast?.n ?? 0) + 1 } }));
+      set((s) => ({ ...s, toast: { text: `Added ${parts} to the request in Sirion`, n: (s.toast?.n ?? 0) + 1 } }));
       actions.runReading();
     }
   },

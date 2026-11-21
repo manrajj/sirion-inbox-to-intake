@@ -45,7 +45,7 @@ export const CHAPTERS: Chapter[] = [
   {
     id: "sidebar",
     title: "Open Sirion",
-    caption: "Sirion sits beside the email. There is no deal for it in Sirion yet.",
+    caption: "Sirion sits beside the email. There is no intake request for it yet.",
     steps: [
       { target: "open-sidebar", do: () => actions.toggleSidebar(true), ms: 2500 },
       { target: "sidebar", ms: 3000 },
@@ -53,8 +53,8 @@ export const CHAPTERS: Chapter[] = [
   },
   {
     id: "add",
-    title: "Create the deal",
-    caption: "One click creates DL-1042 and adds this thread, the quote, and the two internal threads about Brightline.",
+    title: "Start the request",
+    caption: "One click starts a draft intake request and adds this thread, the quote, and the two internal threads about Brightline.",
     steps: [
       { target: "create-deal", do: () => actions.createDeal(), ms: 2400 },
       { target: "reading", do: () => actions.setReading(2), ms: 1500 },
@@ -75,7 +75,7 @@ export const CHAPTERS: Chapter[] = [
   {
     id: "request",
     title: "Into Sirion",
-    caption: "One click, and the intake request is already filled in Sirion.",
+    caption: "In Sirion, the draft request is already filled in.",
     steps: [
       {
         target: "review-in-sirion",

@@ -1,6 +1,7 @@
 "use client";
 
 import { SHOW_NARRATIVE } from "@/lib/nav";
+import { openAbout } from "@/components/product/About";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Play, Pause, SkipBack, SkipForward, RotateCcw, Hand, X, BarChart3, MousePointerClick } from "lucide-react";
@@ -73,6 +74,7 @@ export function Film() {
   // The spotlight and cursor glide to their target every frame (eased, no CSS
   // transitions), so scrolling, re-renders and screen changes never make them jump.
   const spotRef = useRef<HTMLDivElement>(null);
+  const captionRef = useRef<HTMLDivElement>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
   const targetName = useRef<string | null>(null);
   const cur = useRef({ x: 0, y: 0, w: 0, h: 0, cx: -60, cy: -60, init: false });
@@ -87,8 +89,22 @@ export function Film() {
         if (el) targetEl.current = el;
       }
       const a = cur.current;
+      // A target that has left the screen (for example Submit, once the request is created) hides the spotlight.
+      if ((!el || !el.isConnected) && spotRef.current) spotRef.current.style.opacity = "0";
       if (el && el.isConnected) {
         const r = el.getBoundingClientRect();
+        // Keep the caption card off the step: if the target sits low, the card moves to the top.
+        const cap = captionRef.current;
+        if (cap) {
+          const capH = (cap.firstElementChild as HTMLElement | null)?.offsetHeight ?? 120;
+          const low = r.bottom > window.innerHeight - capH - 36;
+          const want = low ? "top" : "bottom";
+          if (cap.dataset.at !== want) {
+            cap.dataset.at = want;
+            cap.style.top = low ? "64px" : "auto";
+            cap.style.bottom = low ? "auto" : "20px";
+          }
+        }
         if (r.width > 0) {
           const k = reduced || !a.init ? 1 : 0.16;
           a.x += (r.x - a.x) * k;
@@ -288,7 +304,7 @@ export function Film() {
 
       {/* Caption card: large, high contrast, with the controls tucked beside it. */}
       {!ended && (
-        <div className="pointer-events-none fixed inset-x-0 bottom-5 z-[70] flex justify-center px-4" aria-live="polite">
+        <div ref={captionRef} className="pointer-events-none fixed inset-x-0 bottom-5 z-[70] flex justify-center px-4" aria-live="polite">
           <div className="pointer-events-auto w-full max-w-[880px] overflow-hidden rounded-card bg-white text-ink shadow-pop">
             <div className="h-1 bg-surface-alt" aria-hidden>
               <div className="h-full bg-teal" style={{ width: `${Math.min(100, (elapsed / TOTAL_MS) * 100)}%` }} />
@@ -337,15 +353,27 @@ export function Film() {
               >
                 <MousePointerClick size={18} strokeWidth={1.5} aria-hidden /> Try it yourself
               </button>
-              {SHOW_NARRATIVE && <button
+              <button
                 className="inline-flex min-h-12 items-center gap-2 rounded-button border border-ink-muted px-6 text-body text-ink-on-stage hover:border-ink-on-stage"
                 onClick={() => {
                   takeOver();
-                  router.push("/metrics/");
+                  openAbout();
                 }}
+                data-tour="film-about"
               >
-                <BarChart3 size={18} strokeWidth={1.5} aria-hidden /> See how we'd measure it
-              </button>}
+                <BarChart3 size={18} strokeWidth={1.5} aria-hidden /> About this prototype
+              </button>
+              {SHOW_NARRATIVE && (
+                <button
+                  className="inline-flex min-h-12 items-center gap-2 rounded-button border border-ink-muted px-6 text-body text-ink-on-stage hover:border-ink-on-stage"
+                  onClick={() => {
+                    takeOver();
+                    router.push("/metrics/");
+                  }}
+                >
+                  See how we&apos;d measure it
+                </button>
+              )}
             </div>
             <button className="mt-6 inline-flex min-h-11 items-center gap-2 text-small text-ink-on-stage underline-offset-4 hover:underline" onClick={() => seek(0)}>
               <RotateCcw size={15} strokeWidth={1.5} aria-hidden /> Replay
