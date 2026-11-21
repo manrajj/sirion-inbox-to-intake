@@ -1,0 +1,110 @@
+{
+  "dealId": "DL-1063",
+  "model": "example-output-v1",
+  "dealMatch": {
+    "suggestions": []
+  },
+  "coreFields": [
+    {
+      "key": "legalEntity",
+      "value": "Peregrine Creative Ltd",
+      "evidence": [
+        {
+          "messageId": "pe-01",
+          "quote": "our retainer for the spring campaign"
+        }
+      ]
+    },
+    {
+      "key": "scope",
+      "value": "Spring campaign retainer, 6 months",
+      "evidence": [
+        {
+          "messageId": "pe-01",
+          "quote": "our retainer for the spring campaign is $12,000 per month for 6 months."
+        }
+      ]
+    },
+    {
+      "key": "dataAccess",
+      "value": "No",
+      "evidence": [
+        {
+          "messageId": "pe-01",
+          "quote": "spring campaign"
+        }
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "key": "retainer",
+      "label": "Monthly retainer",
+      "group": "commercial",
+      "fieldType": "money",
+      "claimedStatus": "countered",
+      "claimedValue": "$13,000 per month",
+      "openOwner": "Procurement",
+      "steps": [
+        {
+          "role": "offer",
+          "party": "supplier",
+          "value": "$12,000 per month",
+          "messageId": "pe-01",
+          "quote": "our retainer for the spring campaign is $12,000 per month for 6 months."
+        },
+        {
+          "role": "acceptance",
+          "party": "buyer",
+          "value": "$12,000 per month",
+          "messageId": "pe-02",
+          "quote": "$12,000 per month works for us."
+        },
+        {
+          "role": "withdrawal",
+          "party": "supplier",
+          "value": "$12,000 per month",
+          "messageId": "pe-03",
+          "quote": "please ignore the earlier rate; it left out media planning."
+        },
+        {
+          "role": "offer",
+          "party": "supplier",
+          "value": "$14,500 per month",
+          "messageId": "pe-03",
+          "quote": "Our retainer is $14,500 per month."
+        },
+        {
+          "role": "counter",
+          "party": "buyer",
+          "value": "$13,000 per month",
+          "messageId": "pe-04",
+          "quote": "we can go to $13,000 per month including media planning."
+        }
+      ]
+    }
+  ],
+  "contractType": {
+    "suggestion": "New marketing services agreement",
+    "reason": "No Peregrine agreement found in the repository.",
+    "evidence": [
+      {
+        "messageId": "pe-01",
+        "quote": "our retainer for the spring campaign"
+      }
+    ]
+  },
+  "chaseDrafts": [
+    {
+      "termKey": "retainer",
+      "to": "jonah@peregrine-creative.example",
+      "subject": "RE: Retainer for the spring campaign",
+      "body": "Hi Jonah,\n\nCan you confirm $13,000 per month including media planning, so we can raise the contract?\n\nThanks,\nSam",
+      "sourceMessageIds": [
+        "pe-03"
+      ]
+    }
+  ],
+  "flags": [],
+  "entityMentions": []
+}

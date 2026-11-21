@@ -1,0 +1,146 @@
+{
+  "dealId": "DL-1051",
+  "model": "example-output-v1",
+  "dealMatch": {
+    "suggestions": [
+      {
+        "dealId": "DL-1051",
+        "confidence": 0.91,
+        "reasons": [
+          {
+            "type": "supplier_domain",
+            "detail": "keystone-staffing.example"
+          },
+          {
+            "type": "quote_number",
+            "detail": "KS-778"
+          },
+          {
+            "type": "people",
+            "detail": "Sam Okafor and Ravi Menon are on the deal"
+          }
+        ]
+      },
+      {
+        "dealId": "DL-1046",
+        "confidence": 0.55,
+        "reasons": [
+          {
+            "type": "product",
+            "detail": "Also a temporary staffing deal"
+          }
+        ]
+      },
+      {
+        "dealId": "DL-1049",
+        "confidence": 0.31,
+        "reasons": [
+          {
+            "type": "product",
+            "detail": "Same warehouse site"
+          }
+        ]
+      }
+    ]
+  },
+  "coreFields": [
+    {
+      "key": "legalEntity",
+      "value": "Keystone Staffing Partners Ltd",
+      "evidence": [
+        {
+          "messageId": "ks-01",
+          "quote": "Keystone Staffing Partners Ltd"
+        }
+      ]
+    },
+    {
+      "key": "scope",
+      "value": "Warehouse pickers, minimum 10 staff",
+      "evidence": [
+        {
+          "messageId": "ks-01",
+          "quote": "warehouse pickers at $32 per hour, minimum 10 staff"
+        }
+      ]
+    },
+    {
+      "key": "termStart",
+      "value": "6 months from 5 January 2027",
+      "evidence": [
+        {
+          "messageId": "ks-01",
+          "quote": "for 6 months from 5 January 2027"
+        }
+      ]
+    },
+    {
+      "key": "dataAccess",
+      "value": "No",
+      "evidence": [
+        {
+          "messageId": "ks-01",
+          "quote": "warehouse pickers"
+        }
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "key": "rate",
+      "label": "Hourly rate",
+      "group": "commercial",
+      "fieldType": "money",
+      "claimedStatus": "accepted",
+      "claimedValue": "$32 per hour",
+      "openOwner": "Procurement",
+      "steps": [
+        {
+          "role": "offer",
+          "party": "supplier",
+          "value": "$32 per hour",
+          "messageId": "ks-01",
+          "quote": "warehouse pickers at $32 per hour"
+        },
+        {
+          "role": "acceptance",
+          "party": "buyer",
+          "value": "$32 per hour",
+          "messageId": "ks-02",
+          "quote": "$32 per hour works for us."
+        }
+      ]
+    },
+    {
+      "key": "payment",
+      "label": "Payment terms",
+      "group": "commercial",
+      "fieldType": "days",
+      "claimedStatus": "proposed",
+      "claimedValue": "Net 30",
+      "openOwner": "Procurement",
+      "steps": [
+        {
+          "role": "offer",
+          "party": "supplier",
+          "value": "Net 30",
+          "messageId": "ks-01",
+          "quote": "Invoices Net 30."
+        }
+      ]
+    }
+  ],
+  "contractType": {
+    "suggestion": "New staffing agreement",
+    "reason": "No Keystone agreement found in the repository.",
+    "evidence": [
+      {
+        "messageId": "ks-01",
+        "quote": "rate card KS-778 for Keystone Staffing Partners Ltd"
+      }
+    ]
+  },
+  "chaseDrafts": [],
+  "flags": [],
+  "entityMentions": []
+}

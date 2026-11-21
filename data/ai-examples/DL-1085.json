@@ -1,0 +1,99 @@
+{
+  "dealId": "DL-1085",
+  "model": "example-output-v1",
+  "dealMatch": {
+    "suggestions": []
+  },
+  "coreFields": [
+    {
+      "key": "legalEntity",
+      "value": "Cobalt Facilities Services Ltd",
+      "evidence": [
+        {
+          "messageId": "co-01",
+          "quote": "Cobalt Facilities Services Ltd"
+        }
+      ]
+    },
+    {
+      "key": "scope",
+      "value": "Office cleaning, Pune",
+      "evidence": [
+        {
+          "messageId": "co-01",
+          "quote": "can clean the Pune office"
+        }
+      ]
+    },
+    {
+      "key": "value",
+      "value": "USD 4,200 per month",
+      "evidence": [
+        {
+          "messageId": "co-02",
+          "quote": "$4,200 per month is agreed."
+        }
+      ]
+    },
+    {
+      "key": "termStart",
+      "value": "12 months",
+      "evidence": [
+        {
+          "messageId": "co-01",
+          "quote": "$4,200 per month, 12 months."
+        }
+      ]
+    },
+    {
+      "key": "dataAccess",
+      "value": "No",
+      "evidence": [
+        {
+          "messageId": "co-01",
+          "quote": "clean the Pune office"
+        }
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "key": "fee",
+      "label": "Monthly fee",
+      "group": "commercial",
+      "fieldType": "money",
+      "claimedStatus": "accepted",
+      "claimedValue": "$4,200 per month",
+      "openOwner": "Procurement",
+      "steps": [
+        {
+          "role": "offer",
+          "party": "supplier",
+          "value": "$4,200 per month",
+          "messageId": "co-01",
+          "quote": "for $4,200 per month, 12 months."
+        },
+        {
+          "role": "acceptance",
+          "party": "buyer",
+          "value": "$4,200 per month",
+          "messageId": "co-02",
+          "quote": "$4,200 per month is agreed."
+        }
+      ]
+    }
+  ],
+  "contractType": {
+    "suggestion": "Legal to check for an existing agreement",
+    "reason": "No match in the repository, but its coverage is partial, so an older contract may exist.",
+    "evidence": [
+      {
+        "messageId": "co-02",
+        "quote": "Do we already have a contract with you from before?"
+      }
+    ]
+  },
+  "chaseDrafts": [],
+  "flags": [],
+  "entityMentions": []
+}

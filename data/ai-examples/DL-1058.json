@@ -1,0 +1,99 @@
+{
+  "dealId": "DL-1058",
+  "model": "example-output-v1",
+  "dealMatch": {
+    "suggestions": []
+  },
+  "coreFields": [
+    {
+      "key": "legalEntity",
+      "value": "Marlow Advisory LLP",
+      "evidence": [
+        {
+          "messageId": "ma-01",
+          "quote": "Marlow Advisory LLP"
+        }
+      ]
+    },
+    {
+      "key": "scope",
+      "value": "Supply chain review, 20 days",
+      "evidence": [
+        {
+          "messageId": "ma-01",
+          "quote": "proposes a supply chain review at $1,800 per day for 20 days"
+        }
+      ]
+    },
+    {
+      "key": "value",
+      "value": "USD 36,000 (20 days at $1,800)",
+      "evidence": [
+        {
+          "messageId": "ma-02",
+          "quote": "agreed at $1,800 per day for 20 days"
+        }
+      ]
+    },
+    {
+      "key": "termStart",
+      "value": "20 days from 12 January 2027",
+      "evidence": [
+        {
+          "messageId": "ma-01",
+          "quote": "starting 12 January 2027"
+        }
+      ]
+    },
+    {
+      "key": "dataAccess",
+      "value": "No",
+      "evidence": [
+        {
+          "messageId": "ma-01",
+          "quote": "supply chain review"
+        }
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "key": "dayRate",
+      "label": "Day rate",
+      "group": "commercial",
+      "fieldType": "money",
+      "claimedStatus": "accepted",
+      "claimedValue": "$1,800 per day",
+      "openOwner": "Procurement",
+      "steps": [
+        {
+          "role": "offer",
+          "party": "supplier",
+          "value": "$1,800 per day",
+          "messageId": "ma-01",
+          "quote": "proposes a supply chain review at $1,800 per day for 20 days"
+        },
+        {
+          "role": "acceptance",
+          "party": "buyer",
+          "value": "$1,800 per day",
+          "messageId": "ma-02",
+          "quote": "agreed at $1,800 per day for 20 days."
+        }
+      ]
+    }
+  ],
+  "contractType": {
+    "suggestion": "New consulting statement of work",
+    "reason": "No Marlow agreement found in the repository.",
+    "evidence": [
+      {
+        "messageId": "ma-01",
+        "quote": "Marlow Advisory LLP proposes a supply chain review"
+      }
+    ]
+  },
+  "chaseDrafts": [],
+  "flags": [],
+  "entityMentions": []
+}

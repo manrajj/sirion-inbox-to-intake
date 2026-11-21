@@ -1,0 +1,40 @@
+{
+  "name": "sirion-inbox-to-intake",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "npm run validate:examples && next build",
+    "validate:examples": "tsx scripts/validate-examples.ts",
+    "start": "npx serve out -l 3000",
+    "test": "vitest run",
+    "test:e2e": "playwright test --trace off",
+    "record:walkthrough": "tsx scripts/record-walkthrough.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@radix-ui/react-checkbox": "^1.4.1",
+    "@radix-ui/react-dialog": "^1.3.1",
+    "@radix-ui/react-popover": "^1.3.1",
+    "@radix-ui/react-tabs": "^1.2.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.77.0",
+    "next": "^15.5.29",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "autoprefixer": "^10.7.0",
+    "postcss": "^8.5.33",
+    "serve": "^14.2.8",
+    "tailwindcss": "^3.4.19",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^5.1.1"
+  }
+}

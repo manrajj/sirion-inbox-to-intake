@@ -1,0 +1,111 @@
+{
+  "dealId": "DL-1076",
+  "model": "example-output-v1",
+  "dealMatch": {
+    "suggestions": []
+  },
+  "coreFields": [
+    {
+      "key": "legalEntity",
+      "value": "Brookfield Talent Ltd",
+      "evidence": [
+        {
+          "messageId": "br-01",
+          "quote": "Brookfield Talent Ltd"
+        }
+      ]
+    },
+    {
+      "key": "scope",
+      "value": "30 contact centre agents",
+      "evidence": [
+        {
+          "messageId": "br-01",
+          "quote": "can supply 30 contact centre agents"
+        }
+      ]
+    },
+    {
+      "key": "termStart",
+      "value": "From 1 February 2027",
+      "evidence": [
+        {
+          "messageId": "br-01",
+          "quote": "from 1 February 2027"
+        }
+      ]
+    },
+    {
+      "key": "dataAccess",
+      "value": "Yes: customer data",
+      "evidence": [
+        {
+          "messageId": "br-01",
+          "quote": "contact centre agents"
+        }
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "key": "rate",
+      "label": "Hourly rate",
+      "group": "commercial",
+      "fieldType": "money",
+      "claimedStatus": "accepted",
+      "claimedValue": "$55 per hour",
+      "openOwner": "Procurement",
+      "steps": [
+        {
+          "role": "offer",
+          "party": "supplier",
+          "value": "$55 per hour",
+          "messageId": "br-01",
+          "quote": "30 contact centre agents at $55 per hour"
+        },
+        {
+          "role": "acceptance",
+          "party": "buyer",
+          "value": "$55 per hour",
+          "messageId": "br-02",
+          "quote": "$55 per hour is agreed."
+        }
+      ]
+    },
+    {
+      "key": "overtime",
+      "label": "Overtime rate",
+      "group": "commercial",
+      "fieldType": "text",
+      "claimedStatus": "notNegotiated",
+      "claimedValue": null,
+      "openOwner": "Supplier",
+      "steps": []
+    }
+  ],
+  "contractType": {
+    "suggestion": "New staffing agreement",
+    "reason": "No Brookfield agreement found in the repository.",
+    "evidence": [
+      {
+        "messageId": "br-01",
+        "quote": "Brookfield Talent Ltd can supply"
+      }
+    ]
+  },
+  "chaseDrafts": [
+    {
+      "termKey": "overtime",
+      "to": "kim.adeyemi@brookfield-talent.example",
+      "subject": "RE: Contact centre agents: Brookfield rates",
+      "body": "Hi Kim,\n\nWe still need your overtime rate. For reference, Sterling quoted $52 per hour with overtime at 1.5x, so we would expect something similar.\n\nThanks,\nSam",
+      "sourceMessageIds": [
+        "br-02",
+        "st-01"
+      ],
+      "plantedFlaw": "Deliberately wrong model output: the draft uses the rival's quote to put pressure on the supplier."
+    }
+  ],
+  "flags": [],
+  "entityMentions": []
+}

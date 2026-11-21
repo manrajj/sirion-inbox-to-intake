@@ -1,0 +1,99 @@
+{
+  "dealId": "DL-1067",
+  "model": "example-output-v1",
+  "dealMatch": {
+    "suggestions": []
+  },
+  "coreFields": [
+    {
+      "key": "legalEntity",
+      "value": "Tallyhaus Software Ltd",
+      "evidence": [
+        {
+          "messageId": "ta-01",
+          "quote": "Tallyhaus Software Ltd"
+        }
+      ]
+    },
+    {
+      "key": "scope",
+      "value": "Expense software, 400 users",
+      "evidence": [
+        {
+          "messageId": "ta-01",
+          "quote": "for 400 users, 24 months"
+        }
+      ]
+    },
+    {
+      "key": "termStart",
+      "value": "24 months",
+      "evidence": [
+        {
+          "messageId": "ta-01",
+          "quote": "400 users, 24 months"
+        }
+      ]
+    },
+    {
+      "key": "dataAccess",
+      "value": "Yes: employee data",
+      "evidence": [
+        {
+          "messageId": "ta-01",
+          "quote": "pricing is $30 per user per month"
+        }
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "key": "seatPrice",
+      "label": "Price per user",
+      "group": "commercial",
+      "fieldType": "money",
+      "claimedStatus": "countered",
+      "claimedValue": "$26 per user per month",
+      "openOwner": "Procurement",
+      "steps": [
+        {
+          "role": "offer",
+          "party": "supplier",
+          "value": "$30 per user per month",
+          "messageId": "ta-01",
+          "quote": "pricing is $30 per user per month for 400 users"
+        },
+        {
+          "role": "counter",
+          "party": "buyer",
+          "value": "$26 per user per month",
+          "messageId": "ta-02",
+          "quote": "at 400 users we need $26 per user per month."
+        }
+      ]
+    }
+  ],
+  "contractType": {
+    "suggestion": "New SaaS subscription agreement",
+    "reason": "No Tallyhaus agreement found in the repository.",
+    "evidence": [
+      {
+        "messageId": "ta-01",
+        "quote": "Tallyhaus Software Ltd pricing"
+      }
+    ]
+  },
+  "chaseDrafts": [
+    {
+      "termKey": "seatPrice",
+      "to": "felix@tallyhaus.example",
+      "subject": "RE: Tallyhaus pricing for Halden",
+      "body": "Hi Felix,\n\nFollowing up on $26 per user per month for 400 users. Can you confirm so we can raise the contract?\n\nThanks,\nSam",
+      "sourceMessageIds": [
+        "ta-03"
+      ]
+    }
+  ],
+  "flags": [],
+  "entityMentions": []
+}

@@ -1,0 +1,110 @@
+{
+  "dealId": "DL-1072",
+  "model": "example-output-v1",
+  "dealMatch": {
+    "suggestions": []
+  },
+  "coreFields": [
+    {
+      "key": "legalEntity",
+      "value": "Ashgrove Consulting Ltd",
+      "evidence": [
+        {
+          "messageId": "ag-01",
+          "quote": "Ashgrove Consulting Ltd will deliver the finance transformation"
+        }
+      ]
+    },
+    {
+      "key": "scope",
+      "value": "Finance transformation, 10 weeks",
+      "evidence": [
+        {
+          "messageId": "ag-01",
+          "quote": "deliver the finance transformation for a fixed fee of $96,000, 10 weeks."
+        }
+      ]
+    },
+    {
+      "key": "value",
+      "value": "USD 96,000 fixed fee",
+      "evidence": [
+        {
+          "messageId": "ag-02",
+          "quote": "the fixed fee of $96,000 is agreed."
+        }
+      ]
+    },
+    {
+      "key": "termStart",
+      "value": "10 weeks",
+      "evidence": [
+        {
+          "messageId": "ag-01",
+          "quote": "$96,000, 10 weeks"
+        }
+      ]
+    },
+    {
+      "key": "dataAccess",
+      "value": "Yes: finance data",
+      "evidence": [
+        {
+          "messageId": "ag-01",
+          "quote": "finance transformation"
+        }
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "key": "fee",
+      "label": "Fixed fee",
+      "group": "commercial",
+      "fieldType": "money",
+      "claimedStatus": "accepted",
+      "claimedValue": "$96,000",
+      "openOwner": "Procurement",
+      "steps": [
+        {
+          "role": "offer",
+          "party": "supplier",
+          "value": "$96,000",
+          "messageId": "ag-01",
+          "quote": "for a fixed fee of $96,000, 10 weeks."
+        },
+        {
+          "role": "acceptance",
+          "party": "buyer",
+          "value": "$96,000",
+          "messageId": "ag-02",
+          "quote": "the fixed fee of $96,000 is agreed."
+        }
+      ]
+    }
+  ],
+  "contractType": {
+    "suggestion": "Statement of work under the existing MSA",
+    "reason": "The repository holds an Ashgrove MSA, if the entity is Ashgrove Consulting Ltd.",
+    "evidence": [
+      {
+        "messageId": "ag-01",
+        "quote": "Ashgrove Consulting Ltd will deliver the finance transformation"
+      }
+    ]
+  },
+  "chaseDrafts": [],
+  "flags": [],
+  "entityMentions": [
+    {
+      "messageId": "ag-01",
+      "quote": "Ruth Okoye\nAshgrove Consulting Ltd",
+      "entity": "Ashgrove Consulting Ltd"
+    },
+    {
+      "messageId": "ag-03",
+      "quote": "please set up the vendor as Ashgrove Consulting Group Inc, our US entity",
+      "entity": "Ashgrove Consulting Group Inc"
+    }
+  ]
+}
