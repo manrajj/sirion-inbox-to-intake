@@ -42,6 +42,13 @@
   --mail-text: #242424;
   --mail-muted: #616161;
   --mail-line: #e0e0e0;
+  /* Microsoft 365 app colours for the Outlook app rail (DECISIONS C7) */
+  --ms-calendar: #0f6cbd;
+  --ms-people: #5b5fc7;
+  --ms-todo: #2564cf;
+  --ms-onedrive: #0364b8;
+  --ms-word: #185abd;
+  --ms-excel: #107c41;
   --avatar-1: #0f6cbd;
   --avatar-2: #6b4ea0;
   --avatar-3: #a4262c;

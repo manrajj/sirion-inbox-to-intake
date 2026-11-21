@@ -12,7 +12,7 @@ export function watchErrors(page: Page) {
   return errors;
 }
 
-export async function fresh(page: Page, path = "/product/") {
+export async function fresh(page: Page, path = "/") {
   await page.goto(path);
   await page.evaluate(() => sessionStorage.clear());
   await page.goto(path);

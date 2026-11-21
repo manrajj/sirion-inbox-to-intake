@@ -25,6 +25,8 @@ export function useCoach(): Coach {
 
   if (submitted) return { stage: 4, target: null, label: "" };
   if (s.view === "sirion") {
+    if (view.core.some((c) => c.value === null))
+      return { stage: 2, target: "submit-fix", label: mainAdded ? "Some fields are empty. Fill them in." : "Add the Brightline emails first" };
     if (conflict) return { stage: 2, target: `options-${conflict.key}`, label: "The email and the quote disagree. Pick one." };
     return { stage: 3, target: "confirm-check", label: "Everything is filled in. Check it and submit." };
   }

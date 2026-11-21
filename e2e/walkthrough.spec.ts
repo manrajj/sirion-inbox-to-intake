@@ -29,7 +29,7 @@ test("walkthrough: every chapter seeks cleanly offline and the end card hands ov
 
 test("narrative pages render without errors and fit one screen", async ({ page }) => {
   const errors = watchErrors(page);
-  for (const p of ["/", "/stakeholders/", "/problem/", "/metrics/"]) {
+  for (const p of ["/why/", "/stakeholders/", "/problem/", "/metrics/"]) {
     await page.goto(p);
     await page.waitForTimeout(200);
     const h = await page.evaluate(() => document.documentElement.scrollHeight);

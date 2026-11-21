@@ -59,3 +59,24 @@ test("adding a rival supplier's email to the deal warns first", async ({ page })
   await expect(page.locator(t("mismatch"))).toHaveCount(0);
   await expectNoErrors(errors);
 });
+
+test("going to Sirion before adding the supplier thread: Submit says why, and one click fixes it", async ({ page }) => {
+  const errors = watchErrors(page);
+  await fresh(page);
+  await page.click(t("open-sidebar"));
+  await expect(page.locator(t("match-reason"))).toContainText("brightline-analytics.example");
+  await expect(page.locator(t("match-reason"))).toContainText("Q-BL-2291");
+  await page.click(t("review-in-sirion"));
+  await expect(page.locator(t("submit"))).toBeDisabled();
+  await expect(page.locator(t("submit-why"))).toContainText("2 fields are empty");
+  await expect(page.locator(t("summary"))).not.toContainText("Legal");
+  await page.click(t("submit-fix"));
+  await expect(page.locator(t("core-value"))).toContainText("48,000", { timeout: 10_000 });
+  await expect(page.locator(t("submit-why"))).toContainText("Pick the payment terms");
+  await page.click(t("pick-payment-0"));
+  await expect(page.locator(t("submit-why"))).toContainText("Tick the box");
+  await page.click(t("confirm-check"));
+  await expect(page.locator(t("submit-why"))).toHaveCount(0);
+  await expect(page.locator(t("submit"))).toBeEnabled();
+  await expectNoErrors(errors);
+});

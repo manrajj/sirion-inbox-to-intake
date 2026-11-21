@@ -1,5 +1,6 @@
 "use client";
 
+import { SHOW_NARRATIVE } from "@/lib/nav";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Play, Pause, SkipBack, SkipForward, RotateCcw, Hand, X, BarChart3, MousePointerClick } from "lucide-react";
@@ -180,7 +181,8 @@ export function Film() {
   );
 
   const ensureProduct = useCallback(async () => {
-    if (!pathRef.current?.startsWith("/product")) {
+    const p = pathRef.current || "/";
+    if (p !== "/" && !p.startsWith("/product")) {
       router.push("/product/");
       await waitFor("inbox", 5000);
     }
@@ -335,7 +337,7 @@ export function Film() {
               >
                 <MousePointerClick size={18} strokeWidth={1.5} aria-hidden /> Try it yourself
               </button>
-              <button
+              {SHOW_NARRATIVE && <button
                 className="inline-flex min-h-12 items-center gap-2 rounded-button border border-ink-muted px-6 text-body text-ink-on-stage hover:border-ink-on-stage"
                 onClick={() => {
                   takeOver();
@@ -343,7 +345,7 @@ export function Film() {
                 }}
               >
                 <BarChart3 size={18} strokeWidth={1.5} aria-hidden /> See how we'd measure it
-              </button>
+              </button>}
             </div>
             <button className="mt-6 inline-flex min-h-11 items-center gap-2 text-small text-ink-on-stage underline-offset-4 hover:underline" onClick={() => seek(0)}>
               <RotateCcw size={15} strokeWidth={1.5} aria-hidden /> Replay

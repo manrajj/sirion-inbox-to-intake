@@ -2,7 +2,7 @@
 
 A clickable prototype for the ISB x Sirion APM case. One scenario: Manraj, a procurement contract owner, agreed a deal with Brightline over email. A Sirion add-in in Outlook adds the deal's emails and quote to deal DL-1042 in one click, and Sirion builds the intake request from them, with every term cited. The story ends when the intake request is created; terms not agreed in email are flagged for Legal, never shown as agreed.
 
-The site has the brief's five sections, in order: Why this stage, Stakeholders, Problem, Prototype, Metrics. Assumptions, the learning plan and sources sit in one drawer. In the prototype, a pulsing marker points at the next click.
+For now the site opens straight into the prototype, full screen (DECISIONS C7). The brief's five sections (Why this stage, Stakeholders, Problem, Prototype, Metrics) stay in code and open by URL: /why/, /stakeholders/, /problem/, /product/, /metrics/. In the prototype, a pulsing marker points at the next click, the add-in says why an email belongs to the deal, and Submit says what blocks it.
 
 - Live site: https://sirion-inbox-to-intake.vercel.app
 - Walkthrough recording: [`public/walkthrough.mp4`](public/walkthrough.mp4), also served at `/walkthrough.mp4`

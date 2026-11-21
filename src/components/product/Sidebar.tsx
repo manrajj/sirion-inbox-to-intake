@@ -23,6 +23,8 @@ import {
   Mic,
   Paperclip,
   Copy,
+  Link2,
+  Unlink,
 } from "lucide-react";
 import { actions, useApp, useDealView, threadOf, threadAttachments } from "@/lib/store";
 import { getDeal } from "@data/index";
@@ -36,6 +38,69 @@ import { SirionMark } from "./SirionMark";
 // email", a bordered suggestion list, and a prompt card at the bottom.
 
 const READ_STEPS = ["Reading the emails", "Reading the quote PDF", "Checking each term against its source"];
+
+/**
+ * Says, in plain words, why the open email belongs to this deal. The rules are the
+ * deal-match checks in checks.ts: the sender's domain is the deal's supplier, the
+ * thread names the deal's quote, or you already added the thread yourself.
+ */
+function MatchReason() {
+  const dealId = useApp((s) => s.dealId);
+  const openId = useApp((s) => s.openMessageId);
+  const view = useDealView();
+  const deal = getDeal(dealId);
+  const thread = threadOf(deal, openId);
+  const msgs = thread.messageIds.map((id) => deal.messages.find((m) => m.id === id)!);
+  const emails = msgs.filter((m) => m.kind === "email");
+  const preAdded = deal.preAdded.find((p) => emails.some((m) => m.id === p.messageId));
+  const domains = new Set(emails.map((m) => domainOf(m.from.email)));
+  const quote = msgs.map((m) => m.body).join(" ").match(/Q-[A-Z]{2}-\d{3,}/)?.[0];
+  const fromSupplier = domains.has(deal.supplier.domain);
+  const fromRival = deal.rival && domains.has(deal.rival.domain);
+
+  let ok = true;
+  let text: React.ReactNode;
+  if (fromRival && !fromSupplier) {
+    ok = false;
+    text = (
+      <>
+        Not part of {dealId}: sent from <b className="font-medium">{deal.rival!.domain}</b>, and this deal&apos;s supplier is {deal.supplier.name}.
+      </>
+    );
+  } else if (fromSupplier) {
+    text = (
+      <>
+        Matched because it comes from <b className="font-medium">{deal.supplier.domain}</b>, the supplier on {dealId}
+        {quote ? (
+          <>
+            , and mentions quote <b className="font-medium">{quote}</b>
+          </>
+        ) : null}
+        .
+      </>
+    );
+  } else if (preAdded && emails.every((m) => view.addedIds.has(m.id))) {
+    text = (
+      <>
+        You added this thread to {dealId} on {fmtDate(preAdded.addedAt)}.
+      </>
+    );
+  } else {
+    text = <>Mentions {deal.supplier.name}, the supplier on {dealId}.</>;
+  }
+  return (
+    <p
+      className={cx(
+        "mx-3 mb-1 flex items-start gap-1.5 rounded-[6px] px-2.5 py-1.5 text-xs leading-[18px]",
+        ok ? "bg-surface-alt text-ink-muted" : "bg-tone-warn-bg text-tone-warn-fg",
+      )}
+      data-tour="match-reason"
+    >
+      {ok ? <Link2 size={13} strokeWidth={1.75} className="mt-[2px] shrink-0 text-teal" aria-hidden /> : <Unlink size={13} strokeWidth={1.75} className="mt-[2px] shrink-0" aria-hidden />}
+      <span>{text}</span>
+    </p>
+  );
+}
 
 /** Open a cited sentence in the mail reading pane. */
 export const citeInMail = (messageId: string, quote?: string) => actions.cite(messageId, quote);
@@ -62,6 +127,7 @@ export function Sidebar() {
       {/* Tab header, as Outlook shows add-ins */}
       <header className="flex h-10 shrink-0 items-end border-b border-mail-line bg-mail-pane pl-2 text-mail-text">
         <span className="flex h-10 items-center gap-1.5 border-b-2 border-mail-blue px-2 text-small font-semibold">
+          <SirionMark size={13} />
           Sirion for Outlook
           <Pin size={14} strokeWidth={2} className="fill-current text-mail-blue" aria-hidden />
           <button onClick={() => actions.toggleSidebar(false)} className="inline-flex h-8 w-7 items-center justify-center rounded-[4px] text-mail-muted hover:bg-mail-blue-soft" aria-label="Close Sirion">
@@ -90,6 +156,8 @@ export function Sidebar() {
         </span>
       </div>
 
+      <MatchReason />
+
       <div className="thin-scroll min-h-0 flex-1 overflow-y-auto px-3 pb-3">
         {ds.pendingWarning && <MismatchWarning />}
         {reading ? (
@@ -99,8 +167,8 @@ export function Sidebar() {
         ) : panel === "home" ? (
           <section aria-label="Suggestions" className="fade-in">
             <div className="flex flex-col items-center pb-4 pt-5">
-              <span className="inline-flex h-12 w-12 items-center justify-center rounded-[10px] shadow-card">
-                <SirionMark size={30} />
+              <span className="inline-flex h-12 w-14 items-center justify-center rounded-[10px] shadow-card">
+                <SirionMark size={24} />
               </span>
               <span className="mt-1.5 text-[10px] font-medium uppercase tracking-wider text-ink-muted">Intake</span>
               <p className="mt-3 text-small text-ink-muted">Suggestions for your email</p>

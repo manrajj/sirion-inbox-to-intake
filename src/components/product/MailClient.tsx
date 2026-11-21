@@ -2,14 +2,17 @@
 
 import { useEffect, useState } from "react";
 import {
-  Grid3x3,
+  Grip,
+  Play,
+  RotateCcw,
+  CalendarDays,
+  SquareCheckBig,
+  Cloud,
   Search,
   Bell,
   Settings,
   Mail,
-  Calendar,
   Users,
-  FileText,
   LayoutGrid,
   SquarePen,
   Trash,
@@ -28,7 +31,6 @@ import {
   FileEdit,
   Paperclip,
   ListFilter,
-  CircleDot,
   StickyNote,
 } from "lucide-react";
 import { actions, useApp, threadOf } from "@/lib/store";
@@ -38,11 +40,14 @@ import { cx, fmtDate, HonestyChip } from "@/components/ui";
 import type { Person } from "@/lib/types";
 import { Highlighted } from "./SourceText";
 import { Sidebar } from "./Sidebar";
+import { SirionLogo, SirionMark } from "./SirionMark";
+import { startFilm } from "@/components/walkthrough/Film";
 
 // A mock of a web mail client in the Outlook layout: top bar, app rail, command bar,
 // folder pane, message list, reading pane and the add-in pane on the right.
 // It uses its own Fluent-style neutrals and blue (mail-* tokens) so the Sirion pane,
-// in Sirion's teal, reads as an add-in inside someone else's app. No vendor logos.
+// in Sirion's teal, reads as an add-in inside someone else's app. The org logo slot
+// shows Sirion's logo, as a company's own Outlook would (DECISIONS C7).
 
 const AVATARS = [
   "var(--avatar-1)",
@@ -81,6 +86,17 @@ function Avatar({ person, size = 32 }: { person: Person; size?: number }) {
     </span>
   );
 }
+
+const RAIL: { icon: React.ElementType; cls: string; letter?: string }[] = [
+  { icon: Mail, cls: "text-mail-blue" },
+  { icon: CalendarDays, cls: "text-mail-calendar" },
+  { icon: Users, cls: "text-mail-people" },
+  { icon: SquareCheckBig, cls: "text-mail-todo" },
+  { icon: Cloud, cls: "text-mail-onedrive" },
+  { icon: Mail, cls: "bg-mail-word", letter: "W" },
+  { icon: Mail, cls: "bg-mail-excel", letter: "X" },
+  { icon: LayoutGrid, cls: "text-mail-muted" },
+];
 
 function IconBtn({
   icon: I,
@@ -151,77 +167,77 @@ export function MailClient() {
       className="flex h-full min-h-0 flex-col bg-mail-bg text-mail-text"
       data-tour="inbox"
     >
-      {/* Top bar */}
-      <header className="flex h-12 shrink-0 items-center gap-3 bg-mail-blue px-3 text-white">
-        <Grid3x3
-          size={18}
-          strokeWidth={1.75}
+      {/* Top bar, as Outlook on the web shows it: app launcher, the organisation's logo, "Outlook", search */}
+      <header className="flex h-12 shrink-0 items-center gap-3 bg-mail-bg pl-3 pr-2">
+        <Grip
+          size={20}
+          strokeWidth={2.25}
           aria-hidden
-          className="hidden sm:block"
+          className="hidden text-mail-text sm:block"
         />
-        <span className="text-[15px] font-semibold">Mail</span>
-        <div
-          className="mx-auto hidden h-8 w-full max-w-[460px] items-center gap-2 rounded-[4px] px-3 text-small text-mail-muted md:flex"
-          style={{ background: "var(--mail-blue-soft)" }}
-        >
-          <Search
-            size={15}
-            strokeWidth={1.75}
-            className="text-mail-blue"
-            aria-hidden
-          />
+        <span className="flex items-center gap-3 pl-1" aria-label="Organisation: Sirion">
+          <SirionLogo size={18} />
+          <span className="text-[16px] font-medium text-mail-text">Outlook</span>
+        </span>
+        <div className="hidden h-8 w-full max-w-[380px] items-center gap-2 rounded-[6px] border border-mail-line bg-white px-2.5 text-small text-mail-muted md:flex lg:ml-6">
+          <Search size={16} strokeWidth={1.75} className="text-mail-text" aria-hidden />
           <span>Search</span>
         </div>
-        <span className="ml-auto flex items-center gap-1 md:ml-0">
+        <span className="ml-auto flex items-center gap-1">
           <HonestyChip
             kind="mocked"
-            title="Mock of the Outlook and Gmail add-in"
-            className="bg-white text-ink-muted"
+            title="A mock of Outlook on the web with the Sirion add-in"
+            className="hidden bg-white text-ink-muted lg:inline-flex"
           />
-          <span className="hidden text-xs text-white lg:inline">
-            Mock of the Outlook add-in
-          </span>
-          <Bell
-            size={17}
-            strokeWidth={1.5}
-            className="ml-2 hidden sm:block"
-            aria-hidden
-          />
-          <Settings
-            size={17}
-            strokeWidth={1.5}
-            className="ml-2 hidden sm:block"
-            aria-hidden
-          />
-          <span
-            className="ml-2 hidden rounded-full sm:inline-flex"
-            style={{ boxShadow: "0 0 0 2px rgb(255 255 255 / 0.6)" }}
+          <button
+            onClick={() => startFilm(0)}
+            className="ml-1 inline-flex min-h-9 items-center gap-1.5 rounded-button bg-amethyst px-3 text-small text-white hover:bg-amethyst-hover"
+            data-tour="watch"
           >
+            <Play size={14} strokeWidth={1.75} aria-hidden />
+            <span className="hidden sm:inline">Watch walkthrough</span>
+            <span className="sm:hidden">Watch</span>
+          </button>
+          <button
+            onClick={() => actions.resetDeal()}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-button text-mail-text hover:bg-white"
+            aria-label="Start again"
+            title="Start again"
+          >
+            <RotateCcw size={16} strokeWidth={1.75} />
+          </button>
+          <Bell size={17} strokeWidth={1.5} className="ml-1 hidden text-mail-text sm:block" aria-hidden />
+          <Settings size={17} strokeWidth={1.5} className="ml-2 hidden text-mail-text sm:block" aria-hidden />
+          <span className="ml-2 hidden sm:inline-flex">
             <Avatar person={me} size={28} />
           </span>
         </span>
       </header>
 
       <div className="flex min-h-0 flex-1">
-        {/* App rail */}
+        {/* App rail with the Microsoft 365 apps */}
         <nav
-          className="hidden w-12 shrink-0 flex-col items-center gap-1 py-2 md:flex"
+          className="hidden w-12 shrink-0 flex-col items-center gap-1.5 py-1 md:flex"
           aria-hidden
         >
-          {[Mail, Calendar, Users, FileText, LayoutGrid].map((I, i) => (
+          {RAIL.map(({ icon: I, cls, letter }, i) => (
             <span
               key={i}
               className={cx(
-                "relative inline-flex h-10 w-10 items-center justify-center rounded-[4px]",
-                i === 0
-                  ? "bg-white text-mail-blue shadow-card"
-                  : "text-mail-muted",
+                "relative inline-flex h-10 w-10 items-center justify-center rounded-[6px]",
+                i === 0 && "bg-white shadow-card",
               )}
             >
               {i === 0 && (
-                <span className="absolute left-0 top-2 h-6 w-[3px] rounded-r bg-mail-blue" />
+                <span className="absolute -left-1 top-2.5 h-5 w-[3px] rounded-r bg-mail-blue" />
               )}
-              <I size={19} strokeWidth={1.5} />
+              {letter ? (
+                <span className={cx("inline-flex h-[20px] w-[20px] items-center justify-center rounded-[4px] text-[11px] font-semibold text-white", cls)}>
+                  {letter}
+                </span>
+              ) : (
+                <I size={21} strokeWidth={1.75} className={cls} />
+              )}
             </span>
           ))}
         </nav>
@@ -309,12 +325,7 @@ export function MailClient() {
                       : "border-mail-line bg-white text-mail-text hover:bg-mail-blue-soft",
                   )}
                 >
-                  <CircleDot
-                    size={16}
-                    strokeWidth={1.75}
-                    className="text-teal"
-                    aria-hidden
-                  />
+                  <SirionMark size={12} />
                   Sirion
                 </button>
               </span>

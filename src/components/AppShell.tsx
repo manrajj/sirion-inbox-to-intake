@@ -16,13 +16,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const path = usePathname() || "/";
   const norm = path.endsWith("/") ? path : path + "/";
   useEffect(() => hydrateFromSession(), []);
+  // The prototype shows full screen, with no site header. Narrative pages keep the header.
+  const fullScreen = norm === "/" || norm === "/product/";
   return (
     <div className="flex min-h-screen flex-col">
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded-button focus:bg-white focus:p-3">
         Skip to content
       </a>
+      {!fullScreen && (
       <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b border-line bg-white px-3 lg:px-5">
-        <Link href="/" className="hidden min-h-11 shrink-0 items-center gap-2 pr-2 text-h3 text-ink md:flex">
+        <Link href="/why/" className="hidden min-h-11 shrink-0 items-center gap-2 pr-2 text-h3 text-ink md:flex">
           <CircleDot size={18} strokeWidth={1.5} className="text-teal" aria-hidden />
           <span>
             Inbox-to-Intake <span className="hidden text-ink-muted xl:inline">· Sirion APM case</span>
@@ -79,6 +82,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </button>
         </div>
       </header>
+      )}
       <main id="main" className="min-w-0 flex-1">
         {children}
       </main>

@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import * as Popover from "@radix-ui/react-popover";
-import { ChevronDown, Quote, Mail, UploadCloud, Check, ArrowLeft, Search, Bell, RotateCcw } from "lucide-react";
-import { actions, useApp, useDealView } from "@/lib/store";
+import { ChevronDown, Quote, Mail, UploadCloud, Check, ArrowLeft, Search, Bell, RotateCcw, Info } from "lucide-react";
+import { actions, useApp, useDealView, threadOf, threadAttachments } from "@/lib/store";
 import { getDeal } from "@data/index";
 import type { TermView } from "@/lib/derive";
 import { Button, cx, fmtDate } from "@/components/ui";
 import { SourceMessage } from "./SourceText";
-import { SirionMark } from "./SirionMark";
+import { SirionLogo } from "./SirionMark";
 
 // A mock of the Sirion web app: solid top bar, grey canvas, a request form in
 // collapsible sections, documents and the submit panel on the right. The owner
@@ -18,9 +18,7 @@ export function SirionChrome({ crumb, children }: { crumb: string; children: Rea
   return (
     <div className="sirion-enter flex h-full min-h-0 flex-col bg-canvas" data-tour="sirion-app">
       <header className="flex h-12 shrink-0 items-center gap-5 bg-teal px-4 text-white">
-        <span className="flex items-center gap-2 text-h3 font-medium">
-          <SirionMark size={22} inverse /> Sirion
-        </span>
+        <SirionLogo size={20} inverse />
         <nav className="hidden items-center gap-1 text-small md:flex" aria-hidden>
           {["Home", "Requests", "Contracts", "Reports"].map((n) => (
             <span key={n} className={cx("rounded-chip px-2.5 py-1", n === "Requests" ? "bg-white text-teal" : "text-white")}>
@@ -110,6 +108,34 @@ export function SirionRequest() {
   const filled = view.core.filter((c) => c.value !== null).length;
   const conflict = view.terms.find((t) => t.needsDecision);
   const blocked = view.blockers.some((b) => b.kind === "conflict" || b.kind === "core-missing" || b.kind === "entity");
+  const missing = view.core.filter((c) => c.value === null);
+  // The supplier thread (with its quote PDF) is where most values come from.
+  const mainIds = [...threadOf(deal, deal.openMessageId).messageIds, ...threadAttachments(deal, deal.openMessageId).map((m) => m.id)];
+  const mainMissing = mainIds.filter((id) => !view.addedIds.has(id));
+  const entity = view.blockers.find((b) => b.kind === "entity");
+  const labels = (cs: typeof missing) => cs.map((c) => c.label.toLowerCase()).join(" and ");
+  const goTo = (tour: string) => document.querySelector<HTMLElement>(`[data-tour="${tour}"]`)?.scrollIntoView({ block: "center", behavior: "smooth" });
+  // What stops Submit, in plain words, with the one click that fixes it.
+  const why: { text: string; fix?: { label: string; run: () => void } } | null = missing.length
+    ? mainMissing.length
+      ? {
+          text: `${missing.length} field${missing.length === 1 ? " is" : "s are"} empty (${labels(missing)}). They come from the ${deal.supplier.name} emails, which are not in ${dealId} yet.`,
+          fix: {
+            label: `Add the ${deal.supplier.name.split(" ")[0]} emails`,
+            run: () => {
+              actions.addMessages(mainMissing, "thread");
+              actions.dismissToast();
+            },
+          },
+        }
+      : { text: `Type the ${labels(missing)} above. The emails don't say.`, fix: { label: "Go to the field", run: () => goTo(`type-${missing[0].key}`) } }
+    : conflict
+      ? { text: `Pick the ${conflict.label.toLowerCase()}: the email and the quote disagree.`, fix: { label: "Show me", run: () => goTo(`options-${conflict.key}`) } }
+      : entity
+        ? { text: entity.label }
+        : !checked
+          ? { text: "Tick the box to say you checked the values." }
+          : null;
 
   if (submitted) return <Created />;
 
@@ -205,7 +231,8 @@ export function SirionRequest() {
                 {[
                   ["Filled from email", `${filled} of 7`],
                   ["Typed by hand", String(view.typedByHand)],
-                  ["Flagged for Legal", String(view.openForLegal.length + (conflict ? 1 : 0))],
+                  // Only meaningful once the fields are in: before that every term looks "not discussed".
+                  ...(missing.length ? [] : [["Left for Legal to settle", String(view.openForLegal.length)]]),
                 ].map(([k, v]) => (
                   <div key={k} className="flex justify-between gap-3">
                     <dt className="text-ink-muted">{k}</dt>
@@ -223,10 +250,23 @@ export function SirionRequest() {
                 disabled={blocked || !checked || ds.submit.status === "pending"}
                 onClick={() => actions.confirmAndSubmit()}
                 data-tour="submit"
-                title={blocked ? "Pick the payment terms first" : !checked ? "Tick the check first" : undefined}
+                aria-describedby={why ? "submit-why" : undefined}
               >
                 {ds.submit.status === "pending" ? "Submitting" : "Submit request"}
               </Button>
+              {why && (
+                <div id="submit-why" className="mt-2.5 flex items-start gap-2 rounded-chip bg-tone-info-bg px-3 py-2 text-small text-tone-info-fg" data-tour="submit-why" role="status">
+                  <Info size={15} strokeWidth={1.75} className="mt-[3px] shrink-0" aria-hidden />
+                  <span className="min-w-0">
+                    {why.text}
+                    {why.fix && (
+                      <button onClick={why.fix.run} className="mt-1.5 flex min-h-9 items-center rounded-button bg-teal px-3 text-small text-white hover:opacity-90" data-tour="submit-fix">
+                        {why.fix.label}
+                      </button>
+                    )}
+                  </span>
+                </div>
+              )}
               {ds.submit.status === "failed" && <p className="mt-2 text-xs text-tone-danger-fg">{ds.submit.error} Retry is safe.</p>}
             </section>
           </div>
@@ -290,7 +330,7 @@ function Created() {
             {[
               [`${view.core.filter((c) => c.value !== null).length}/7`, "fields from email"],
               [String(view.typedByHand), "typed by hand"],
-              [String(view.openForLegal.length), "flagged for Legal"],
+              [String(view.openForLegal.length), "left for Legal"],
             ].map(([n, l]) => (
               <div key={l}>
                 <dt className="text-h1 text-ink">{n}</dt>
