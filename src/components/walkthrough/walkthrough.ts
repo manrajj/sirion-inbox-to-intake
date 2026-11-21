@@ -5,7 +5,7 @@
 
 import { actions, getState } from "@/lib/store";
 import { sirion } from "@/lib/submit";
-import { CORE_FIELDS } from "@/lib/derive";
+import { getDeal } from "@data/index";
 
 export interface Step {
   target?: string;
@@ -23,159 +23,118 @@ export interface Chapter {
   steps: Step[];
 }
 
-const confirmAllCore = () => CORE_FIELDS.forEach((f) => actions.confirmCore(f.key, true));
+const deal = () => getDeal("DL-1042");
+/** The Brightline thread: its emails and the quote PDF, as the add-in's first suggestion adds them. */
+const addMainThread = () => {
+  const d = deal();
+  const t = d.threads.find((x) => x.id === "t-bl")!;
+  actions.addMessages(t.messageIds, "thread");
+};
+const UPLIFT_CONFIRM = "Confirmed: we will waive the $5,000 setup fee, and the annual uplift stays at 4%.";
 
 export const CHAPTERS: Chapter[] = [
   {
     id: "pain",
-    title: "The pain",
-    caption: "The deal is agreed. Now it has to be retyped into Sirion.",
+    title: "The deal is in email",
+    caption: "Manraj agreed a deal with Brightline over six emails and a quote. Now it has to go into Sirion.",
     steps: [
       {
         do: () => {
-          actions.loadDeal("DL-1042");
           actions.toggleSidebar(false);
           actions.setView("inbox");
         },
         target: "inbox",
-        ms: 3500,
+        ms: 3000,
       },
-      { target: "thread-t-bl", ms: 3000 },
-      { target: "attachment", ms: 3000 },
+      { target: "thread-t-bl", ms: 2500 },
+      { target: "attachment", ms: 2500 },
     ],
   },
   {
     id: "sidebar",
-    title: "Open the sidebar",
-    caption: "Sirion lives where the deal happened.",
+    title: "Open Sirion",
+    caption: "Sirion sits beside the email, already on deal DL-1042.",
     steps: [
       { target: "open-sidebar", do: () => actions.toggleSidebar(true), ms: 2500 },
-      { target: "sidebar", ms: 5000 },
-    ],
-  },
-  {
-    id: "deal",
-    title: "Pick the deal",
-    caption: "Every action applies to one deal.",
-    steps: [
-      { target: "deal-picker", click: true, visual: true, ms: 2500 },
-      { target: "pick-DL-1042", click: true, visual: true, ms: 2500 },
-      { target: "deal-picker", do: () => actions.pickDeal("DL-1042"), ms: 3000 },
+      { target: "sidebar", ms: 3000 },
     ],
   },
   {
     id: "add",
-    title: "Add the material",
-    caption: "Nothing is read until you add it.",
+    title: "Add the thread",
+    caption: "One click adds the emails and the quote. Nothing is read until you add it.",
     steps: [
-      { target: "context-chips", ms: 4500 },
-      { target: "add-to-sirion", do: () => actions.addTicked(), ms: 2500 },
-      { target: "reading", ms: 2500 },
+      { target: "add-to-sirion", do: addMainThread, ms: 2200 },
+      { target: "reading", do: () => actions.setReading(2), ms: 1500 },
+      { target: "reading", do: () => actions.setReading(3), ms: 1500 },
+      { target: "toast", do: () => actions.finishReading(), ms: 3000 },
     ],
   },
   {
-    id: "at",
-    title: "Add another thread",
-    caption: "Pull in the rest of the deal.",
+    id: "agreed",
+    title: "What's agreed",
+    caption: "Every term comes with the sentence it came from.",
     steps: [
-      { target: "at-input", do: () => actions.setAtOpen(true), ms: 3000 },
-      { target: "at-t-fin", do: () => actions.addThread("t-fin"), ms: 3000 },
-      { target: "added-items", ms: 3000 },
+      { target: "agreed-list", do: () => actions.setPanel("agreed"), ms: 2400 },
+      { target: "agreed-uplift", ms: 2600 },
+      { target: "cite-mark", do: () => actions.cite("bl-06", UPLIFT_CONFIRM), ms: 3600 },
     ],
   },
   {
-    id: "reading",
-    title: "AI reading",
-    caption: "Reading only what you added.",
+    id: "request",
+    title: "Open in Sirion",
+    caption: "The request is already filled in Sirion. Nothing typed by hand.",
     steps: [
-      { target: "reading", do: () => actions.setReading(1), ms: 2200 },
-      { target: "reading", do: () => actions.setReading(2), ms: 2200 },
-      { target: "reading", do: () => actions.setReading(3), ms: 2200 },
-      { target: "card-agreed", do: () => actions.finishReading(), ms: 3000 },
-    ],
-  },
-  {
-    id: "uplift",
-    title: "The uplift term",
-    caption: "Agreed only when the evidence says so.",
-    steps: [
-      { target: "agreed-uplift", ms: 2000 },
-      { target: "term-uplift", do: () => actions.setView("review"), ms: 1800 },
-      { target: "toggle-uplift", click: true, visual: true, ms: 1800 },
-      { target: "step-uplift-0", do: () => actions.selectSource("bl-01", "Pricing includes a 6% annual uplift from year two"), ms: 2200 },
-      { target: "step-uplift-2", do: () => actions.selectSource("bl-04", "OK on 4% if you drop the setup fee."), ms: 2600 },
-      { target: "step-uplift-3", do: () => actions.selectSource("bl-06", "Confirmed: we will waive the $5,000 setup fee, and the annual uplift stays at 4%."), ms: 2600 },
-      { target: "cite-mark", ms: 2400 },
-      { target: "confirm-uplift", do: () => actions.confirmTerm("uplift", true), ms: 1800 },
+      {
+        target: "review-in-sirion",
+        do: () => {
+          actions.setPanel("home");
+          actions.selectSource("bl-06");
+        },
+        ms: 2000,
+      },
+      { target: "basic-info", do: () => actions.setView("sirion"), ms: 3200 },
+      { target: "documents", ms: 2600 },
     ],
   },
   {
     id: "conflict",
-    title: "The conflict",
-    caption: "Open items go to Legal honestly.",
+    title: "Settle the conflict",
+    caption: "The email says Net 45. The quote says Net 30. Manraj decides, or Legal does.",
     steps: [
+      { target: "conflict-payment", ms: 3400 },
       {
-        target: "conflict-payment",
-        do: () => {
-          actions.setView("review");
-          actions.selectSource("pdf-q2291", "Payment terms: Net 30 from invoice date.");
-        },
-        ms: 3200,
-      },
-      { target: "mark-open-payment", click: true, visual: true, ms: 2200 },
-      { target: "mark-open-form-payment", ms: 2600 },
-      {
-        target: "term-head-payment",
+        target: "mark-open-payment",
         do: () =>
           actions.resolveTerm("payment", {
             type: "open",
-            reason: "Net 45 (Tom, 13 Nov) vs Net 30 (Grace, 13 Nov quote). Confirm which applies.",
+            reason: "Net 45 (Tom's email, 13 Nov) vs Net 30 (the quote PDF, 13 Nov). Confirm which applies.",
             owner: "Legal",
           }),
-        ms: 3000,
+        ms: 2400,
       },
-    ],
-  },
-  {
-    id: "existing",
-    title: "What we already have",
-    caption: "Legal decides the paper. We show what exists.",
-    steps: [
-      { target: "card-existing", do: () => actions.setView("inbox"), ms: 5000 },
-      { target: "card-missing", ms: 4000 },
+      { target: "legal-open-list", ms: 3000 },
     ],
   },
   {
     id: "submit",
     title: "Submit",
-    caption: "One deliberate click. Nothing typed by hand.",
+    caption: "One check, one click. The request goes to Legal.",
     steps: [
-      { target: "core-legalEntity", do: () => { actions.setView("review"); confirmAllCore(); }, ms: 2600 },
-      { target: "term-price", do: () => { actions.confirmTerm("price", true); actions.confirmTerm("sla", true); }, ms: 2000 },
-      { target: "record-complete", do: () => actions.setRecordComplete(true), ms: 2200 },
-      { target: "submit", do: () => actions.openSubmit(), ms: 3000 },
-      { target: "confirm-submit", do: () => actions.submit(), ms: 2200 },
-      { target: "typed-count", ms: 2500 },
+      { target: "submit", do: () => actions.openSubmit(), ms: 2200 },
+      { target: "confirm-check", click: true, visual: true, ms: 1800 },
+      { target: "confirm-submit", do: () => actions.confirmAndSubmit(), ms: 2000 },
+      { target: "receipt", ms: 3000 },
     ],
   },
   {
     id: "legal",
     title: "Legal's view",
-    caption: "Legal drafts from evidence, not memory.",
+    caption: "Legal gets what was agreed, with sources, and what is still open.",
     steps: [
-      { target: "legal-evidenced", do: () => actions.setView("legal"), ms: 3200 },
-      { target: "legal-open", ms: 3200 },
-      { target: "start-drafting", do: () => actions.legalDecide("start"), ms: 2800 },
-    ],
-  },
-  {
-    id: "trail",
-    title: "The deal trail",
-    caption: "The reason behind the clause stays with the clause.",
-    steps: [
-      { target: "invoice-flag", do: () => actions.setView("record"), ms: 3800 },
-      { target: "clause-uplift", ms: 3000 },
-      { target: "deal-trail", ms: 4500 },
+      { target: "legal-evidenced", do: () => actions.setView("legal"), ms: 3000 },
+      { target: "legal-open", ms: 2600 },
+      { target: "start-drafting", do: () => actions.legalDecide("start"), ms: 2600 },
     ],
   },
 ];

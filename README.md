@@ -1,6 +1,8 @@
 # Sirion Inbox-to-Intake
 
-A clickable prototype for the ISB x Sirion APM case. A Sirion sidebar in Outlook and Gmail lets a procurement contract owner add a deal's emails and quotes to a deal ID, and builds the Sirion intake request from them, with every term cited. Legal receives the evidenced position and the open items, marked honestly.
+A clickable prototype for the ISB x Sirion APM case. One scenario: Manraj, a procurement contract owner, agreed a deal with Brightline over email. A Sirion add-in in Outlook adds the deal's emails and quote to deal DL-1042 in one click, and Sirion builds the intake request from them, with every term cited. Legal receives what was agreed, with sources, and what is still open.
+
+The site has the brief's five sections, in order: Why this stage, Stakeholders, Problem, Prototype, Metrics. Assumptions, the learning plan and sources sit in one drawer. In the prototype, a pulsing marker points at the next click.
 
 - Live site: https://sirion-inbox-to-intake.vercel.app
 - Walkthrough recording: [`public/walkthrough.mp4`](public/walkthrough.mp4), also served at `/walkthrough.mp4`
@@ -36,7 +38,7 @@ Three example outputs are deliberately wrong (a paraphrased citation, a one-side
 ## Architecture
 
 ```
-data/                 deals (1 main, 8 exploration), people, example AI outputs (JSON)
+data/                 the main deal, 8 more deals used only as test fixtures, people, example AI outputs (JSON)
 src/lib/
   schema.ts           Zod contract for model output
   checks.ts           live checks: citation, bundle, contradiction, parse, routing, chase, injection
@@ -45,8 +47,8 @@ src/lib/
   submit.ts           mock Sirion endpoint with idempotency keys
   guardrail-suite.ts  planted wrong outputs and risky inputs, run in Vitest and in the browser
 src/components/
-  product/            mail client, sidebar, review, receipt, Legal view, contract record, drawers
-  narrative/          start page and the brief sections
+  product/            mail client, Sirion add-in, Sirion request screen, Legal view, coach marks, drawers
+  narrative/          the brief sections and the notes drawer
   walkthrough/        the film: script (walkthrough.ts) and player (Film.tsx)
 src/app/              one route per section, static export
 ```
@@ -56,22 +58,20 @@ The model's job is to extract and classify. Code decides what is shown as agreed
 ## Tests
 
 - **Vitest, 37 tests** (`tests/unit/`): citation verifier, value parsing, routing rules, injection scan, rival filtering, wrong-deal warning, status rules on the main deal, submit gate, idempotent submit with a simulated timeout, the full guardrail suite, and the walkthrough script driving the real store to a submitted request with zero fields typed by hand.
-- **Playwright, 15 tests** (`e2e/`): the main deal by hand from inbox to contract record; removing the confirmation email; the wrong-supplier warning; all eight exploration deals; keyboard-only completion of the main flow; Escape closes the film; every chapter of the walkthrough with the network off; every narrative page fits 1280 x 800 with no console errors.
+- **Playwright, 8 tests** (`e2e/`): the main deal by hand from inbox to Legal (toast, citation highlight, conflict, submit); picking one side of the conflict; removing the confirmation email; the wrong-supplier warning; keyboard-only completion of the main flow; Escape closes the film; every chapter of the walkthrough with the network off; every narrative page fits 1280 x 800 with no console errors.
 
 ## UX laws applied
 
-1. Jakob: the inbox follows Outlook's web layout (command bar, folders, message list, reading pane, add-in pane on the right); review uses a reading pane.
+1. Jakob: the inbox follows Outlook's web layout; the add-in follows Harvey for Outlook (suggestions, answer, prompt box); the request screen follows the Sirion app (sections, documents, summary).
 2. Fitts: targets at least 44 px, 8 px apart; Submit sits after the last field; Confirm and Change are never adjacent.
 3. Miller: fields in four groups; IDs and money formatted; nothing to remember across screens.
-4. Hick: one primary action per screen; detail behind Timeline, Checks and Details.
+4. Hick: one scenario, five sections, four suggestions in the add-in, one coach mark at a time.
 5. Postel: forgiving value parsing; specific messages next to the field; fluid from 360 to 1440 px.
-6. Peak-end: the peak is the citation lighting up the 4% condition; the end is a clear receipt.
+6. Peak-end: the peak is the citation lighting up the 4% confirmation in the email; the end is the "sent to Legal" banner and Legal's view.
 7. Tesler: the AI prefills; the owner only confirms. Typing counts against the north star.
-8. Doherty: feedback under 400 ms; step text while reading; friction only on Submit.
+8. Doherty: feedback under 400 ms; a toast after every add; step text while reading; friction only on Submit.
 9. Von Restorff: one emphasis per view; risky actions in Quartz with a warning icon.
 10. Ethics: no pre-ticked confirmations; nothing attached, submitted or sent without a click.
-
-The same note is in the app under "Design notes".
 
 ## Audit results
 
@@ -81,26 +81,25 @@ The same note is in the app under "Design notes".
 |---|---|---|---|---|---|---|---|---|---|
 | Start and narrative pages | Pass | Pass | Pass | Pass | Pass | n/a | Pass | n/a | Pass |
 | Inbox and sidebar | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass |
-| Review | Pass | Pass | Pass | Partial | Pass | Pass | Pass | Pass | Pass |
-| Receipt and Legal view | Pass | Pass | Pass | Pass | n/a | Pass | Pass | Pass | Pass |
-| Contract record | Pass | Pass | Pass | Pass | n/a | Pass | Pass | n/a | Pass |
+| Sirion request screen | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass |
+| Legal view | Pass | Pass | Pass | Pass | n/a | Pass | Pass | Pass | Pass |
 | Walkthrough | Pass | Pass | Pass | Pass | n/a | Pass | Pass | n/a | Pass |
 
-Partial, justified: the review screen shows four field groups and seven terms at once. Splitting it into steps would hide the full position the owner signs off, which is the point of the screen. Detail is collapsed behind Timeline and Checks, and one primary action (Submit) sits at the end.
+Simplified on 21 Nov at the user's request (DECISIONS.md, C5, D22, D23): one deal, five sections, a Harvey-style add-in, and the review screen merged into a Sirion-style request screen.
 
 Fixed during the audit:
 
 - Modals rendered off-centre because the fade-in animation overwrote the centring transform. The animation now uses `translate`.
 - Stakeholder map labels were 22 px tall. They are now 28 px on desktop, and a phone gets a list of 44 px buttons instead of the diagram.
-- On a phone, the inbox squeezed the message list and reading pane side by side. It now shows a conversation picker above a full-width reading pane. Review rows stack label over value.
+- On a phone, the inbox squeezed the message list and reading pane side by side. It now shows a conversation picker above a full-width reading pane.
 - The Metrics tables and tab bar overflowed on a phone. They now scroll inside their own box.
 
 ### Sirion Kit
 
 - No Lilac text on white: Pass. Lilac is used only on the Midnight stage (hero, film).
 - No hex outside the token table: Pass. All colours come from `src/styles/tokens.css`, including the mock mail client's blue and greys; the film cursor uses token variables.
-- One Teal or Amethyst moment per view: Pass. Amethyst appears once, on "Watch the 2-minute walkthrough". The mock inbox uses its own mail blue, so Sirion's teal marks only the add-in.
-- Contrast 4.5:1 or better: Pass. An automated scan of every text element on all nine pages, at 1280 and 390 px wide, found no failures.
+- One Teal or Amethyst moment per view: Pass. Amethyst marks only "Watch walkthrough" and the coach mark on the next click. The mock inbox uses its own mail blue, so Sirion's teal marks only the add-in and the Sirion screens.
+- Contrast 4.5:1 or better: Pass. An automated scan of every text element on all five pages and the prototype's main screens, at 1280 and 390 px wide, found no failures.
 - Keyboard and focus: Pass. Skip link first, visible focus ring, the main flow completes by keyboard alone (tested), `prefers-reduced-motion` respected.
 
 ### Red team, as a Sirion PM

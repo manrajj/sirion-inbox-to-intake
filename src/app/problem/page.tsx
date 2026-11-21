@@ -19,7 +19,7 @@ const EVIDENCE = [
 
 export default function Page() {
   return (
-    <NarrativePage eyebrow="Brief item 3 · The problem" title="Raising the request means retyping the deal" next={{ href: "/stakeholders/", label: "Who is involved" }}>
+    <NarrativePage eyebrow="3 of 5 · The problem" title="Raising the request means retyping the deal" next={{ href: "/product/", label: "Try the prototype" }}>
       <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
         <div className="space-y-4">
           <section aria-label="Who it affects">

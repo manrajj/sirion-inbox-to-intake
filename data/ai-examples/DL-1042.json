@@ -9,7 +9,7 @@
         "reasons": [
           { "type": "supplier_domain", "detail": "brightline-analytics.example" },
           { "type": "quote_number", "detail": "Q-BL-2291" },
-          { "type": "people", "detail": "Sam Okafor and Tom Ashby are on the deal" }
+          { "type": "people", "detail": "Manraj Singh and Tom Ashby are on the deal" }
         ]
       },
       {

@@ -10,7 +10,8 @@ import { deriveDeal, emptyDecisions, buildPayload, type OwnerDecisions, type Dea
 import { domainMismatch } from "./checks";
 import { sirion, hash } from "./submit";
 
-export type View = "inbox" | "review" | "receipt" | "legal" | "record";
+export type View = "inbox" | "sirion" | "legal";
+export type Panel = "home" | "agreed" | "open";
 
 export interface AuditEntry {
   at: string;
@@ -46,10 +47,14 @@ export interface AppState {
   deals: Record<string, DealState>;
   clock: number; // demo seconds since 18 Nov 2026 09:30
   film: boolean;
+  /** Which view the add-in shows: suggestions, or one of its two answers. */
+  panel: Panel;
+  /** Confirmation after material is added to the deal. */
+  toast: { text: string; n: number } | null;
 }
 
 const DEMO_START = Date.parse("2026-11-18T09:30:00Z");
-const KEY = "sirion-i2i-v1";
+const KEY = "sirion-i2i-v2";
 
 function freshDeal(d: Deal): DealState {
   const added: AddedItem[] = d.preAdded.map((p) => ({ ...p, via: "pre-added" }));
@@ -87,6 +92,8 @@ function initial(): AppState {
     deals: Object.fromEntries(DEALS.map((d) => [d.id, freshDeal(d)])),
     clock: 0,
     film: false,
+    panel: "home",
+    toast: null,
   };
 }
 
@@ -220,7 +227,7 @@ export const actions = {
   },
   resetDeal(id = state.dealId) {
     setDeal((_, deal) => freshDeal(deal), id);
-    set((s) => ({ ...s, view: "inbox", source: null, chaseFor: null, atOpen: false, openMessageId: getDeal(id).openMessageId }));
+    set((s) => ({ ...s, view: "inbox", source: null, chaseFor: null, atOpen: false, panel: "home", toast: null, sidebarOpen: false, openMessageId: getDeal(id).openMessageId }));
   },
   setFilm(on: boolean) {
     state = { ...state, film: on };
@@ -231,7 +238,13 @@ export const actions = {
     set((s) => ({ ...s, dealId: id, view: "inbox", openMessageId: deal.openMessageId, source: null, chaseFor: null, atOpen: false, sidebarOpen: s.sidebarOpen }));
   },
   setView(view: View) {
-    set((s) => ({ ...s, view, source: view === "review" ? s.source : null }));
+    set((s) => ({ ...s, view, source: null, toast: null }));
+  },
+  setPanel(panel: Panel) {
+    set((s) => ({ ...s, panel }));
+  },
+  dismissToast() {
+    set((s) => ({ ...s, toast: null }));
   },
   openMessage(id: string) {
     set((s) => ({ ...s, openMessageId: id }));
@@ -241,7 +254,7 @@ export const actions = {
   },
   pickDeal(dealId: string, via: DealState["pickedVia"] = "owner") {
     tick(3);
-    setDeal((d) => log({ ...d, pickedDealId: dealId, pickedVia: via }, "Sam Okafor", via === "suggestion" ? "Accepted suggestion" : "Picked deal", dealId));
+    setDeal((d) => log({ ...d, pickedDealId: dealId, pickedVia: via }, "Manraj Singh", via === "suggestion" ? "Accepted suggestion" : "Picked deal", dealId));
   },
   clearDeal() {
     setDeal((d) => ({ ...d, pickedDealId: null, pickedVia: null }));
@@ -287,12 +300,18 @@ export const actions = {
     const at = nowIso();
     setDeal((d) => {
       const kept = d.added.filter((a) => !(toAdd.includes(a.messageId) && a.removed));
-      const added = [...kept, ...toAdd.map((id) => ({ messageId: id, addedBy: "Sam Okafor", addedAt: at, via }))];
+      const added = [...kept, ...toAdd.map((id) => ({ messageId: id, addedBy: "Manraj Singh", addedAt: at, via }))];
       let next: DealState = { ...d, added, pendingWarning: null, lastAdd: { added: toAdd.length, skipped }, reading: toAdd.length ? 1 : 0 };
-      next = log(next, "Sam Okafor", "Added", `${toAdd.length} item${toAdd.length === 1 ? "" : "s"} to ${d.pickedDealId} (${via})${skipped ? `, ${skipped} already added` : ""}; content hash ${hash(toAdd.join(","))}`);
+      next = log(next, "Manraj Singh", "Added", `${toAdd.length} item${toAdd.length === 1 ? "" : "s"} to ${d.pickedDealId} (${via})${skipped ? `, ${skipped} already added` : ""}; content hash ${hash(toAdd.join(","))}`);
       return next;
     });
-    if (toAdd.length) actions.runReading();
+    if (toAdd.length) {
+      const pdfs = toAdd.filter((id) => deal.messages.find((m) => m.id === id)?.kind === "pdf").length;
+      const emails = toAdd.length - pdfs;
+      const parts = [emails ? `${emails} email${emails === 1 ? "" : "s"}` : "", pdfs ? `${pdfs} PDF${pdfs === 1 ? "" : "s"}` : ""].filter(Boolean).join(" and ");
+      set((s) => ({ ...s, toast: { text: `Added ${parts} to ${ds.pickedDealId} in Sirion`, n: (s.toast?.n ?? 0) + 1 } }));
+      actions.runReading();
+    }
   },
   cancelWarning() {
     setDeal((d) => ({ ...d, pendingWarning: null }));
@@ -323,11 +342,16 @@ export const actions = {
   removeItem(messageId: string) {
     tick(4);
     setDeal((d) =>
-      log({ ...d, added: d.added.map((a) => (a.messageId === messageId ? { ...a, removed: true } : a)) }, "Sam Okafor", "Removed", messageId),
+      log({ ...d, added: d.added.map((a) => (a.messageId === messageId ? { ...a, removed: true } : a)) }, "Manraj Singh", "Removed", messageId),
     );
   },
   restoreItem(messageId: string) {
-    setDeal((d) => log({ ...d, added: d.added.map((a) => (a.messageId === messageId ? { ...a, removed: false } : a)) }, "Sam Okafor", "Restored", messageId));
+    setDeal((d) => log({ ...d, added: d.added.map((a) => (a.messageId === messageId ? { ...a, removed: false } : a)) }, "Manraj Singh", "Restored", messageId));
+  },
+  /** Open a cited sentence in the mail reading pane. PDFs open under the email that carried them. */
+  cite(messageId: string, quote?: string) {
+    const m = getDeal(state.dealId).messages.find((x) => x.id === messageId);
+    set((s) => ({ ...s, view: "inbox", source: { messageId, quote }, openMessageId: m?.kind === "pdf" && m.parentId ? m.parentId : messageId }));
   },
   selectSource(messageId: string, quote?: string) {
     set((s) => ({ ...s, source: { messageId, quote } }));
@@ -347,7 +371,7 @@ export const actions = {
     }));
   },
   pickCore(key: string, value: string) {
-    setDeal((d) => log({ ...d, decisions: { ...d.decisions, pickedCore: { ...d.decisions.pickedCore, [key]: value } } }, "Sam Okafor", "Picked value", `${key}: ${value}`));
+    setDeal((d) => log({ ...d, decisions: { ...d.decisions, pickedCore: { ...d.decisions.pickedCore, [key]: value } } }, "Manraj Singh", "Picked value", `${key}: ${value}`));
   },
   confirmTerm(key: string, on: boolean) {
     setDeal((d) => ({ ...d, decisions: { ...d.decisions, confirmedTerms: { ...d.decisions.confirmedTerms, [key]: on } } }));
@@ -357,7 +381,7 @@ export const actions = {
     setDeal((d) =>
       log(
         { ...d, decisions: { ...d.decisions, resolutions: { ...d.decisions.resolutions, [key]: resolution }, confirmedTerms: { ...d.decisions.confirmedTerms, [key]: false } } },
-        "Sam Okafor",
+        "Manraj Singh",
         resolution ? (resolution.type === "open" ? "Marked open for Legal" : resolution.type === "picked" ? "Resolved with evidence" : "Logged term agreed on a call") : "Cleared resolution",
         `${key}${resolution && resolution.type === "open" ? `: ${resolution.reason}` : resolution && "value" in resolution ? `: ${resolution.value}` : ""}`,
       ),
@@ -391,11 +415,24 @@ export const actions = {
     try {
       const req = await sirion.submit(`${id}-intake`, id, payload, { simulateTimeout: fail });
       tick(4);
-      setDeal((d) => log({ ...d, submit: { ...d.submit, status: "done", requestId: req.requestId } }, "Sam Okafor", "Submitted", `${req.requestId} (attempt ${d.submit.attempts}, idempotency key ${id}-intake)`), id);
-      set((s) => ({ ...s, view: s.dealId === id ? "receipt" : s.view }));
+      setDeal((d) => log({ ...d, submit: { ...d.submit, status: "done", requestId: req.requestId } }, "Manraj Singh", "Submitted", `${req.requestId} (attempt ${d.submit.attempts}, idempotency key ${id}-intake)`), id);
+      set((s) => ({ ...s, view: s.dealId === id ? "sirion" : s.view }));
     } catch (e) {
       setDeal((d) => log({ ...d, submit: { ...d.submit, status: "failed", error: (e as Error).message } }, "System", "Submit failed", (e as Error).message), id);
     }
+  },
+  /**
+   * The single owner checkpoint on the Sirion screen: ticking "I checked these
+   * against the cited emails" confirms every prefilled field and every agreed
+   * term, then submits. Conflicts must already be resolved (the gate still runs).
+   */
+  async confirmAndSubmit() {
+    const view = dealView(state);
+    view.core.forEach((c) => c.value !== null && actions.confirmCore(c.key, true));
+    view.terms.forEach((t) => (t.status === "accepted" || t.status === "offEmail") && actions.confirmTerm(t.key, true));
+    actions.setRecordComplete(true);
+    setDeal((d) => log(d, "Manraj Singh", "Confirmed", "Checked prefilled fields and agreed terms against their citations"));
+    await actions.submit();
   },
   legalDecide(decision: "start" | "ask") {
     tick(30);

@@ -2,7 +2,7 @@ import type { Person } from "../../src/lib/types";
 
 // All names, companies and domains are fictional. Domains use the reserved .example TLD.
 
-export const SAM: Person = { name: "Sam Okafor", email: "sam.okafor@halden.example", role: "Procurement contract owner" };
+export const SAM: Person = { name: "Manraj Singh", email: "manraj.singh@halden.example", role: "Procurement contract owner" };
 export const PRIYA: Person = { name: "Priya Nair", email: "priya.nair@halden.example", role: "Marketing Ops (requester)" };
 export const LENA: Person = { name: "Lena Ruiz", email: "lena.ruiz@halden.example", role: "Finance, FP&A" };
 export const DEV: Person = { name: "Dev Malhotra", email: "dev.malhotra@halden.example", role: "Legal intake" };

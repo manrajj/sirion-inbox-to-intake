@@ -20,21 +20,13 @@ test("keyboard-only main flow", async ({ page }) => {
 
   await key(page, t("open-sidebar"));
   await key(page, t("add-to-sirion"));
-  await expect(page.locator(t("card-agreed"))).toBeVisible({ timeout: 10_000 });
-  await page.locator(t("at-input")).focus();
-  await key(page, t("at-t-fin"));
   await expect(page.locator(t("reading"))).toHaveCount(0, { timeout: 10_000 });
   await key(page, t("review-in-sirion"));
-
-  const review = t("review");
-  for (const k of ["legalEntity", "scope", "value", "termStart", "requester", "costCentre", "dataAccess", "price", "uplift", "sla"]) {
-    await key(page, `${review} ${t(`confirm-${k}`)} input`, "Space");
-  }
-  await key(page, `${review} ${t("mark-open-payment")}`);
-  await key(page, `${review} ${t("mark-open-save-payment")}`);
-  await key(page, `${t("record-complete")} input`, "Space");
+  await expect(page.locator(t("sirion-app"))).toBeVisible();
+  await key(page, t("mark-open-payment"));
   await key(page, t("submit"));
-  await expect(page.locator(t("submit-modal"))).toBeVisible();
+  await expect(page.locator(t("modal"))).toBeVisible();
+  await key(page, `${t("confirm-check")} input`, "Space");
   await key(page, t("confirm-submit"));
   await expect(page.locator(t("receipt"))).toBeVisible({ timeout: 10_000 });
 

@@ -5,7 +5,7 @@ export const metadata = { title: "Metrics · Sirion Inbox-to-Intake" };
 
 export default function Page() {
   return (
-    <NarrativePage eyebrow="Brief item 5 · Success metrics" title="One number for both sides of the handoff" next={{ href: "/next/", label: "What's next" }}>
+    <NarrativePage eyebrow="5 of 5 · Success metrics" title="One number for both sides of the handoff">
       <Metrics />
     </NarrativePage>
   );

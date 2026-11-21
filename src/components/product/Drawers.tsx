@@ -1,11 +1,9 @@
 "use client";
 
-import { Check, X, ShieldCheck, Mail, Ban } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { SCHEMA_TEXT } from "@/lib/schema";
 import { runGuardrails } from "@/lib/guardrail-suite";
-import { actions, useApp, useDealView } from "@/lib/store";
-import { getDeal } from "@data/index";
-import { Button, Drawer, HonestyChip, Modal, Tabs } from "@/components/ui";
+import { Drawer, HonestyChip, Tabs } from "@/components/ui";
 
 export const AUTONOMY = [
   {
@@ -150,59 +148,5 @@ export function DesignNotes({ trigger }: { trigger: React.ReactNode }) {
       </ul>
       <p className="mt-3 text-xs text-ink-muted">Styled with a candidate-made Sirion Kit inspired by Sirion's public brand. Not official Sirion material.</p>
     </Drawer>
-  );
-}
-
-export function ChaseModal() {
-  const termKey = useApp((s) => s.chaseFor);
-  const dealId = useApp((s) => s.dealId);
-  const view = useDealView();
-  const deal = getDeal(dealId);
-  const c = view.chase.find((x) => x.draft.termKey === termKey);
-  return (
-    <Modal open={!!termKey} onOpenChange={(o) => !o && actions.openChase(null)} title="Draft supplier chase" width={560}>
-      {c && (
-        <div className="space-y-3" data-tour="chase-modal">
-          <div className="flex flex-wrap gap-1">
-            <HonestyChip kind="ai" />
-            <HonestyChip kind="live" title="Live check: sources and confidential details" />
-          </div>
-          {c.check.ok ? (
-            <>
-              <div className="rounded-chip border border-line p-3 text-small">
-                <div className="text-xs text-ink-muted">To: {c.draft.to}</div>
-                <div className="text-xs text-ink-muted">Subject: {c.draft.subject}</div>
-                <p className="mt-2 whitespace-pre-wrap text-ink">{c.draft.body}</p>
-              </div>
-              <p className="flex items-start gap-1.5 text-xs text-ink-muted">
-                <ShieldCheck size={14} strokeWidth={1.5} className="mt-0.5 shrink-0 text-teal" aria-hidden />
-                Built only from {deal.supplier.name}'s own thread. No rival quotes or internal limits.
-                {c.check.excludedSources.length > 0 && ` ${c.check.excludedSources.length} other source${c.check.excludedSources.length > 1 ? "s" : ""} removed.`}
-              </p>
-            </>
-          ) : (
-            <div className="rounded-chip border-2 border-quartz p-3 text-small text-ink" role="alert" data-tour="chase-blocked">
-              <div className="flex items-center gap-2">
-                <Ban size={15} strokeWidth={1.5} aria-hidden /> Draft held back
-              </div>
-              <ul className="mt-1 list-disc pl-5 text-xs">
-                {c.check.reasons.map((r) => (
-                  <li key={r}>{r}</li>
-                ))}
-              </ul>
-              <p className="mt-2 text-xs text-ink-muted">The model's draft used a rival's quote. It never reaches the supplier. Write the chase yourself, from {deal.supplier.name}'s thread only.</p>
-            </div>
-          )}
-          <div className="flex items-center justify-between gap-3">
-            <span className="flex items-center gap-1.5 text-xs text-ink-muted">
-              <Mail size={13} strokeWidth={1.5} aria-hidden /> Drafted only. Nothing is sent from Sirion.
-            </span>
-            <Button variant="primary" onClick={() => actions.openChase(null)}>
-              {c.check.ok ? "Copy to my draft" : "Close"}
-            </Button>
-          </div>
-        </div>
-      )}
-    </Modal>
   );
 }

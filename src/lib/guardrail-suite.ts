@@ -31,7 +31,7 @@ export const GUARDRAIL_CASES: GuardrailCase[] = [
     wrongOutput: true,
     run: () => {
       const t = view("DL-1042").terms.find((x) => x.key === "priceHold")!;
-      return { pass: t.status === "heldBack" && t.value === null && /not found/.test(t.heldBackReason ?? ""), detail: t.heldBackReason ?? t.status };
+      return { pass: t.status === "heldBack" && t.value === null && /not in the email word for word/.test(t.heldBackReason ?? ""), detail: t.heldBackReason ?? t.status };
     },
   },
   {

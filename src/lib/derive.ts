@@ -188,7 +188,7 @@ export function deriveDeal(deal: Deal, ai: ExampleOutput, added: AddedItem[], de
     const entityHit = steps.filter((s) => wrongEntityMsgs.has(s.messageId));
 
     let heldBackReason: string | undefined;
-    if (badCite.length) heldBackReason = "Held back: cited text not found in source";
+    if (badCite.length) heldBackReason = "Held back: the AI's quote is not in the email word for word";
     else if (badParty.length) heldBackReason = "Held back: evidence does not come from the side it claims";
     else if (badValue.length) heldBackReason = `Held back: "${badValue[0].value}" does not parse as ${t.fieldType}`;
     else if (entityHit.length && entityConflict) heldBackReason = "Held back: evidence names a different legal entity";
@@ -475,7 +475,7 @@ export function buildPayload(view: DealView) {
 export function reasonFor(t: TermView): string {
   switch (t.status) {
     case "notNegotiated":
-      return "Not mentioned in the added material";
+      return "Not discussed in the emails";
     case "conditional":
       return "Condition not resolved in the added material";
     case "proposed":

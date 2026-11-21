@@ -3,83 +3,85 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { Home, Compass, AlertCircle, Users, ListChecks, Inbox, Gauge, Route, BookOpen, CircleDot } from "lucide-react";
+import { CircleDot, Play, NotebookText } from "lucide-react";
 import { NAV } from "@/lib/nav";
 import { cx } from "@/components/ui";
 import { hydrateFromSession } from "@/lib/store";
-import { Film } from "@/components/walkthrough/Film";
+import { Film, startFilm } from "@/components/walkthrough/Film";
+import { NotesDrawer } from "@/components/narrative/NotesDrawer";
 
-const ICONS = { Home, Compass, AlertCircle, Users, ListChecks, Inbox, Gauge, Route, BookOpen } as const;
+export const TOPBAR_H = 56;
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const path = usePathname() || "/";
   const norm = path.endsWith("/") ? path : path + "/";
   useEffect(() => hydrateFromSession(), []);
-  // The live product gets the room: the section nav collapses to an icon rail there.
-  const compact = norm === "/product/";
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen flex-col">
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded-button focus:bg-white focus:p-3">
         Skip to content
       </a>
-      <nav aria-label="Sections" className={cx("sticky top-0 hidden h-screen shrink-0 flex-col border-r border-line bg-surface-alt py-5 lg:flex", compact ? "w-[64px] px-2" : "w-[208px] px-3")}>
-        <Link href="/" className={cx("mb-6 flex min-h-11 items-center gap-2 text-h3 text-ink", compact ? "justify-center px-0" : "px-3")} aria-label={compact ? "Sirion Inbox-to-Intake, start" : undefined}>
+      <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b border-line bg-white px-3 lg:px-5">
+        <Link href="/" className="hidden min-h-11 shrink-0 items-center gap-2 pr-2 text-h3 text-ink md:flex">
           <CircleDot size={18} strokeWidth={1.5} className="text-teal" aria-hidden />
-          <span className={compact ? "sr-only" : undefined}>
-            Sirion <span className="text-ink-muted">Inbox-to-Intake</span>
+          <span>
+            Inbox-to-Intake <span className="hidden text-ink-muted xl:inline">· Sirion APM case</span>
           </span>
         </Link>
-        <ol className="flex flex-col gap-0.5">
-          {NAV.map((n, i) => {
-            const Icon = ICONS[n.icon];
-            const active = norm === n.href;
-            return (
-              <li key={n.href}>
-                <Link
-                  href={n.href}
-                  aria-current={active ? "page" : undefined}
-                  title={compact ? n.label : undefined}
-                  className={cx(
-                    "flex min-h-11 items-center gap-3 rounded-button text-small",
-                    compact ? "justify-center px-0" : "px-3",
-                    active ? "bg-white text-teal" : "text-ink hover:bg-white",
-                  )}
-                  style={active ? { boxShadow: "inset 0 0 0 1px var(--line)" } : undefined}
-                >
-                  <Icon size={17} strokeWidth={1.5} aria-hidden />
-                  <span className={compact ? "sr-only" : "flex-1"}>{n.label}</span>
-                  {!compact && <span className="text-xs text-ink-muted">{i + 1}</span>}
-                </Link>
-              </li>
-            );
-          })}
-        </ol>
-        <p className={cx("mt-auto px-3 text-xs leading-4 text-ink-muted", compact && "sr-only")}>
-          A candidate prototype for the Sirion APM case. Not a Sirion product. All data is synthetic.
-        </p>
-      </nav>
-      <div className="flex min-w-0 flex-1 flex-col pb-[64px] lg:pb-0">
-        <main id="main" className="min-w-0 flex-1">
-          {children}
-        </main>
-      </div>
-      <nav aria-label="Sections" className="fixed inset-x-0 bottom-0 z-30 flex overflow-x-auto border-t border-line bg-white lg:hidden">
-        {NAV.map((n) => {
-          const Icon = ICONS[n.icon];
-          const active = norm === n.href;
-          return (
-            <Link
-              key={n.href}
-              href={n.href}
-              aria-current={active ? "page" : undefined}
-              className={cx("flex min-h-[60px] min-w-[72px] flex-1 flex-col items-center justify-center gap-0.5 px-1 text-xs", active ? "text-teal" : "text-ink-muted")}
-            >
-              <Icon size={18} strokeWidth={1.5} aria-hidden />
-              {n.short}
-            </Link>
-          );
-        })}
-      </nav>
+        <nav aria-label="Sections" className="thin-scroll flex min-w-0 flex-1 items-center gap-1 overflow-x-auto md:justify-center">
+          <ol className="flex items-center gap-1">
+            {NAV.map((n, i) => {
+              const active = norm === n.href;
+              return (
+                <li key={n.href} className="flex items-center">
+                  <Link
+                    href={n.href}
+                    aria-current={active ? "page" : undefined}
+                    className={cx(
+                      "flex min-h-11 items-center gap-2 whitespace-nowrap rounded-pill px-3 text-small",
+                      active ? "bg-tone-success-bg text-teal" : "text-ink hover:bg-surface-alt",
+                    )}
+                  >
+                    <span
+                      className={cx(
+                        "inline-flex h-5 w-5 items-center justify-center rounded-full text-xs",
+                        active ? "bg-teal text-white" : "border border-line-strong text-ink-muted",
+                      )}
+                      aria-hidden
+                    >
+                      {i + 1}
+                    </span>
+                    <span className="hidden sm:inline">{n.label}</span>
+                    <span className="sm:hidden">{n.short}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ol>
+        </nav>
+        <div className="flex shrink-0 items-center gap-1">
+          <NotesDrawer
+            trigger={
+              <button className="inline-flex min-h-11 items-center gap-2 rounded-button px-3 text-small text-teal hover:bg-surface-alt" aria-label="Assumptions and sources">
+                <NotebookText size={16} strokeWidth={1.5} aria-hidden />
+                <span className="hidden lg:inline">Assumptions</span>
+              </button>
+            }
+          />
+          <button
+            onClick={() => startFilm(0)}
+            className="inline-flex min-h-11 items-center gap-2 rounded-button bg-amethyst px-4 text-small text-white hover:bg-amethyst-hover"
+            data-tour="watch"
+          >
+            <Play size={15} strokeWidth={1.75} aria-hidden />
+            <span className="hidden sm:inline">Watch walkthrough</span>
+            <span className="sm:hidden">Watch</span>
+          </button>
+        </div>
+      </header>
+      <main id="main" className="min-w-0 flex-1">
+        {children}
+      </main>
       <Film />
     </div>
   );

@@ -110,6 +110,7 @@ export function MailClient() {
   const dealId = useApp((s) => s.dealId);
   const openId = useApp((s) => s.openMessageId);
   const sidebarOpen = useApp((s) => s.sidebarOpen);
+  const source = useApp((s) => s.source);
   const deal = getDeal(dealId);
   const byId = new Map(deal.messages.map((m) => [m.id, m]));
   const openThread = threadOf(deal, openId);
@@ -143,7 +144,7 @@ export function MailClient() {
   const threadMsgs = openThread.messageIds
     .map((id) => byId.get(id)!)
     .filter((m) => m.kind === "email");
-  const me = { name: "Sam Okafor", email: `sam.okafor@${BUYER_DOMAIN}` };
+  const me = { name: "Manraj Singh", email: `manraj.singh@${BUYER_DOMAIN}` };
 
   return (
     <div
@@ -557,9 +558,10 @@ export function MailClient() {
                           {(m.attachmentIds ?? []).map((aid) => {
                             const a = byId.get(aid)!;
                             return (
-                              <div
+                              <button
                                 key={aid}
-                                className="mb-3 inline-flex items-center gap-2.5 rounded-[6px] border border-mail-line bg-white px-3 py-2 text-xs text-mail-text shadow-card"
+                                onClick={() => actions.selectSource(aid)}
+                                className="mb-3 mr-2 inline-flex items-center gap-2.5 rounded-[6px] border border-mail-line bg-white px-3 py-2 text-left text-xs text-mail-text shadow-card hover:bg-mail-blue-soft"
                                 data-tour="attachment"
                               >
                                 <span
@@ -574,14 +576,27 @@ export function MailClient() {
                                     {a.filename}
                                   </span>
                                   <span className="block text-mail-muted">
-                                    Attachment
+                                    Click to preview
                                   </span>
                                 </span>
-                              </div>
+                              </button>
                             );
                           })}
+                          {source && (m.attachmentIds ?? []).includes(source.messageId) && (
+                            <div className="mb-3 rounded-[6px] border border-mail-line bg-mail-pane p-3 fade-in" data-tour="pdf-preview">
+                              <div className="mb-1 flex items-center justify-between text-xs text-mail-muted">
+                                <span>{byId.get(source.messageId)!.filename}</span>
+                                <button onClick={() => actions.selectSource(m.id)} className="min-h-8 px-2 text-mail-blue hover:underline">
+                                  Close preview
+                                </button>
+                              </div>
+                              <div className="whitespace-pre-wrap font-mono text-xs leading-5 text-mail-text">
+                                <Highlighted text={byId.get(source.messageId)!.body} quote={source.quote} />
+                              </div>
+                            </div>
+                          )}
                           <div className="whitespace-pre-wrap text-[14px] leading-6 text-mail-text">
-                            <Highlighted text={m.body} />
+                            <Highlighted text={m.body} quote={source?.messageId === m.id ? source.quote : undefined} />
                           </div>
                         </div>
                       )}

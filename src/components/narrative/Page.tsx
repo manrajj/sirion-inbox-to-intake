@@ -17,11 +17,11 @@ export function NarrativePage({
 }) {
   return (
     <div className="bg-canvas">
-      <div className="mx-auto flex min-h-[100dvh] max-w-[1120px] flex-col px-5 pb-6 pt-8 lg:h-[100dvh] lg:min-h-0 lg:px-10">
+      <div className="mx-auto flex min-h-[calc(100dvh-56px)] max-w-[1120px] flex-col px-5 pb-6 pt-6 lg:h-[calc(100dvh-56px)] lg:min-h-0 lg:px-10">
         <header className="mb-5 flex flex-wrap items-end justify-between gap-4">
           <div>
             <Eyebrow>{eyebrow}</Eyebrow>
-            <h1 className="mt-2 text-h1 text-ink md:text-display">{title}</h1>
+            <h1 className="mt-2 max-w-[820px] text-h1 text-ink md:text-[36px] md:leading-[42px]">{title}</h1>
             {lead && (
               <p className="mt-2 max-w-prose text-lead font-light text-ink-muted">
                 {lead}

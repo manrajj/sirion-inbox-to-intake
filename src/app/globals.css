@@ -114,3 +114,26 @@ textarea {
     transition-duration: 0.001ms !important;
   }
 }
+
+/* Coach mark: the next thing to click. */
+.coach-ring {
+  box-shadow: 0 0 0 2px var(--brand-accent), 0 0 0 6px rgb(146 66 159 / 0.25);
+  animation: coach-pulse 1.6s ease-in-out infinite;
+}
+@keyframes coach-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px var(--brand-accent), 0 0 0 4px rgb(146 66 159 / 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 2px var(--brand-accent), 0 0 0 10px rgb(146 66 159 / 0.08);
+  }
+}
+.coach-label {
+  animation: fade-in 0.3s ease both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .coach-ring {
+    animation: none;
+  }
+}

@@ -13,7 +13,7 @@ test("walkthrough: every chapter seeks cleanly offline and the end card hands ov
   await expect(film).toBeVisible();
   const bars = page.getByRole("button", { name: /^Go to chapter/ });
   const n = await bars.count();
-  expect(n).toBe(12);
+  expect(n).toBe(8);
   for (let i = 0; i < n; i++) {
     await bars.nth(i).click();
     await page.waitForTimeout(700);
@@ -23,13 +23,14 @@ test("walkthrough: every chapter seeks cleanly offline and the end card hands ov
   await expect(page.getByRole("button", { name: /Try it yourself/ })).toBeVisible({ timeout: 20_000 });
   await page.getByRole("button", { name: /Try it yourself/ }).click();
   await expect(film).toHaveCount(0);
-  await expect(page.locator('[data-tour="sidebar"]')).toBeVisible();
+  // A fresh start, with the coach mark on the first click
+  await expect(page.locator('[data-coach="open-sidebar"]')).toHaveCount(1);
   await expectNoErrors(errors);
 });
 
 test("narrative pages render without errors and fit one screen", async ({ page }) => {
   const errors = watchErrors(page);
-  for (const p of ["/", "/why/", "/problem/", "/stakeholders/", "/assumptions/", "/metrics/", "/next/", "/sources/"]) {
+  for (const p of ["/", "/stakeholders/", "/problem/", "/metrics/"]) {
     await page.goto(p);
     await page.waitForTimeout(200);
     const h = await page.evaluate(() => document.documentElement.scrollHeight);

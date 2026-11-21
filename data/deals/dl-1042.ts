@@ -16,15 +16,13 @@ export const DL1042: Deal = {
   owner: SAM,
   openMessageId: "bl-06",
   threads: [
-    { id: "t-req", subject: "Request: marketing analytics platform", label: "Priya's request (internal)", messageIds: ["rq-01", "rq-02", "rq-03"] },
+    { id: "t-req", subject: "Request: marketing analytics platform", label: "Priya's request (internal)", messageIds: ["rq-01", "rq-02", "rq-03", "rq-04"] },
     { id: "t-bl", subject: "Brightline proposal for Halden", label: "Brightline negotiation", messageIds: ["bl-01", "bl-02", "bl-03", "bl-04", "bl-05", "bl-06", "pdf-q2291"] },
     { id: "t-fin", subject: "Budget check: Brightline analytics", label: "Finance budget check (internal)", messageIds: ["fn-01", "fn-02"] },
     { id: "t-cx", subject: "Corvex quote: analytics platform", label: "Corvex quote (rival)", messageIds: ["cx-01"] },
   ],
-  preAdded: [
-    { messageId: "rq-01", addedBy: "Priya Nair", addedAt: "2026-11-03T09:12:00Z" },
-    { messageId: "rq-02", addedBy: "Priya Nair", addedAt: "2026-11-03T09:12:00Z" },
-  ],
+  // Manraj opened DL-1042 on 18 Nov, after picking Brightline, and added the two internal threads then.
+  preAdded: ["rq-01", "rq-02", "rq-03", "rq-04", "fn-01", "fn-02"].map((messageId) => ({ messageId, addedBy: "Manraj Singh", addedAt: "2026-11-18T09:02:00Z" })),
   repository: {
     records: [
       { id: "MSA-2025-0187", type: "Master subscription agreement", entity: "Brightline Analytics Ltd", signed: "2025-03-14", expires: "2028-03-13" },
@@ -41,7 +39,7 @@ export const DL1042: Deal = {
     {
       id: "rq-01", threadId: "t-req", kind: "email", from: PRIYA, to: [SAM], date: "2026-11-02T08:40:00Z",
       subject: "Request: marketing analytics platform",
-      body: `Hi Sam,
+      body: `Hi Manraj,
 
 Marketing Ops needs a campaign attribution and analytics platform for 25 users. We would like a 12-month subscription starting 1 December 2026.
 
@@ -55,23 +53,32 @@ Priya`,
     {
       id: "rq-02", threadId: "t-req", kind: "email", from: SAM, to: [PRIYA], date: "2026-11-02T10:05:00Z",
       subject: "RE: Request: marketing analytics platform",
-      body: `Thanks Priya. I'll run both quotes and come back with a recommendation this week. I've opened draft request DL-1042 for this.
+      body: `Thanks Priya. I'll get quotes from both and pick one.
 
-Sam`,
+Manraj`,
     },
     {
       id: "rq-03", threadId: "t-req", kind: "email", from: PRIYA, to: [SAM], date: "2026-11-18T08:15:00Z",
       subject: "RE: Request: marketing analytics platform",
-      body: `Hi Sam, any update? Campaign launch is 5 December, so we need the contract in place before then.
+      body: `Hi Manraj, any update? Campaign launch is 5 December, so we need the contract in place before then.
 
 Priya`,
+    },
+    {
+      id: "rq-04", threadId: "t-req", kind: "email", from: SAM, to: [PRIYA], date: "2026-11-18T09:00:00Z",
+      subject: "RE: Request: marketing analytics platform",
+      body: `Hi Priya,
+
+We are going with Brightline. The deal is agreed by email. I have opened request DL-1042 in Sirion and will send it to Legal today.
+
+Manraj`,
     },
 
     // ---- Thread 2: Brightline negotiation (supplier)
     {
       id: "bl-01", threadId: "t-bl", kind: "email", from: TOM, to: [SAM], date: "2026-11-04T14:20:00Z",
       subject: "Brightline proposal for Halden",
-      body: `Hi Sam,
+      body: `Hi Manraj,
 
 Thanks for the time today. Our proposal for Halden Group: the Brightline Insights platform for 25 users at $48,000 a year, on a 12-month subscription.
 
@@ -91,13 +98,13 @@ Thanks. The $48,000 a year works for us. 6% is above what we can accept on the u
 We also need Net 45 payment terms, and a service credit if uptime drops below 99.9%.
 
 Regards,
-Sam Okafor
+Manraj Singh
 Procurement, Halden Group`,
     },
     {
       id: "bl-03", threadId: "t-bl", kind: "email", from: TOM, to: [SAM], date: "2026-11-09T16:45:00Z",
       subject: "RE: Brightline proposal for Halden",
-      body: `Sam,
+      body: `Manraj,
 
 We can do 4%. On uptime, we will credit 5% of the monthly fee for each month uptime falls below 99.9%.
 
@@ -112,12 +119,12 @@ OK on 4% if you drop the setup fee. The service credit as described works for us
 
 We would also like 20 hours of onboarding training included.
 
-Sam`,
+Manraj`,
     },
     {
       id: "bl-05", threadId: "t-bl", kind: "email", from: TOM, to: [SAM], date: "2026-11-11T10:02:00Z",
       subject: "RE: Brightline proposal for Halden",
-      body: `Sam, let me check the setup fee with our deal desk and come back to you by Friday.
+      body: `Manraj, let me check the setup fee with our deal desk and come back to you by Friday.
 
 Tom`,
     },
@@ -125,7 +132,7 @@ Tom`,
       id: "bl-06", threadId: "t-bl", kind: "email", from: TOM, to: [SAM], date: "2026-11-13T15:30:00Z",
       subject: "RE: Brightline proposal for Halden",
       attachmentIds: ["pdf-q2291"],
-      body: `Hi Sam,
+      body: `Hi Manraj,
 
 Confirmed: we will waive the $5,000 setup fee, and the annual uplift stays at 4%. Invoices will be payable Net 45, as you asked.
 
@@ -168,12 +175,12 @@ This quote is governed by the Master Subscription Agreement between the parties,
 
 Can you confirm budget for the Brightline analytics platform at $48,000 a year? Corvex came in at $41,000 but failed our security review.
 
-Sam`,
+Manraj`,
     },
     {
       id: "fn-02", threadId: "t-fin", kind: "email", from: LENA, to: [SAM, PRIYA], date: "2026-11-12T17:20:00Z",
       subject: "RE: Budget check: Brightline analytics",
-      body: `Sam,
+      body: `Manraj,
 
 Budget confirmed. Please charge it to cost centre MKT-4410 (Marketing Operations). A start date of 1 December 2026 works for FY27 phasing.
 
@@ -184,7 +191,7 @@ Lena`,
     {
       id: "cx-01", threadId: "t-cx", kind: "email", from: NINA, to: [SAM], date: "2026-11-05T12:00:00Z",
       subject: "Corvex quote: analytics platform",
-      body: `Hi Sam,
+      body: `Hi Manraj,
 
 As discussed, Corvex Data Inc can offer our analytics suite for 25 users at $41,000 a year, Net 30, with a 5% annual uplift.
 

@@ -347,13 +347,13 @@ export function Film() {
           <div className="glow-stage pointer-events-none absolute inset-0" aria-hidden />
           <div className="relative max-w-[640px] text-center">
             <p className="text-small text-lilac">End of the walkthrough</p>
-            <h2 className="mt-2 text-[34px] leading-[40px] text-ink-on-stage">From inbox to a Legal-ready request, with every term cited.</h2>
+            <h2 className="mt-2 text-[34px] leading-[40px] text-ink-on-stage">From the inbox to a Legal-ready request, with every term cited and nothing retyped.</h2>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <button
                 className="inline-flex min-h-12 items-center gap-2 rounded-button bg-teal px-6 text-body text-white hover:opacity-90"
-                onClick={async () => {
+                onClick={() => {
                   runId.current++;
-                  await seekState(2);
+                  actions.reset();
                   takeOver();
                 }}
               >
