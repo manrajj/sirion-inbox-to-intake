@@ -2,7 +2,7 @@
 
 A clickable prototype for the ISB x Sirion APM case. A Sirion sidebar in Outlook and Gmail lets a procurement contract owner add a deal's emails and quotes to a deal ID, and builds the Sirion intake request from them, with every term cited. Legal receives the evidenced position and the open items, marked honestly.
 
-- Live site: https://sirion-inbox-to-intake.vercel.app (see the deploy note at the end)
+- Live site: deploying to Vercel (link added here once live)
 - Walkthrough recording: [`public/walkthrough.mp4`](public/walkthrough.mp4), also served at `/walkthrough.mp4`
 - Plan: [`PLAN.md`](PLAN.md). Decisions and conflicts: [`DECISIONS.md`](DECISIONS.md). Build prompt and sources: [`docs/`](docs/)
 
