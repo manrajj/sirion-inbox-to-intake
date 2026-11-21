@@ -1,7 +1,29 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { X, Plus, Check, Loader2, ShieldAlert, ListChecks, ArrowUpRight, ArrowLeft, AtSign, Mail, FileText, ChevronDown, ArrowUp, Pin, Quote } from "lucide-react";
+import {
+  X,
+  Check,
+  Loader2,
+  ShieldAlert,
+  ArrowLeft,
+  ArrowRight,
+  Mail,
+  FileText,
+  Pin,
+  Quote,
+  CornerDownRight,
+  History,
+  FolderOpen,
+  Briefcase,
+  SlidersHorizontal,
+  Plus,
+  ListFilter,
+  PenLine,
+  Mic,
+  Paperclip,
+  Copy,
+} from "lucide-react";
 import { actions, useApp, useDealView, threadOf, threadAttachments } from "@/lib/store";
 import { getDeal } from "@data/index";
 import { domainOf } from "@/lib/checks";
@@ -9,9 +31,9 @@ import type { TermView } from "@/lib/derive";
 import { Button, cx, fmtDate } from "@/components/ui";
 import { SirionMark } from "./SirionMark";
 
-// The Sirion add-in, docked in Outlook's add-in pane and laid out like Harvey for
-// Outlook: a title bar, the deal it is working on, three suggestions, an answer
-// view, and a prompt box at the bottom.
+// The Sirion add-in, laid out like Harvey for Outlook: a tab header with pin and
+// close, a toolbar with the deal chip, a centred mark over "Suggestions for your
+// email", a bordered suggestion list, and a prompt card at the bottom.
 
 const READ_STEPS = ["Reading the emails", "Reading the quote PDF", "Checking each term against its source"];
 
@@ -33,54 +55,69 @@ export function Sidebar() {
   const pdfsLeft = notAdded.length - emailsLeft;
   const submitted = !!ds.submit.requestId;
   const reading = ds.reading > 0;
-
-  const addSub =
-    notAdded.length === 0
-      ? "Added"
-      : [emailsLeft ? `${emailsLeft} email${emailsLeft === 1 ? "" : "s"}` : "", pdfsLeft ? `${pdfsLeft} PDF${pdfsLeft === 1 ? "" : "s"}` : ""].filter(Boolean).join(" and ");
+  const counts = [emailsLeft ? `${emailsLeft} email${emailsLeft === 1 ? "" : "s"}` : "", pdfsLeft ? `${pdfsLeft} PDF` : ""].filter(Boolean).join(", ");
 
   return (
     <aside className="flex w-full shrink-0 flex-col overflow-hidden rounded-[8px] border border-mail-line bg-white shadow-card md:w-[340px]" aria-label="Sirion add-in" data-tour="sidebar">
-      {/* Outlook add-in title bar */}
-      <header className="flex h-10 shrink-0 items-center gap-2 border-b border-mail-line bg-mail-pane pl-3 pr-1 text-mail-text">
-        <SirionMark size={16} />
-        <span className="text-small font-semibold">Sirion</span>
-        <span className="ml-auto inline-flex h-10 w-9 items-center justify-center text-mail-muted" aria-hidden>
-          <Pin size={14} strokeWidth={1.5} />
+      {/* Tab header, as Outlook shows add-ins */}
+      <header className="flex h-10 shrink-0 items-end border-b border-mail-line bg-mail-pane pl-2 text-mail-text">
+        <span className="flex h-10 items-center gap-1.5 border-b-2 border-mail-blue px-2 text-small font-semibold">
+          Sirion for Outlook
+          <Pin size={14} strokeWidth={2} className="fill-current text-mail-blue" aria-hidden />
+          <button onClick={() => actions.toggleSidebar(false)} className="inline-flex h-8 w-7 items-center justify-center rounded-[4px] text-mail-muted hover:bg-mail-blue-soft" aria-label="Close Sirion">
+            <X size={15} strokeWidth={1.75} />
+          </button>
         </span>
-        <button onClick={() => actions.toggleSidebar(false)} className="inline-flex h-10 w-9 items-center justify-center rounded-[4px] text-mail-muted hover:bg-mail-blue-soft" aria-label="Close Sirion">
-          <X size={16} strokeWidth={1.5} />
-        </button>
+        <span className="flex h-10 items-center px-3 text-small text-mail-muted" aria-hidden>
+          My Day
+        </span>
       </header>
 
-      <div className="thin-scroll min-h-0 flex-1 overflow-y-auto px-4 py-4">
+      {/* Toolbar with the deal chip */}
+      <div className="flex h-10 shrink-0 items-center gap-1 px-2 text-ink-muted">
+        <span className="inline-flex h-8 w-8 items-center justify-center" aria-hidden>
+          <History size={15} strokeWidth={1.5} />
+        </span>
+        <span className="inline-flex h-8 w-8 items-center justify-center" aria-hidden>
+          <FolderOpen size={15} strokeWidth={1.5} />
+        </span>
+        <span className="mx-auto inline-flex items-center gap-1.5 text-small text-ink" data-tour="deal-chip">
+          <Briefcase size={14} strokeWidth={1.5} aria-hidden />
+          {dealId} · {deal.supplier.name}
+        </span>
+        <span className="inline-flex h-8 w-8 items-center justify-center" aria-hidden>
+          <SlidersHorizontal size={15} strokeWidth={1.5} />
+        </span>
+      </div>
+
+      <div className="thin-scroll min-h-0 flex-1 overflow-y-auto px-3 pb-3">
         {ds.pendingWarning && <MismatchWarning />}
         {reading ? (
-          <Reading step={ds.reading} />
+          <div className="pt-2">
+            <Reading step={ds.reading} />
+          </div>
         ) : panel === "home" ? (
-          <section aria-label="Suggestions">
-            <p className="text-h3 font-medium text-ink">Hi Manraj</p>
-            <p className="mt-0.5 text-small text-ink-muted">This email is part of a deal you're on.</p>
-            <span className="mt-3 inline-flex items-center gap-2 rounded-chip bg-teal px-3 py-1.5 text-small text-white" data-tour="deal-chip">
-              {dealId} · {deal.supplier.name}
-            </span>
-            <h2 className="mt-5 pb-1.5 text-xs font-medium uppercase tracking-wide text-ink-muted">Suggested</h2>
-            <ul className="divide-y divide-line border-y border-line">
+          <section aria-label="Suggestions" className="fade-in">
+            <div className="flex flex-col items-center pb-4 pt-5">
+              <span className="inline-flex h-12 w-12 items-center justify-center rounded-[10px] shadow-card">
+                <SirionMark size={30} />
+              </span>
+              <span className="mt-1.5 text-[10px] font-medium uppercase tracking-wider text-ink-muted">Intake</span>
+              <p className="mt-3 text-small text-ink-muted">Suggestions for your email</p>
+            </div>
+            <ul className="divide-y divide-line overflow-hidden rounded-[8px] border border-line">
               <Suggestion
                 tour="add-to-sirion"
-                icon={notAdded.length ? Plus : Check}
-                label={notAdded.length ? "Add this thread to the deal" : "This thread is in the deal"}
-                sub={addSub}
                 done={notAdded.length === 0}
-                onClick={() => actions.addMessages(notAdded, "thread")}
                 disabled={submitted}
+                label={notAdded.length ? `Add this thread to ${dealId}` : `Thread added to ${dealId}`}
+                meta={notAdded.length ? counts : undefined}
+                onClick={() => actions.addMessages(notAdded, "thread")}
               />
-              <Suggestion tour="card-agreed" icon={ListChecks} label="What's agreed so far?" sub="Each term, with its source" onClick={() => actions.setPanel("agreed")} />
+              <Suggestion tour="card-agreed" label="What's agreed so far?" onClick={() => actions.setPanel("agreed")} />
               <Suggestion
                 tour="review-in-sirion"
-                icon={ArrowUpRight}
                 label={submitted ? `Open ${ds.submit.requestId} in Sirion` : "Create the intake request in Sirion"}
-                sub={submitted ? "Created" : "Filled in from these emails"}
                 onClick={() => actions.setView("sirion")}
               />
             </ul>
@@ -95,17 +132,13 @@ export function Sidebar() {
   );
 }
 
-function Suggestion({ icon: Icon, label, sub, onClick, tour, done, disabled }: { icon: React.ElementType; label: string; sub: string; onClick: () => void; tour: string; done?: boolean; disabled?: boolean }) {
+function Suggestion({ label, meta, onClick, tour, done, disabled }: { label: string; meta?: string; onClick: () => void; tour: string; done?: boolean; disabled?: boolean }) {
   return (
     <li>
-      <button onClick={onClick} disabled={done || disabled} data-tour={tour} className="group flex min-h-[52px] w-full items-center gap-3 py-2 text-left disabled:cursor-default">
-        <span className={cx("inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full", done ? "bg-teal text-white" : "bg-surface-alt text-teal group-hover:bg-teal group-hover:text-white")}>
-          <Icon size={16} strokeWidth={1.75} aria-hidden />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-small text-ink">{label}</span>
-          <span className="block truncate text-xs text-ink-muted">{sub}</span>
-        </span>
+      <button onClick={onClick} disabled={done || disabled} data-tour={tour} className="flex min-h-11 w-full items-center gap-2.5 px-3 text-left text-small text-ink hover:bg-surface-alt disabled:cursor-default disabled:hover:bg-transparent">
+        {done ? <Check size={14} strokeWidth={2} className="shrink-0 text-teal" aria-hidden /> : <CornerDownRight size={14} strokeWidth={1.5} className="shrink-0 text-ink-muted" aria-hidden />}
+        <span className={cx("flex-1", done && "text-ink-muted")}>{label}</span>
+        {meta && <span className="text-xs text-ink-muted">{meta}</span>}
       </button>
     </li>
   );
@@ -119,43 +152,49 @@ function Answer() {
   const conflicts = view.terms.filter((t) => t.needsDecision);
   const nothing = !view.terms.some((t) => t.steps.length);
   return (
-    <section aria-label="What's agreed so far" className="fade-in">
-      <button onClick={() => actions.setPanel("home")} className="-ml-1 mb-3 inline-flex min-h-9 items-center gap-1 rounded-button px-1 text-small text-teal hover:bg-surface-alt" data-tour="panel-back">
-        <ArrowLeft size={15} strokeWidth={1.5} aria-hidden /> Back
-      </button>
-      <p className="ml-auto w-fit rounded-[12px] rounded-br-[4px] bg-teal px-3 py-2 text-small text-white">What's agreed so far?</p>
-      <div className="mt-4">
+    <section aria-label="Assistant" className="fade-in">
+      <div className="-mx-3 mb-3 flex h-10 items-center gap-2 border-b border-line px-3">
+        <button onClick={() => actions.setPanel("home")} className="inline-flex h-8 w-8 items-center justify-center rounded-[4px] text-ink hover:bg-surface-alt" aria-label="Back to suggestions" data-tour="panel-back">
+          <ArrowLeft size={16} strokeWidth={1.5} />
+        </button>
+        <span className="text-small font-medium text-ink">Assistant</span>
+      </div>
+      <p className="rounded-[10px] bg-surface-alt px-3 py-2.5 text-small text-ink">What's agreed so far on this deal?</p>
+      <div className="mt-1 flex justify-end text-ink-muted" aria-hidden>
+        <Copy size={13} strokeWidth={1.5} />
+      </div>
+      <div className="mt-2">
         {nothing ? (
           <p className="text-small text-ink">Nothing yet. I only read emails you add to the deal. Add this thread first.</p>
         ) : (
           <>
-            <p className="text-small text-ink">
-              {agreed.length} terms are agreed by both sides in writing{conflicts.length ? `, and ${conflicts[0].label.toLowerCase()} still differ between the email and the quote` : ""}.
+            <p className="text-small leading-6 text-ink">
+              {agreed.length} terms are agreed by both sides in writing{conflicts.length ? `. ${conflicts[0].label} still differ between Tom's email and the quote` : ""}.
             </p>
-            <ul className="mt-3 divide-y divide-line border-y border-line" data-tour="agreed-list">
+            <ul className="mt-2" data-tour="agreed-list">
               {agreed.map((t) => {
                 const s = settling(t);
                 return (
-                  <li key={t.key} className="flex items-center gap-2 py-2" data-tour={`agreed-${t.key}`}>
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-xs text-ink-muted">{t.label}</span>
-                      <span className="block text-small text-ink">{t.value}</span>
+                  <li key={t.key} className="flex items-start gap-2 py-1 text-small leading-6 text-ink" data-tour={`agreed-${t.key}`}>
+                    <span aria-hidden>•</span>
+                    <span className="flex-1">
+                      {t.label}: <strong className="font-medium">{t.value}</strong>
                     </span>
                     <button
                       onClick={() => citeInMail(s.messageId, s.quote)}
-                      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-muted hover:bg-surface-alt hover:text-teal"
+                      className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-ink-muted hover:bg-surface-alt hover:text-teal"
                       aria-label={`Show where ${t.label.toLowerCase()} was agreed: ${s.author}, ${fmtDate(s.date)}`}
                       title={`${s.author}, ${fmtDate(s.date)}`}
                       data-tour={`cite-${t.key}`}
                     >
-                      <Quote size={14} strokeWidth={1.75} aria-hidden />
+                      <Quote size={13} strokeWidth={1.75} aria-hidden />
                     </button>
                   </li>
                 );
               })}
             </ul>
             <p className="mt-2 text-xs text-ink-muted">Example AI output, checked against the emails in your browser.</p>
-            <Button size="sm" variant="primary" className="mt-4 w-full" onClick={() => actions.setView("sirion")} icon={<ArrowUpRight size={15} strokeWidth={1.5} aria-hidden />}>
+            <Button size="sm" variant="primary" className="mt-3 w-full" onClick={() => actions.setView("sirion")} icon={<ArrowRight size={15} strokeWidth={1.5} aria-hidden />}>
               Create the intake request in Sirion
             </Button>
           </>
@@ -216,7 +255,7 @@ function MismatchWarning() {
   );
 }
 
-/** The prompt box: @ adds a thread; a question is answered by the matching suggestion. */
+/** The prompt card: a files chip, a text box ("Type @ to add sources"), and a tool row. */
 function Composer() {
   const dealId = useApp((s) => s.dealId);
   const ds = useApp((s) => s.deals[s.dealId]);
@@ -237,15 +276,15 @@ function Composer() {
     const text = q.trim().toLowerCase();
     if (!text || text.startsWith("@")) return;
     setQ("");
-    if (/open|missing|left|conflict|legal/.test(text)) actions.setPanel("open");
-    else if (/agree|term|price|uplift|so far/.test(text)) actions.setPanel("agreed");
-    else setNote("In this prototype I answer two questions: what's agreed, and what's still open.");
+    if (/agree|term|price|uplift|so far/.test(text)) actions.setPanel("agreed");
+    else if (/sirion|request|intake|create/.test(text)) actions.setView("sirion");
+    else setNote("In this prototype, try a suggestion above.");
   };
 
   return (
-    <div className="shrink-0 border-t border-line p-3">
+    <div className="shrink-0 px-3 pb-3">
       {atOpen && (
-        <ul id="at-list" role="listbox" className="mb-2 rounded-[10px] border border-line bg-white p-1 shadow-pop fade-in" data-tour="at-list">
+        <ul id="at-list" role="listbox" className="mb-2 rounded-[8px] border border-line bg-white p-1 shadow-pop fade-in" data-tour="at-list">
           <li className="px-2 py-1 text-xs text-ink-muted">Add a thread to {dealId}</li>
           {options.length === 0 && <li className="px-2 py-2 text-xs text-ink-muted">All threads are added.</li>}
           {options.map(({ t, emails }) => {
@@ -270,32 +309,41 @@ function Composer() {
           })}
         </ul>
       )}
-      {showSources && (
-        <ul className="thin-scroll mb-2 max-h-[200px] overflow-y-auto rounded-[10px] border border-line p-1" aria-label={`Added to ${dealId}`} data-tour="added-list">
-          {live.map((a) => {
-            const m = deal.messages.find((x) => x.id === a.messageId)!;
-            return (
-              <li key={a.messageId} className="flex min-h-11 items-center gap-2 px-1">
-                {m.kind === "pdf" ? <FileText size={14} strokeWidth={1.5} className="shrink-0 text-ink-muted" aria-hidden /> : <Mail size={14} strokeWidth={1.5} className="shrink-0 text-ink-muted" aria-hidden />}
-                <span className="min-w-0 flex-1 truncate text-xs text-ink">{m.kind === "pdf" ? m.filename : `${m.from.name}, ${fmtDate(m.date)}`}</span>
-                {!submitted && (
-                  <button onClick={() => actions.removeItem(a.messageId)} className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-button text-ink-muted hover:bg-surface-alt" aria-label={`Remove ${m.kind === "pdf" ? m.filename : m.subject} from deal`} data-tour={`remove-${a.messageId}`}>
-                    <X size={14} strokeWidth={1.5} />
-                  </button>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      )}
       {note && (
         <p className="mb-2 rounded-chip bg-surface-alt px-2 py-1.5 text-xs text-ink" role="status">
           {note}
         </p>
       )}
-      <div className="rounded-[12px] border border-line-strong bg-white px-3 pb-2 pt-2 focus-within:border-teal">
-        <input
+      <div className="rounded-[10px] bg-surface-alt p-2 focus-within:ring-1 focus-within:ring-teal">
+        <button
+          onClick={() => setShowSources((v) => !v)}
+          className="flex min-h-9 w-full items-center gap-2 rounded-[6px] bg-white px-2.5 text-left text-xs text-ink-muted"
+          aria-expanded={showSources}
+          data-tour="added-items"
+        >
+          <Paperclip size={13} strokeWidth={1.5} aria-hidden /> {live.length} file{live.length === 1 ? "" : "s"} in {dealId}
+        </button>
+        {showSources && (
+          <ul className="thin-scroll mt-1 max-h-[180px] overflow-y-auto rounded-[6px] bg-white p-1" aria-label={`Added to ${dealId}`} data-tour="added-list">
+            {live.map((a) => {
+              const m = deal.messages.find((x) => x.id === a.messageId)!;
+              return (
+                <li key={a.messageId} className="flex min-h-10 items-center gap-2 px-1">
+                  {m.kind === "pdf" ? <FileText size={13} strokeWidth={1.5} className="shrink-0 text-ink-muted" aria-hidden /> : <Mail size={13} strokeWidth={1.5} className="shrink-0 text-ink-muted" aria-hidden />}
+                  <span className="min-w-0 flex-1 truncate text-xs text-ink">{m.kind === "pdf" ? m.filename : `${m.from.name}, ${fmtDate(m.date)}`}</span>
+                  {!submitted && (
+                    <button onClick={() => actions.removeItem(a.messageId)} className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[4px] text-ink-muted hover:bg-surface-alt" aria-label={`Remove ${m.kind === "pdf" ? m.filename : m.subject} from deal`} data-tour={`remove-${a.messageId}`}>
+                      <X size={13} strokeWidth={1.5} />
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        <textarea
           data-tour="at-input"
+          rows={2}
           value={q}
           onChange={(e) => {
             const v = e.target.value;
@@ -305,34 +353,31 @@ function Composer() {
           }}
           onKeyDown={(e) => {
             if (e.key === "Escape") actions.setAtOpen(false);
-            if (e.key === "Enter") ask();
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              ask();
+            }
           }}
-          placeholder="Ask about this deal, or type @ to add sources"
-          className="w-full bg-transparent text-small text-ink outline-none placeholder:text-ink-muted"
-          aria-label="Ask about this deal. Type @ to add sources."
+          placeholder="Ask Sirion about this deal. Type @ to add sources."
+          className="mt-1.5 w-full resize-none bg-transparent px-1 text-small leading-5 text-ink outline-none placeholder:text-ink-muted"
+          aria-label="Ask Sirion about this deal. Type @ to add sources."
           aria-expanded={atOpen}
           aria-controls="at-list"
         />
-        <div className="mt-1.5 flex items-center gap-1">
-          <button
-            onClick={() => actions.setAtOpen(!atOpen)}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-ink-muted hover:bg-surface-alt"
-            aria-label="Add a thread"
-            data-tour="at-button"
-          >
-            <AtSign size={15} strokeWidth={1.5} />
+        <div className="flex items-center gap-0.5 text-ink-muted">
+          <button onClick={() => actions.setAtOpen(!atOpen)} className="inline-flex h-8 w-8 items-center justify-center rounded-[4px] hover:bg-white" aria-label="Add sources" data-tour="at-button">
+            <Plus size={15} strokeWidth={1.5} />
           </button>
-          <button
-            onClick={() => setShowSources((v) => !v)}
-            className="inline-flex h-8 items-center gap-1 rounded-pill border border-line px-2.5 text-xs text-ink hover:bg-surface-alt"
-            aria-expanded={showSources}
-            data-tour="added-items"
-          >
-            {live.length} source{live.length === 1 ? "" : "s"} added
-            <ChevronDown size={13} strokeWidth={1.5} aria-hidden className={cx("transition-transform", showSources && "rotate-180")} />
-          </button>
-          <button onClick={ask} className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-full bg-teal text-white hover:opacity-90 disabled:opacity-40" disabled={!q.trim() || q.trim().startsWith("@")} aria-label="Ask">
-            <ArrowUp size={15} strokeWidth={2} />
+          {[ListFilter, PenLine, SlidersHorizontal].map((I, i) => (
+            <span key={i} className="inline-flex h-8 w-8 items-center justify-center" aria-hidden>
+              <I size={14} strokeWidth={1.5} />
+            </span>
+          ))}
+          <span className="ml-auto inline-flex h-8 w-8 items-center justify-center" aria-hidden>
+            <Mic size={14} strokeWidth={1.5} />
+          </span>
+          <button onClick={ask} className="inline-flex h-8 w-8 items-center justify-center rounded-[6px] bg-ink text-white disabled:opacity-40" disabled={!q.trim() || q.trim().startsWith("@")} aria-label="Ask">
+            <ArrowRight size={15} strokeWidth={2} />
           </button>
         </div>
       </div>
