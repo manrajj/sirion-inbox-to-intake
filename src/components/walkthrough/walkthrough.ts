@@ -90,10 +90,15 @@ export const CHAPTERS: Chapter[] = [
     ],
   },
   {
-    id: "conflict",
-    title: "One check",
-    caption: "The email says Net 45, the quote says Net 30. Sirion preselects the later email; Manraj can switch.",
-    steps: [{ target: "options-payment", ms: 3600 }],
+    id: "quoted",
+    title: "Quoted from the emails",
+    caption: "Every value shows where it came from. Click a source to read the exact sentence.",
+    steps: [
+      { target: "source-payment", ms: 1400 },
+      { target: "source-payment", click: true, visual: true, ms: 700 },
+      { target: "source-popover", visual: true, ms: 3600 },
+      { target: "source-payment", click: true, visual: true, ms: 700 },
+    ],
   },
   {
     id: "submit",

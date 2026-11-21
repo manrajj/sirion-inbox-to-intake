@@ -20,6 +20,25 @@ function allAdded(dealId: string, exclude: string[] = []): AddedItem[] {
     .map((m) => ({ messageId: m.id, addedBy: "test", addedAt: "", via: "thread" as const }));
 }
 
+/**
+ * The main deal with one planted contradiction: the quote PDF says Net 30 while the
+ * emails agree Net 45. The demo data agrees on Net 45; this variant keeps the
+ * conflict check tested.
+ */
+export function conflictVariant() {
+  const base = getDeal("DL-1042");
+  const deal = { ...base, messages: base.messages.map((m) => (m.id === "pdf-q2291" ? { ...m, body: m.body.replace("Net 45 from invoice date", "Net 30 from invoice date") } : m)) };
+  const ex = EXAMPLES["DL-1042"];
+  const example = {
+    ...ex,
+    terms: ex.terms.map((t) =>
+      t.key !== "payment" ? t : { ...t, steps: t.steps.map((s) => (s.messageId === "pdf-q2291" ? { ...s, value: "Net 30", quote: "Payment terms: Net 30 from invoice date." } : s)) },
+    ),
+  };
+  const added = deal.messages.map((m) => ({ messageId: m.id, addedBy: "test", addedAt: "", via: "thread" as const }));
+  return { deal, example, added };
+}
+
 function view(dealId: string, exclude: string[] = []) {
   return deriveDeal(getDeal(dealId), EXAMPLES[dealId], allAdded(dealId, exclude), emptyDecisions());
 }
@@ -57,7 +76,8 @@ export const GUARDRAIL_CASES: GuardrailCase[] = [
     name: "Model claims accepted, but a quote contradicts it: conflict",
     wrongOutput: true,
     run: () => {
-      const t = view("DL-1042").terms.find((x) => x.key === "payment")!;
+      const c = conflictVariant();
+      const t = deriveDeal(c.deal, c.example, c.added, emptyDecisions()).terms.find((x) => x.key === "payment")!;
       return { pass: t.claimedStatus === "accepted" && t.status === "conflict" && t.value === null, detail: `${t.status}: ${t.conflict?.options.map((o) => o.value).join(" vs ")}` };
     },
   },

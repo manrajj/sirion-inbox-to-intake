@@ -23,7 +23,6 @@ test("keyboard-only main flow", async ({ page }) => {
   await expect(page.locator(t("reading"))).toHaveCount(0, { timeout: 10_000 });
   await key(page, t("review-in-sirion"));
   await expect(page.locator(t("sirion-app"))).toBeVisible();
-  await key(page, t("pick-payment-1"));
   await key(page, t("submit"));
   await expect(page.locator(t("receipt"))).toBeVisible({ timeout: 10_000 });
 

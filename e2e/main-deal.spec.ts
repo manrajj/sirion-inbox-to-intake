@@ -24,11 +24,12 @@ test("main deal by hand: create the deal, ask what's agreed, open the request in
   await page.click(t("review-in-sirion"));
   await expect(page.locator(t("sirion-app"))).toBeVisible();
   await expect(page.locator(t("core-costCentre"))).toContainText("MKT-4410");
-  // The payment conflict opens preselected to the later email, and can be switched
-  await expect(page.locator(t("pick-payment-0"))).toHaveAttribute("aria-checked", "true");
+  // Every value is quoted: the source opens the exact sentence
+  await expect(page.locator(t("core-payment")).or(page.locator(t("term-payment")))).toContainText("Net 45");
+  await page.click(t("source-payment"));
+  await expect(page.locator(t("source-popover"))).toContainText("Net 45");
+  await page.keyboard.press("Escape");
   await expect(page.locator(t("submit"))).toBeEnabled();
-  await page.click(t("pick-payment-1"));
-  await expect(page.locator(t("pick-payment-1"))).toHaveAttribute("aria-checked", "true");
   await page.click(t("submit"));
   await expect(page.locator(t("receipt"))).toContainText("Intake request created", { timeout: 10_000 });
 

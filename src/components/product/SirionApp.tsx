@@ -52,18 +52,25 @@ export function SirionChrome({ crumb, children }: { crumb: string; children: Rea
 }
 
 /** One quiet source button per value: click to read the sentence it came from. */
-export function Source({ messageId, quote }: { messageId: string; quote?: string }) {
+export function Source({ messageId, quote, tour }: { messageId: string; quote?: string; tour?: string }) {
   const m = getDeal("DL-1042").messages.find((x) => x.id === messageId)!;
   const who = m.kind === "pdf" ? "the quote PDF" : `${m.from.name}'s email`;
+  const short = m.kind === "pdf" ? "Quote PDF" : `${m.from.name.split(" ")[0]}'s email`;
   return (
     <Popover.Root>
       <Popover.Trigger asChild>
-        <button className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-muted hover:bg-surface-alt hover:text-teal" aria-label={`Source: ${who}, ${fmtDate(m.date)}`} title={`From ${who}`}>
-          <Quote size={14} strokeWidth={1.75} aria-hidden />
+        <button
+          className="inline-flex min-h-8 shrink-0 items-center gap-1 whitespace-nowrap rounded-pill bg-tone-success-bg px-2.5 text-xs text-teal hover:bg-teal hover:text-white"
+          aria-label={`Source: ${who}, ${fmtDate(m.date)}. Show the sentence.`}
+          title={`Show the sentence from ${who}`}
+          data-tour={tour}
+        >
+          <Quote size={12} strokeWidth={2} aria-hidden />
+          {short}
         </button>
       </Popover.Trigger>
       <Popover.Portal>
-        <Popover.Content align="end" sideOffset={6} className="thin-scroll z-50 max-h-[380px] w-[440px] max-w-[calc(100vw-16px)] overflow-y-auto rounded-card border border-line bg-white p-4 shadow-pop fade-in">
+        <Popover.Content align="end" sideOffset={6} data-tour="source-popover" className="thin-scroll z-50 max-h-[380px] w-[440px] max-w-[calc(100vw-16px)] overflow-y-auto rounded-card border border-line bg-white p-4 shadow-pop fade-in">
           <SourceMessage message={m} quote={quote} />
         </Popover.Content>
       </Popover.Portal>
@@ -87,7 +94,7 @@ function Section({ title, children, tour }: { title: string; children: React.Rea
 
 function Row({ label, children, source, tour }: { label: string; children: React.ReactNode; source?: React.ReactNode; tour?: string }) {
   return (
-    <div className="grid min-h-11 grid-cols-[1fr_32px] items-center gap-x-3 border-t border-line py-1.5 sm:grid-cols-[170px_1fr_32px]" data-tour={tour}>
+    <div className="grid min-h-11 grid-cols-[1fr_auto] items-center gap-x-3 border-t border-line py-1.5 sm:grid-cols-[170px_1fr_auto]" data-tour={tour}>
       <span className="col-span-2 text-xs text-ink-muted sm:col-span-1 sm:text-small">{label}</span>
       <span className="min-w-0 text-small text-ink">{children}</span>
       <span>{source}</span>
@@ -140,7 +147,7 @@ export function SirionRequest() {
   const field = (key: string, label?: string) => {
     const c = core(key);
     return (
-      <Row key={key} label={label ?? c.label} tour={`core-${key}`} source={c.source === "ai" && c.evidence[0] ? <Source messageId={c.evidence[0].messageId} quote={c.evidence[0].quote} /> : undefined}>
+      <Row key={key} label={label ?? c.label} tour={`core-${key}`} source={c.source === "ai" && c.evidence[0] ? <Source messageId={c.evidence[0].messageId} quote={c.evidence[0].quote} tour={`source-${key}`} /> : undefined}>
         {c.value ?? (
           <input className="min-h-10 w-full rounded-chip border border-line-strong px-2 text-small" placeholder="Not in the emails. Type it here." aria-label={c.label} onChange={(e) => actions.typeCore(key, e.target.value)} data-tour={`type-${key}`} />
         )}
@@ -154,7 +161,7 @@ export function SirionRequest() {
     const agreed = t.status === "accepted" || t.status === "offEmail";
     const s = agreed ? settling(t) : undefined;
     return (
-      <Row key={k} label={t.label} tour={`term-${k}`} source={s ? <Source messageId={s.messageId} quote={s.quote} /> : undefined}>
+      <Row key={k} label={t.label} tour={`term-${k}`} source={s ? <Source messageId={s.messageId} quote={s.quote} tour={`source-${k}`} /> : undefined}>
         {agreed ? t.value : <span className="text-ink-muted">Flagged for Legal</span>}
       </Row>
     );
@@ -170,7 +177,7 @@ export function SirionRequest() {
         <div className="mb-3 flex items-center gap-3 px-1 py-2">
           <div className="min-w-0 flex-1">
             <h1 className="text-h1 text-ink">New intake request</h1>
-            <p className="text-small text-ink-muted">Filled in from Outlook. Check it, then submit.</p>
+            <p className="text-small text-ink-muted">Filled in from your emails. Every value is quoted: click its source to read the sentence.</p>
           </div>
           <Button variant="secondary" onClick={() => actions.setView("inbox")}>
             Cancel

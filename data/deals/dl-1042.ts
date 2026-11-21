@@ -159,7 +159,7 @@ Subscription term: 12 months from the start date.
 2. Fees
 Setup fee: waived.
 Annual uplift: 4% on each anniversary.
-Payment terms: Net 30 from invoice date.
+Payment terms: Net 45 from invoice date.
 
 3. Service levels
 Uptime commitment: 99.9% monthly.

@@ -98,7 +98,7 @@
       "steps": [
         { "role": "counter", "party": "buyer", "value": "Net 45", "messageId": "bl-02", "quote": "We also need Net 45 payment terms" },
         { "role": "acceptance", "party": "supplier", "value": "Net 45", "messageId": "bl-06", "quote": "Invoices will be payable Net 45, as you asked." },
-        { "role": "statement", "party": "supplier", "value": "Net 30", "messageId": "pdf-q2291", "quote": "Payment terms: Net 30 from invoice date." }
+        { "role": "statement", "party": "supplier", "value": "Net 45", "messageId": "pdf-q2291", "quote": "Payment terms: Net 45 from invoice date." }
       ]
     },
     {

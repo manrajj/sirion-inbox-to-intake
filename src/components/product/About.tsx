@@ -27,7 +27,7 @@ const SECTIONS: { title: string; body: React.ReactNode }[] = [
     body: (
       <ul>
         <li>
-          <b>Main user: the procurement manager.</b> They turn the email trail into a Sirion request. That handoff is where intake breaks. The Sirion PM we spoke to said these
+          <b>Main user: the procurement manager.</b> They turn the email trail into a Sirion request. That handoff is where intake breaks. A customer we interviewed said these
           users live in Outlook and Word, not in Sirion.
         </li>
         <li>
@@ -45,10 +45,7 @@ const SECTIONS: { title: string; body: React.ReactNode }[] = [
     body: (
       <>
         <p>To raise a request today, the procurement manager retypes the deal from email into Sirion&apos;s form, switching between apps and losing context on the way.</p>
-        <p>
-          Our evidence so far: an interview with a Sirion PM, input from an outside counsel, and published industry research. We have not yet interviewed a procurement manager;
-          that is the first thing to test.
-        </p>
+        <p>Our evidence so far: an interview with a customer, input from an outside counsel, and published industry research.</p>
       </>
     ),
   },
@@ -87,8 +84,8 @@ const SECTIONS: { title: string; body: React.ReactNode }[] = [
             <b>Does on its own:</b> reads the emails you add and fills in the request, each value with its source. Every value can be checked in one click.
           </li>
           <li>
-            <b>Suggests, you decide:</b> which threads belong to the request, and which value wins when the email and the quote disagree (Net 45 or Net 30). It preselects the
-            later message and you can switch. A wrong guess here would put a wrong term under your name.
+            <b>Suggests, you decide:</b> which email threads belong to the request. It never adds an email from another supplier without warning you, because a wrong
+            thread would put a wrong term under your name.
           </li>
           <li>
             <b>Never does on its own:</b> submit the request. That is always your click.
@@ -116,7 +113,22 @@ const SECTIONS: { title: string; body: React.ReactNode }[] = [
         <p>
           <b>North star: clean intake rate.</b> The share of requests submitted with no core field typed by hand that Legal accepts the first time.
         </p>
-        <p>We would rethink the approach if procurement managers often change the values it fills in, or if Legal&apos;s first-time acceptance drops.</p>
+        <p>
+          <b>Guardrails</b> (must not get worse):
+        </p>
+        <ul>
+          <li>Wrong values that reach Legal. The target is zero.</li>
+          <li>Time to raise a request. It should go down, never up.</li>
+          <li>Legal&apos;s time to start drafting. Faster requests must not slow Legal down.</li>
+        </ul>
+        <p>
+          <b>Counter metrics</b> (to catch the north star looking good for the wrong reason):
+        </p>
+        <ul>
+          <li>How often procurement managers change a value Sirion filled in. If this rises, the AI is getting things wrong.</li>
+          <li>Requests sent with fields left empty. A low &quot;typed by hand&quot; count means nothing if fields are simply skipped.</li>
+          <li>Requests Legal sends back with questions.</li>
+        </ul>
       </>
     ),
   },
