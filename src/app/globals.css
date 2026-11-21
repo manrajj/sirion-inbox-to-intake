@@ -137,3 +137,23 @@ textarea {
     animation: none;
   }
 }
+
+/* Outlook to Sirion: the request slides in, already filled. */
+.sirion-enter {
+  animation: sirion-enter 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes sirion-enter {
+  from {
+    opacity: 0;
+    translate: 24px 0;
+  }
+  to {
+    opacity: 1;
+    translate: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sirion-enter {
+    animation: none;
+  }
+}

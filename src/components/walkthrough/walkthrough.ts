@@ -75,15 +75,14 @@ export const CHAPTERS: Chapter[] = [
     title: "What's agreed",
     caption: "Every term comes with the sentence it came from.",
     steps: [
-      { target: "agreed-list", do: () => actions.setPanel("agreed"), ms: 2400 },
-      { target: "agreed-uplift", ms: 2600 },
-      { target: "cite-mark", do: () => actions.cite("bl-06", UPLIFT_CONFIRM), ms: 3600 },
+      { target: "agreed-list", do: () => actions.setPanel("agreed"), ms: 2600 },
+      { target: "cite-mark", do: () => actions.cite("bl-06", UPLIFT_CONFIRM), ms: 3400 },
     ],
   },
   {
     id: "request",
-    title: "Open in Sirion",
-    caption: "The request is already filled in Sirion. Nothing typed by hand.",
+    title: "Into Sirion",
+    caption: "One click, and the intake request is already filled in Sirion.",
     steps: [
       {
         target: "review-in-sirion",
@@ -94,47 +93,26 @@ export const CHAPTERS: Chapter[] = [
         ms: 2000,
       },
       { target: "basic-info", do: () => actions.setView("sirion"), ms: 3200 },
-      { target: "documents", ms: 2600 },
+      { target: "documents", ms: 2400 },
     ],
   },
   {
     id: "conflict",
-    title: "Settle the conflict",
-    caption: "The email says Net 45. The quote says Net 30. Manraj decides, or Legal does.",
+    title: "One decision",
+    caption: "The email says Net 45, the quote says Net 30. Manraj picks the later email.",
     steps: [
-      { target: "conflict-payment", ms: 3400 },
-      {
-        target: "mark-open-payment",
-        do: () =>
-          actions.resolveTerm("payment", {
-            type: "open",
-            reason: "Net 45 (Tom's email, 13 Nov) vs Net 30 (the quote PDF, 13 Nov). Confirm which applies.",
-            owner: "Legal",
-          }),
-        ms: 2400,
-      },
-      { target: "legal-open-list", ms: 3000 },
+      { target: "options-payment", ms: 2600 },
+      { target: "options-payment", do: () => actions.resolveTerm("payment", { type: "picked", value: "Net 45", messageId: "bl-06" }), ms: 2200 },
     ],
   },
   {
     id: "submit",
-    title: "Submit",
-    caption: "One check, one click. The request goes to Legal.",
+    title: "Request created",
+    caption: "Nothing typed by hand. The intake request is in Sirion.",
     steps: [
-      { target: "submit", do: () => actions.openSubmit(), ms: 2200 },
-      { target: "confirm-check", click: true, visual: true, ms: 1800 },
-      { target: "confirm-submit", do: () => actions.confirmAndSubmit(), ms: 2000 },
-      { target: "receipt", ms: 3000 },
-    ],
-  },
-  {
-    id: "legal",
-    title: "Legal's view",
-    caption: "Legal gets what was agreed, with sources, and what is still open.",
-    steps: [
-      { target: "legal-evidenced", do: () => actions.setView("legal"), ms: 3000 },
-      { target: "legal-open", ms: 2600 },
-      { target: "start-drafting", do: () => actions.legalDecide("start"), ms: 2600 },
+      { target: "confirm-check", click: true, visual: true, ms: 1600 },
+      { target: "submit", do: () => actions.confirmAndSubmit(), ms: 1800 },
+      { target: "receipt", ms: 3600 },
     ],
   },
 ];

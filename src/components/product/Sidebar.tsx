@@ -1,32 +1,17 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  X,
-  Plus,
-  Check,
-  Loader2,
-  ShieldAlert,
-  ListChecks,
-  CircleHelp,
-  ArrowUpRight,
-  ArrowLeft,
-  AtSign,
-  Mail,
-  FileText,
-  ChevronDown,
-  ArrowUp,
-  Pin,
-} from "lucide-react";
+import { X, Plus, Check, Loader2, ShieldAlert, ListChecks, ArrowUpRight, ArrowLeft, AtSign, Mail, FileText, ChevronDown, ArrowUp, Pin, Quote } from "lucide-react";
 import { actions, useApp, useDealView, threadOf, threadAttachments } from "@/lib/store";
 import { getDeal } from "@data/index";
 import { domainOf } from "@/lib/checks";
-import { reasonFor, type TermView } from "@/lib/derive";
-import { Button, HonestyChip, StatusBadge, cx, fmtDate } from "@/components/ui";
+import type { TermView } from "@/lib/derive";
+import { Button, cx, fmtDate } from "@/components/ui";
 import { SirionMark } from "./SirionMark";
 
-// The Sirion add-in, kept as plain as an assistant pane: a deal chip, a short
-// list of suggestions, an answer view, and a prompt box at the bottom.
+// The Sirion add-in, docked in Outlook's add-in pane and laid out like Harvey for
+// Outlook: a title bar, the deal it is working on, three suggestions, an answer
+// view, and a prompt box at the bottom.
 
 const READ_STEPS = ["Reading the emails", "Reading the quote PDF", "Checking each term against its source"];
 
@@ -49,79 +34,59 @@ export function Sidebar() {
   const submitted = !!ds.submit.requestId;
   const reading = ds.reading > 0;
 
-  const addLabel = notAdded.length === 0 ? `This thread is in ${dealId}` : `Add this thread to ${dealId}`;
   const addSub =
     notAdded.length === 0
-      ? `${threadIds.length} item${threadIds.length === 1 ? "" : "s"} added`
-      : [emailsLeft ? `${emailsLeft} email${emailsLeft === 1 ? "" : "s"}` : "", pdfsLeft ? `${pdfsLeft} PDF${pdfsLeft === 1 ? "" : "s"}` : ""].filter(Boolean).join(" and ") + ` · ${thread.subject}`;
+      ? "Added"
+      : [emailsLeft ? `${emailsLeft} email${emailsLeft === 1 ? "" : "s"}` : "", pdfsLeft ? `${pdfsLeft} PDF${pdfsLeft === 1 ? "" : "s"}` : ""].filter(Boolean).join(" and ");
 
   return (
-    <aside
-      className="flex w-full shrink-0 flex-col overflow-hidden rounded-[8px] bg-white shadow-card md:w-[360px]"
-      aria-label="Sirion add-in"
-      data-tour="sidebar"
-    >
-      <header className="flex h-11 shrink-0 items-center justify-between border-b border-line px-3">
-        <span className="flex items-center gap-2 text-small font-medium text-ink">
-          <SirionMark size={18} /> Sirion for Outlook
+    <aside className="flex w-full shrink-0 flex-col overflow-hidden rounded-[8px] border border-mail-line bg-white shadow-card md:w-[340px]" aria-label="Sirion add-in" data-tour="sidebar">
+      {/* Outlook add-in title bar */}
+      <header className="flex h-10 shrink-0 items-center gap-2 border-b border-mail-line bg-mail-pane pl-3 pr-1 text-mail-text">
+        <SirionMark size={16} />
+        <span className="text-small font-semibold">Sirion</span>
+        <span className="ml-auto inline-flex h-10 w-9 items-center justify-center text-mail-muted" aria-hidden>
+          <Pin size={14} strokeWidth={1.5} />
         </span>
-        <span className="flex items-center">
-          <HonestyChip kind="mocked" title="Mock of the Outlook add-in" />
-          <span className="inline-flex h-11 w-9 items-center justify-center text-ink-muted" aria-hidden>
-            <Pin size={15} strokeWidth={1.5} />
-          </span>
-          <button onClick={() => actions.toggleSidebar(false)} className="inline-flex h-11 w-9 items-center justify-center rounded-button text-ink-muted hover:bg-surface-alt" aria-label="Close Sirion">
-            <X size={16} strokeWidth={1.5} />
-          </button>
-        </span>
+        <button onClick={() => actions.toggleSidebar(false)} className="inline-flex h-10 w-9 items-center justify-center rounded-[4px] text-mail-muted hover:bg-mail-blue-soft" aria-label="Close Sirion">
+          <X size={16} strokeWidth={1.5} />
+        </button>
       </header>
 
-      <div className="flex shrink-0 items-center gap-2 border-b border-line px-3 py-2">
-        <span className="inline-flex min-w-0 items-center gap-1.5 rounded-pill bg-tone-success-bg px-2.5 py-1 text-xs text-tone-success-fg" data-tour="deal-chip">
-          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-teal" aria-hidden />
-          <span className="truncate">
-            {dealId} · {deal.supplier.name}
-          </span>
-        </span>
-        <span className="ml-auto shrink-0 text-xs text-ink-muted">{submitted ? `Submitted as ${ds.submit.requestId}` : "Draft request"}</span>
-      </div>
-
-      <div className="thin-scroll min-h-0 flex-1 overflow-y-auto px-3 py-2.5">
+      <div className="thin-scroll min-h-0 flex-1 overflow-y-auto px-4 py-4">
         {ds.pendingWarning && <MismatchWarning />}
         {reading ? (
           <Reading step={ds.reading} />
         ) : panel === "home" ? (
           <section aria-label="Suggestions">
-            <div className="flex items-center gap-2.5 px-1 pb-3">
-              <SirionMark size={28} />
-              <p className="text-small text-ink">
-                Hi Manraj. This email is part of your Brightline deal.
-              </p>
-            </div>
-            <h2 className="px-1 pb-1 text-xs text-ink-muted">Suggestions for this email</h2>
-            <ul className="space-y-1.5">
+            <p className="text-h3 font-medium text-ink">Hi Manraj</p>
+            <p className="mt-0.5 text-small text-ink-muted">This email is part of a deal you're on.</p>
+            <span className="mt-3 inline-flex items-center gap-2 rounded-chip bg-teal px-3 py-1.5 text-small text-white" data-tour="deal-chip">
+              {dealId} · {deal.supplier.name}
+            </span>
+            <h2 className="mt-5 pb-1.5 text-xs font-medium uppercase tracking-wide text-ink-muted">Suggested</h2>
+            <ul className="divide-y divide-line border-y border-line">
               <Suggestion
                 tour="add-to-sirion"
                 icon={notAdded.length ? Plus : Check}
-                label={addLabel}
+                label={notAdded.length ? "Add this thread to the deal" : "This thread is in the deal"}
                 sub={addSub}
                 done={notAdded.length === 0}
                 onClick={() => actions.addMessages(notAdded, "thread")}
                 disabled={submitted}
               />
-              <Suggestion tour="card-agreed" icon={ListChecks} label="What's agreed so far?" sub="Each term with the email it came from" onClick={() => actions.setPanel("agreed")} />
-              <Suggestion tour="card-missing" icon={CircleHelp} label="What's still open?" sub="Conflicts and items for Legal" onClick={() => actions.setPanel("open")} />
+              <Suggestion tour="card-agreed" icon={ListChecks} label="What's agreed so far?" sub="Each term, with its source" onClick={() => actions.setPanel("agreed")} />
               <Suggestion
                 tour="review-in-sirion"
                 icon={ArrowUpRight}
-                label={submitted ? `View request ${ds.submit.requestId} in Sirion` : "Open the request in Sirion"}
-                sub={submitted ? "Sent to Legal" : "Prefilled from the emails you added"}
+                label={submitted ? `Open ${ds.submit.requestId} in Sirion` : "Create the intake request in Sirion"}
+                sub={submitted ? "Created" : "Filled in from these emails"}
                 onClick={() => actions.setView("sirion")}
               />
             </ul>
           </section>
         ) : (
-          <Answer panel={panel} />
+          <Answer />
         )}
       </div>
 
@@ -130,36 +95,11 @@ export function Sidebar() {
   );
 }
 
-function Suggestion({
-  icon: Icon,
-  label,
-  sub,
-  onClick,
-  tour,
-  done,
-  disabled,
-}: {
-  icon: React.ElementType;
-  label: string;
-  sub: string;
-  onClick: () => void;
-  tour: string;
-  done?: boolean;
-  disabled?: boolean;
-}) {
+function Suggestion({ icon: Icon, label, sub, onClick, tour, done, disabled }: { icon: React.ElementType; label: string; sub: string; onClick: () => void; tour: string; done?: boolean; disabled?: boolean }) {
   return (
     <li>
-      <button
-        onClick={onClick}
-        disabled={done || disabled}
-        data-tour={tour}
-        className={cx(
-          "flex min-h-[48px] w-full items-center gap-3 rounded-[10px] border px-3 py-1.5 text-left transition-colors",
-          done ? "border-transparent bg-surface-alt" : "border-line bg-white hover:border-teal hover:bg-tone-success-bg",
-          "disabled:cursor-default",
-        )}
-      >
-        <span className={cx("inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full", done ? "bg-teal text-white" : "bg-surface-alt text-teal")}>
+      <button onClick={onClick} disabled={done || disabled} data-tour={tour} className="group flex min-h-[52px] w-full items-center gap-3 py-2 text-left disabled:cursor-default">
+        <span className={cx("inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full", done ? "bg-teal text-white" : "bg-surface-alt text-teal group-hover:bg-teal group-hover:text-white")}>
           <Icon size={16} strokeWidth={1.75} aria-hidden />
         </span>
         <span className="min-w-0 flex-1">
@@ -171,109 +111,55 @@ function Suggestion({
   );
 }
 
-function CiteChips({ t }: { t: TermView }) {
-  return (
-    <span className="flex flex-wrap gap-1">
-      {t.steps.map((s, i) => (
-        <button
-          key={i}
-          onClick={() => citeInMail(s.messageId, s.quote)}
-          title={`${s.author}, ${fmtDate(s.date)}: "${s.quote}"`}
-          className="inline-flex h-6 min-w-6 items-center justify-center rounded-pill border border-line px-1.5 text-xs text-ink-muted hover:border-teal hover:text-teal"
-          aria-label={`Show source ${i + 1} for ${t.label}: ${s.author}, ${fmtDate(s.date)}`}
-          data-tour={`cite-${t.key}-${i}`}
-        >
-          {i + 1}
-        </button>
-      ))}
-    </span>
-  );
-}
+const settling = (t: TermView) => [...t.steps].reverse().find((s) => s.role !== "statement") ?? t.steps[0];
 
-function Answer({ panel }: { panel: "agreed" | "open" }) {
+function Answer() {
   const view = useDealView();
   const agreed = view.terms.filter((t) => t.status === "accepted" || t.status === "offEmail");
   const conflicts = view.terms.filter((t) => t.needsDecision);
-  const open = view.terms.filter((t) => t.goesToLegalOpen);
-  const nothing = view.coverage.messagesRead === 0 || !view.terms.some((t) => t.steps.length);
+  const nothing = !view.terms.some((t) => t.steps.length);
   return (
-    <section aria-label={panel === "agreed" ? "What's agreed so far" : "What's still open"} className="fade-in">
-      <button onClick={() => actions.setPanel("home")} className="mb-2 inline-flex min-h-9 items-center gap-1 rounded-button px-1 text-small text-teal hover:bg-surface-alt" data-tour="panel-back">
-        <ArrowLeft size={15} strokeWidth={1.5} aria-hidden /> Suggestions
+    <section aria-label="What's agreed so far" className="fade-in">
+      <button onClick={() => actions.setPanel("home")} className="-ml-1 mb-3 inline-flex min-h-9 items-center gap-1 rounded-button px-1 text-small text-teal hover:bg-surface-alt" data-tour="panel-back">
+        <ArrowLeft size={15} strokeWidth={1.5} aria-hidden /> Back
       </button>
-      <p className="ml-auto w-fit max-w-[85%] rounded-[12px] rounded-br-[4px] bg-surface-alt px-3 py-2 text-small text-ink">{panel === "agreed" ? "What's agreed so far?" : "What's still open?"}</p>
-      <div className="mt-3 flex items-start gap-2">
-        <SirionMark size={22} className="mt-0.5 shrink-0" />
-        <div className="min-w-0 flex-1">
-          {nothing ? (
-            <p className="text-small text-ink">Nothing yet. I only read emails you add to the deal. Add the Brightline thread first.</p>
-          ) : panel === "agreed" ? (
-            <>
-              <p className="text-small text-ink">
-                {agreed.length} term{agreed.length === 1 ? " is" : "s are"} agreed by both sides in writing. Click a number to see the sentence.
-              </p>
-              <ul className="mt-2 divide-y divide-line rounded-[10px] border border-line" data-tour="agreed-list">
-                {agreed.map((t) => (
-                  <li key={t.key} className="px-3 py-2" data-tour={`agreed-${t.key}`}>
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs text-ink-muted">{t.label}</span>
-                      <CiteChips t={t} />
-                    </div>
-                    <div className="text-small text-ink">{t.value}</div>
+      <p className="ml-auto w-fit rounded-[12px] rounded-br-[4px] bg-teal px-3 py-2 text-small text-white">What's agreed so far?</p>
+      <div className="mt-4">
+        {nothing ? (
+          <p className="text-small text-ink">Nothing yet. I only read emails you add to the deal. Add this thread first.</p>
+        ) : (
+          <>
+            <p className="text-small text-ink">
+              {agreed.length} terms are agreed by both sides in writing{conflicts.length ? `, and ${conflicts[0].label.toLowerCase()} still differ between the email and the quote` : ""}.
+            </p>
+            <ul className="mt-3 divide-y divide-line border-y border-line" data-tour="agreed-list">
+              {agreed.map((t) => {
+                const s = settling(t);
+                return (
+                  <li key={t.key} className="flex items-center gap-2 py-2" data-tour={`agreed-${t.key}`}>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-xs text-ink-muted">{t.label}</span>
+                      <span className="block text-small text-ink">{t.value}</span>
+                    </span>
+                    <button
+                      onClick={() => citeInMail(s.messageId, s.quote)}
+                      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-muted hover:bg-surface-alt hover:text-teal"
+                      aria-label={`Show where ${t.label.toLowerCase()} was agreed: ${s.author}, ${fmtDate(s.date)}`}
+                      title={`${s.author}, ${fmtDate(s.date)}`}
+                      data-tour={`cite-${t.key}`}
+                    >
+                      <Quote size={14} strokeWidth={1.75} aria-hidden />
+                    </button>
                   </li>
-                ))}
-              </ul>
-              {conflicts.length > 0 && (
-                <p className="mt-2 text-small text-ink">
-                  {conflicts.length === 1 ? `${conflicts[0].label} is not agreed: the emails and the quote disagree.` : `${conflicts.length} terms have conflicting values.`}
-                </p>
-              )}
-            </>
-          ) : (
-            <>
-              <p className="text-small text-ink">
-                {conflicts.length ? `${conflicts.length} conflict to settle, and ` : ""}
-                {open.length} item{open.length === 1 ? "" : "s"} will go to Legal as open.
-              </p>
-              <ul className="mt-2 divide-y divide-line rounded-[10px] border border-line" data-tour="open-list">
-                {conflicts.map((t) => (
-                  <li key={t.key} className="px-3 py-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs text-ink-muted">{t.label}</span>
-                      <StatusBadge status="conflict" />
-                    </div>
-                    <div className="mt-1 space-y-1">
-                      {t.conflict!.options.map((o, i) => (
-                        <button key={i} onClick={() => citeInMail(o.messageId, o.quote)} className="flex w-full items-center justify-between gap-2 rounded-chip px-1 text-left text-small text-ink hover:bg-surface-alt">
-                          <span>{o.value}</span>
-                          <span className="text-xs text-ink-muted">
-                            {o.messageId.startsWith("pdf") ? "Quote PDF" : `${o.author}'s email`}, {fmtDate(o.date)}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </li>
-                ))}
-                {open.map((t) => (
-                  <li key={t.key} className="px-3 py-2">
-                    <div className="text-xs text-ink-muted">{t.label}</div>
-                    <div className="text-small text-ink">{t.resolution?.type === "open" ? t.resolution.reason : reasonFor(t)}</div>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-2 text-xs text-ink-muted">You settle conflicts on the request. Open items go to Legal with a reason, never as agreed.</p>
-            </>
-          )}
-          <div className="mt-2 flex flex-wrap gap-1">
-            <HonestyChip kind="ai" />
-            <HonestyChip kind="live" title="Every citation was matched word for word in your browser" />
-          </div>
-          {!nothing && (
-            <Button size="sm" variant="secondary" className="mt-3 w-full" onClick={() => actions.setView("sirion")} icon={<ArrowUpRight size={15} strokeWidth={1.5} aria-hidden />}>
-              Open the request in Sirion
+                );
+              })}
+            </ul>
+            <p className="mt-2 text-xs text-ink-muted">Example AI output, checked against the emails in your browser.</p>
+            <Button size="sm" variant="primary" className="mt-4 w-full" onClick={() => actions.setView("sirion")} icon={<ArrowUpRight size={15} strokeWidth={1.5} aria-hidden />}>
+              Create the intake request in Sirion
             </Button>
-          )}
-        </div>
+          </>
+        )}
       </div>
     </section>
   );

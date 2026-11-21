@@ -9,15 +9,14 @@ test("walkthrough: every chapter seeks cleanly offline and the end card hands ov
   // The film needs no network once the page has loaded.
   await context.setOffline(true);
   await page.click('[data-tour="watch"]');
-  const film = page.getByRole("tablist", { name: "Chapters" });
+  const film = page.locator(`[data-tour="film-step"]`);
   await expect(film).toBeVisible();
-  const bars = page.getByRole("button", { name: /^Go to chapter/ });
-  const n = await bars.count();
-  expect(n).toBe(8);
-  for (let i = 0; i < n; i++) {
-    await bars.nth(i).click();
-    await page.waitForTimeout(700);
-    await expect(film).toBeVisible();
+  const step = page.locator('[data-tour="film-step"]');
+  await expect(step).toContainText("Step 1 of 7");
+  for (let i = 2; i <= 7; i++) {
+    await page.getByRole("button", { name: /^Next step/ }).click();
+    await expect(step).toContainText(`Step ${i} of 7`);
+    await page.waitForTimeout(500);
   }
   // The last chapter plays to the end card
   await expect(page.getByRole("button", { name: /Try it yourself/ })).toBeVisible({ timeout: 20_000 });

@@ -8,7 +8,6 @@ describe("walkthrough script drives the real store", () => {
     const s = await seekState(CHAPTERS.length);
     const ds = s.deals["DL-1042"];
     expect(ds.submit.requestId).toMatch(/^REQ-2026-/);
-    expect(ds.legalDecision).toBe("start");
     const c = sessionCounters(s);
     expect(c.typed).toBe(0);
     expect(c.submitted).toBe(1);

@@ -1,6 +1,6 @@
 # Sirion Inbox-to-Intake
 
-A clickable prototype for the ISB x Sirion APM case. One scenario: Manraj, a procurement contract owner, agreed a deal with Brightline over email. A Sirion add-in in Outlook adds the deal's emails and quote to deal DL-1042 in one click, and Sirion builds the intake request from them, with every term cited. Legal receives what was agreed, with sources, and what is still open.
+A clickable prototype for the ISB x Sirion APM case. One scenario: Manraj, a procurement contract owner, agreed a deal with Brightline over email. A Sirion add-in in Outlook adds the deal's emails and quote to deal DL-1042 in one click, and Sirion builds the intake request from them, with every term cited. The story ends when the intake request is created; terms not agreed in email are flagged for Legal, never shown as agreed.
 
 The site has the brief's five sections, in order: Why this stage, Stakeholders, Problem, Prototype, Metrics. Assumptions, the learning plan and sources sit in one drawer. In the prototype, a pulsing marker points at the next click.
 
@@ -58,7 +58,7 @@ The model's job is to extract and classify. Code decides what is shown as agreed
 ## Tests
 
 - **Vitest, 37 tests** (`tests/unit/`): citation verifier, value parsing, routing rules, injection scan, rival filtering, wrong-deal warning, status rules on the main deal, submit gate, idempotent submit with a simulated timeout, the full guardrail suite, and the walkthrough script driving the real store to a submitted request with zero fields typed by hand.
-- **Playwright, 8 tests** (`e2e/`): the main deal by hand from inbox to Legal (toast, citation highlight, conflict, submit); picking one side of the conflict; removing the confirmation email; the wrong-supplier warning; keyboard-only completion of the main flow; Escape closes the film; every chapter of the walkthrough with the network off; every narrative page fits 1280 x 800 with no console errors.
+- **Playwright, 7 tests** (`e2e/`): the main deal by hand from Outlook to a created intake request (toast, citation highlight, conflict choice, submit); removing the confirmation email; the wrong-supplier warning; keyboard-only completion; Escape closes the film; every walkthrough step with the network off; every narrative page fits 1280 x 800 with no console errors.
 
 ## UX laws applied
 
@@ -67,7 +67,7 @@ The model's job is to extract and classify. Code decides what is shown as agreed
 3. Miller: fields in four groups; IDs and money formatted; nothing to remember across screens.
 4. Hick: one scenario, five sections, four suggestions in the add-in, one coach mark at a time.
 5. Postel: forgiving value parsing; specific messages next to the field; fluid from 360 to 1440 px.
-6. Peak-end: the peak is the citation lighting up the 4% confirmation in the email; the end is the "sent to Legal" banner and Legal's view.
+6. Peak-end: the peak is the citation lighting up the 4% confirmation in the email; the end is the "Intake request created" screen.
 7. Tesler: the AI prefills; the owner only confirms. Typing counts against the north star.
 8. Doherty: feedback under 400 ms; a toast after every add; step text while reading; friction only on Submit.
 9. Von Restorff: one emphasis per view; risky actions in Quartz with a warning icon.
@@ -82,7 +82,6 @@ The model's job is to extract and classify. Code decides what is shown as agreed
 | Start and narrative pages | Pass | Pass | Pass | Pass | Pass | n/a | Pass | n/a | Pass |
 | Inbox and sidebar | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass |
 | Sirion request screen | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass |
-| Legal view | Pass | Pass | Pass | Pass | n/a | Pass | Pass | Pass | Pass |
 | Walkthrough | Pass | Pass | Pass | Pass | n/a | Pass | Pass | n/a | Pass |
 
 Simplified on 21 Nov at the user's request (DECISIONS.md, C5, D22, D23): one deal, five sections, a Harvey-style add-in, and the review screen merged into a Sirion-style request screen.

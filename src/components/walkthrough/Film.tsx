@@ -51,8 +51,8 @@ export function Film() {
   const [playing, setPlaying] = useState(false);
   const [chapter, setChapter] = useState(0);
   const [speed, setSpeed] = useState(1);
-  const [rect, setRect] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
-  const [cursor, setCursor] = useState({ x: -60, y: -60, down: false });
+  const [hasTarget, setHasTarget] = useState(false);
+  const [down, setDown] = useState(false);
   const [elapsed, setElapsed] = useState(0);
 
   // Fetch the product and metrics routes up front, so the film keeps working if the network drops.
@@ -69,15 +69,47 @@ export function Film() {
   const pathRef = useRef(path);
   pathRef.current = path;
 
-  // Keep the spotlight glued to its element while things scroll and re-render.
+  // The spotlight and cursor glide to their target every frame (eased, no CSS
+  // transitions), so scrolling, re-renders and screen changes never make them jump.
+  const spotRef = useRef<HTMLDivElement>(null);
+  const cursorRef = useRef<HTMLDivElement>(null);
+  const targetName = useRef<string | null>(null);
+  const cur = useRef({ x: 0, y: 0, w: 0, h: 0, cx: -60, cy: -60, init: false });
   useEffect(() => {
     if (!open) return;
     let raf = 0;
     const loop = () => {
-      const el = targetEl.current;
+      let el = targetEl.current;
+      // A target that re-rendered or moved to a new screen is found again by name.
+      if ((!el || !el.isConnected) && targetName.current) {
+        el = findVisible(targetName.current);
+        if (el) targetEl.current = el;
+      }
+      const a = cur.current;
       if (el && el.isConnected) {
         const r = el.getBoundingClientRect();
-        if (r.width > 0) setRect((p) => (p && p.x === r.x && p.y === r.y && p.w === r.width && p.h === r.height ? p : { x: r.x, y: r.y, w: r.width, h: r.height }));
+        if (r.width > 0) {
+          const k = reduced || !a.init ? 1 : 0.16;
+          a.x += (r.x - a.x) * k;
+          a.y += (r.y - a.y) * k;
+          a.w += (r.width - a.w) * k;
+          a.h += (r.height - a.h) * k;
+          const tx = r.x + Math.min(r.width / 2, 80);
+          const ty = r.y + Math.min(r.height / 2, 22);
+          const kc = reduced ? 1 : 0.1;
+          a.cx += (tx - a.cx) * kc;
+          a.cy += (ty - a.cy) * kc;
+          a.init = true;
+          const pad = 6;
+          if (spotRef.current) {
+            const st = spotRef.current.style;
+            st.opacity = "1";
+            st.transform = `translate(${a.x - pad}px, ${a.y - pad}px)`;
+            st.width = `${a.w + pad * 2}px`;
+            st.height = `${a.h + pad * 2}px`;
+          }
+          if (cursorRef.current) cursorRef.current.style.transform = `translate(${a.cx}px, ${a.cy}px)`;
+        }
       }
       const p = pos.current;
       if (p.stepStart) setElapsed(p.base + Math.min(p.stepMs, (performance.now() - p.stepStart) * speedRef.current));
@@ -85,7 +117,7 @@ export function Film() {
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [open]);
+  }, [open, reduced]);
 
   const sleep = (ms: number, id: number) =>
     new Promise<boolean>((resolve) => {
@@ -117,24 +149,20 @@ export function Film() {
           }
           if (runId.current !== id) return;
           if (el) {
-            el.scrollIntoView({ block: "center", inline: "nearest", behavior: reduced ? "auto" : "smooth" });
+            el.scrollIntoView({ block: "nearest", inline: "nearest", behavior: reduced ? "auto" : "smooth" });
             targetEl.current = el;
-            const r = el.getBoundingClientRect();
-            setRect({ x: r.x, y: r.y, w: r.width, h: r.height });
-            setCursor({ x: r.x + Math.min(r.width / 2, 80), y: r.y + Math.min(r.height / 2, 22), down: false });
-          } else {
-            targetEl.current = null;
-            setRect(null);
+            targetName.current = step.target ?? null;
+            setHasTarget(true);
           }
           if (!(await sleep(reduced ? 80 : 650, id))) return;
           if (!pos.current.actionDone) {
             if (step.click && el) {
-              setCursor((cur) => ({ ...cur, down: true }));
+              setDown(true);
               el.click();
             }
             if (step.do) await step.do();
             pos.current.actionDone = true;
-            setTimeout(() => setCursor((cur) => ({ ...cur, down: false })), 180);
+            setTimeout(() => setDown(false), 180);
           }
           if (!(await sleep(Math.max(300, step.ms - 650), id))) return;
         }
@@ -143,7 +171,7 @@ export function Film() {
         setPlaying(false);
         setEnded(true);
         targetEl.current = null;
-        setRect(null);
+        targetName.current = null;
         pos.current.stepStart = 0;
         setElapsed(TOTAL_MS);
       }
@@ -193,6 +221,7 @@ export function Film() {
 
   useEffect(() => {
     opener = (c: number) => {
+      cur.current.init = false;
       setOpen(true);
       seek(c);
     };
@@ -226,116 +255,63 @@ export function Film() {
   if (!open) return null;
 
   const ch = CHAPTERS[chapter];
-  const travel = reduced ? 0 : 600 / speed;
-  const pad = 6;
 
   return (
     <div className="on-stage" data-film="open" role="dialog" aria-label="Guided walkthrough" aria-modal="false">
       {/* Click shield: the film drives the UI; Take over hands it back. */}
       <div className="fixed inset-0 z-[60]" onClick={() => (playing ? pause() : undefined)} aria-hidden />
 
-      {/* Spotlight */}
-      {rect && !ended && (
+      {/* Spotlight: positioned every frame by the glide loop above. */}
+      {!ended && (
         <div
+          ref={spotRef}
           aria-hidden
-          className="pointer-events-none fixed z-[61] rounded-card"
+          className="pointer-events-none fixed left-0 top-0 z-[61] rounded-[14px]"
           style={{
-            left: rect.x - pad,
-            top: rect.y - pad,
-            width: rect.w + pad * 2,
-            height: rect.h + pad * 2,
-            boxShadow: "0 0 0 2px var(--brand-primary), var(--glow-teal), 0 0 0 9999px rgb(11 24 33 / 0.6)",
-            transition: reduced ? "none" : "all 0.35s ease",
+            opacity: hasTarget ? 1 : 0,
+            boxShadow: "0 0 0 2px var(--brand-primary), 0 0 24px 4px rgb(13 94 104 / 0.55), 0 0 0 9999px rgb(11 24 33 / 0.55)",
+            transition: "opacity 0.3s ease",
           }}
         />
       )}
-      {!rect && !ended && <div aria-hidden className="pointer-events-none fixed inset-0 z-[61]" style={{ background: "rgb(11 24 33 / 0.6)" }} />}
 
       {/* Cursor */}
       {!ended && !reduced && (
-        <div
-          aria-hidden
-          className="pointer-events-none fixed left-0 top-0 z-[62]"
-          style={{ transform: `translate(${cursor.x}px, ${cursor.y}px) scale(${cursor.down ? 0.85 : 1})`, transition: `transform ${travel}ms ease-in-out` }}
-        >
-          <svg width="22" height="26" viewBox="0 0 22 26">
+        <div ref={cursorRef} aria-hidden className="pointer-events-none fixed left-0 top-0 z-[62]" style={{ transform: "translate(-60px, -60px)" }}>
+          <svg width="22" height="26" viewBox="0 0 22 26" style={{ transform: `scale(${down ? 0.85 : 1})`, transition: "transform 0.15s ease" }}>
             <path d="M2 2 L2 21 L7.5 16 L11 24 L14.5 22.5 L11 14.8 L18.5 14.8 Z" fill="var(--surface)" stroke="var(--ink)" strokeWidth="1.5" strokeLinejoin="round" />
           </svg>
         </div>
       )}
 
-      {/* Top: chapters and scrubber */}
-      <div className="fixed inset-x-0 top-0 z-[70] px-3 pt-2" style={{ background: "rgb(11 24 33 / 0.92)" }}>
-        <div className="mx-auto flex max-w-[1200px] items-center gap-1 overflow-x-auto pb-1" role="tablist" aria-label="Chapters">
-          {CHAPTERS.map((c, i) => (
-            <button
-              key={c.id}
-              role="tab"
-              aria-selected={i === chapter}
-              onClick={() => seek(i)}
-              className={cx(
-                "min-h-9 shrink-0 rounded-pill px-2.5 text-xs",
-                i === chapter ? "bg-teal text-white" : i < chapter ? "text-ink-on-stage" : "text-ink-on-stage opacity-70 hover:opacity-100",
-              )}
-              title={c.caption}
-            >
-              <span className="text-lilac">{String(i + 1).padStart(2, "0")}</span> {c.title}
-            </button>
-          ))}
-        </div>
-        <div className="mx-auto flex max-w-[1200px] pb-2" aria-label="Progress">
-          {CHAPTERS.map((c, i) => {
-            const start = chapterStart(i);
-            const len = chapterMs(i);
-            const fill = Math.max(0, Math.min(1, (elapsed - start) / len));
-            return (
-              <button key={c.id} onClick={() => seek(i)} className="group h-3 flex-1 px-px" style={{ flexGrow: len }} aria-label={`Go to chapter ${i + 1}: ${c.title}`}>
-                <span className="block h-1 overflow-hidden rounded-pill group-hover:h-1.5" style={{ background: "rgb(245 246 246 / 0.25)" }}>
-                  <span className="block h-full bg-teal" style={{ width: `${fill * 100}%` }} />
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Caption bar */}
+      {/* Caption card: large, high contrast, with the controls tucked beside it. */}
       {!ended && (
-        <div className="fixed inset-x-0 bottom-0 z-[70] px-4 py-3" style={{ background: "rgb(11 24 33 / 0.92)" }} aria-live="polite">
-          <div className="mx-auto flex max-w-[1200px] flex-wrap items-center gap-x-6 gap-y-2">
-            <div className="min-w-0 flex-1">
-              <div className="text-small text-lilac">
-                {String(chapter + 1).padStart(2, "0")} · {ch.title}
-              </div>
-              <p className="text-[20px] font-light leading-7 text-ink-on-stage">{ch.caption}</p>
+        <div className="pointer-events-none fixed inset-x-0 bottom-5 z-[70] flex justify-center px-4" aria-live="polite">
+          <div className="pointer-events-auto w-full max-w-[880px] overflow-hidden rounded-card bg-white text-ink shadow-pop">
+            <div className="h-1 bg-surface-alt" aria-hidden>
+              <div className="h-full bg-teal" style={{ width: `${Math.min(100, (elapsed / TOTAL_MS) * 100)}%` }} />
             </div>
-            <div className="flex items-center gap-1">
-              <CtrlButton label="Previous chapter (Left arrow)" onClick={() => seek(Math.max(0, chapter - 1))}>
-                <SkipBack size={18} strokeWidth={1.5} />
-              </CtrlButton>
-              <CtrlButton label={playing ? "Pause (Space)" : "Play (Space)"} onClick={() => (playing ? pause() : resume())} primary>
-                {playing ? <Pause size={18} strokeWidth={1.5} /> : <Play size={18} strokeWidth={1.5} />}
-              </CtrlButton>
-              <CtrlButton label="Next chapter (Right arrow)" onClick={() => seek(Math.min(CHAPTERS.length - 1, chapter + 1))}>
-                <SkipForward size={18} strokeWidth={1.5} />
-              </CtrlButton>
-              <CtrlButton label="Restart" onClick={() => seek(0)}>
-                <RotateCcw size={18} strokeWidth={1.5} />
-              </CtrlButton>
-              <button
-                onClick={() => setSpeed(speed === 1 ? 1.5 : 1)}
-                className="inline-flex h-11 min-w-11 items-center justify-center rounded-button border border-ink-muted px-2 text-small text-ink-on-stage hover:border-ink-on-stage"
-                aria-label={`Speed ${speed}x. Switch to ${speed === 1 ? 1.5 : 1}x`}
-              >
-                {speed}x
-              </button>
-              <button
-                onClick={takeOver}
-                className="ml-2 inline-flex h-11 items-center gap-2 rounded-button bg-white px-4 text-small text-teal hover:bg-surface-alt"
-                data-tour="take-over"
-              >
-                <Hand size={16} strokeWidth={1.5} aria-hidden /> Take over
-              </button>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 px-5 py-4">
+              <div className="min-w-0 flex-1">
+                <div className="text-small font-medium text-teal" data-tour="film-step">
+                  Step {chapter + 1} of {CHAPTERS.length} · {ch.title}
+                </div>
+                <p className="mt-0.5 text-[22px] font-medium leading-7 text-ink">{ch.caption}</p>
+              </div>
+              <div className="flex items-center gap-1">
+                <CtrlButton label="Previous step (Left arrow)" onClick={() => seek(Math.max(0, chapter - 1))}>
+                  <SkipBack size={18} strokeWidth={1.5} />
+                </CtrlButton>
+                <CtrlButton label={playing ? "Pause (Space)" : "Play (Space)"} onClick={() => (playing ? pause() : resume())} primary>
+                  {playing ? <Pause size={18} strokeWidth={1.5} /> : <Play size={18} strokeWidth={1.5} />}
+                </CtrlButton>
+                <CtrlButton label="Next step (Right arrow)" onClick={() => seek(Math.min(CHAPTERS.length - 1, chapter + 1))}>
+                  <SkipForward size={18} strokeWidth={1.5} />
+                </CtrlButton>
+                <button onClick={takeOver} className="ml-2 inline-flex h-11 items-center gap-2 rounded-button border border-line px-4 text-small text-teal hover:bg-surface-alt" data-tour="take-over">
+                  <Hand size={16} strokeWidth={1.5} aria-hidden /> Take over
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -347,7 +323,7 @@ export function Film() {
           <div className="glow-stage pointer-events-none absolute inset-0" aria-hidden />
           <div className="relative max-w-[640px] text-center">
             <p className="text-small text-lilac">End of the walkthrough</p>
-            <h2 className="mt-2 text-[34px] leading-[40px] text-ink-on-stage">From the inbox to a Legal-ready request, with every term cited and nothing retyped.</h2>
+            <h2 className="mt-2 text-[34px] leading-[40px] text-ink-on-stage">From an Outlook thread to a Sirion intake request, with nothing retyped.</h2>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <button
                 className="inline-flex min-h-12 items-center gap-2 rounded-button bg-teal px-6 text-body text-white hover:opacity-90"
@@ -390,7 +366,7 @@ function CtrlButton({ label, onClick, children, primary }: { label: string; onCl
       title={label}
       className={cx(
         "inline-flex h-11 w-11 items-center justify-center rounded-button",
-        primary ? "bg-teal text-white hover:opacity-90" : "text-ink-on-stage hover:bg-ink",
+        primary ? "bg-teal text-white hover:opacity-90" : "text-ink hover:bg-surface-alt",
       )}
     >
       {children}

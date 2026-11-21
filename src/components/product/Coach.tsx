@@ -23,14 +23,10 @@ export function useCoach(): Coach {
   const submitted = !!ds.submit.requestId;
   const conflict = view.terms.find((t) => t.needsDecision);
 
-  if (submitted) {
-    if (s.view === "legal") return { stage: 4, target: ds.legalDecision ? null : "start-drafting", label: "Legal decides if it can start" };
-    return { stage: 4, target: s.view === "sirion" ? "open-legal" : null, label: "See what Legal receives" };
-  }
+  if (submitted) return { stage: 4, target: null, label: "" };
   if (s.view === "sirion") {
     if (conflict) return { stage: 2, target: `options-${conflict.key}`, label: "The email and the quote disagree. Pick one." };
-    if (ds.submit.status !== "idle") return { stage: 3, target: null, label: "" };
-    return { stage: 3, target: "submit", label: "Everything is prefilled. Submit it." };
+    return { stage: 3, target: "confirm-check", label: "Everything is filled in. Check it and submit." };
   }
   if (s.view === "inbox") {
     if (!s.sidebarOpen) return { stage: mainAdded ? 2 : 0, target: "open-sidebar", label: mainAdded ? "Open Sirion again" : "Start here: open the Sirion add-in" };
@@ -42,7 +38,7 @@ export function useCoach(): Coach {
       return { stage: 1, target: "add-to-sirion", label: "Add this email thread to the deal" };
     }
     if (s.panel !== "home") return { stage: 2, target: null, label: "" };
-    return { stage: 2, target: "review-in-sirion", label: "See the request Sirion built" };
+    return { stage: 2, target: "review-in-sirion", label: "Create the request in Sirion" };
   }
   return { stage: 0, target: null, label: "" };
 }
@@ -75,8 +71,16 @@ export function CoachMark({ target, label }: { target: string | null; label: str
 
   if (!rect || !target || film) return null;
   const pad = 4;
-  const below = rect.bottom + 56 < window.innerHeight;
-  const labelLeft = Math.max(8, Math.min(window.innerWidth - 268, rect.left + rect.width / 2 - 130));
+  const W = 240;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  // Place the label beside the target where there is room, so it never hides the content around it.
+  let pos: React.CSSProperties;
+  const midY = Math.max(8, Math.min(vh - 60, rect.top + rect.height / 2 - 22));
+  if (rect.right + 16 + W < vw) pos = { left: rect.right + 16, top: midY, justifyContent: "flex-start" };
+  else if (rect.left - 16 - W > 0) pos = { left: rect.left - 16 - W, top: midY, justifyContent: "flex-end" };
+  else if (rect.bottom + 56 < vh) pos = { left: Math.max(8, Math.min(vw - W - 8, rect.left + rect.width / 2 - W / 2)), top: rect.bottom + 12, justifyContent: "center" };
+  else pos = { left: Math.max(8, Math.min(vw - W - 8, rect.left + rect.width / 2 - W / 2)), bottom: vh - rect.top + 12, justifyContent: "center" };
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 z-40" data-coach={target}>
       <div
@@ -84,8 +88,8 @@ export function CoachMark({ target, label }: { target: string | null; label: str
         style={{ left: rect.left - pad, top: rect.top - pad, width: rect.width + pad * 2, height: rect.height + pad * 2 }}
       />
       <div
-        className="absolute flex w-[260px] justify-center"
-        style={{ left: labelLeft, top: below ? rect.bottom + 12 : undefined, bottom: below ? undefined : window.innerHeight - rect.top + 12 }}
+        className="absolute flex"
+        style={{ ...pos, width: W }}
       >
         <span className="coach-label rounded-button bg-amethyst px-3 py-1.5 text-center text-small text-white shadow-pop">{label}</span>
       </div>

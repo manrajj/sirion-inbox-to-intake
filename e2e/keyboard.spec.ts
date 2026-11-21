@@ -23,11 +23,9 @@ test("keyboard-only main flow", async ({ page }) => {
   await expect(page.locator(t("reading"))).toHaveCount(0, { timeout: 10_000 });
   await key(page, t("review-in-sirion"));
   await expect(page.locator(t("sirion-app"))).toBeVisible();
-  await key(page, t("mark-open-payment"));
-  await key(page, t("submit"));
-  await expect(page.locator(t("modal"))).toBeVisible();
+  await key(page, t("pick-payment-1"));
   await key(page, `${t("confirm-check")} input`, "Space");
-  await key(page, t("confirm-submit"));
+  await key(page, t("submit"));
   await expect(page.locator(t("receipt"))).toBeVisible({ timeout: 10_000 });
 
   // Visible focus ring on the focused control
@@ -40,7 +38,7 @@ test("keyboard-only main flow", async ({ page }) => {
 test("Escape closes the walkthrough", async ({ page }) => {
   await page.goto("/");
   await key(page, t("watch"));
-  await expect(page.getByRole("tablist", { name: "Chapters" })).toBeVisible();
+  await expect(page.locator(`[data-tour="film-step"]`)).toBeVisible();
   await page.keyboard.press("Escape");
-  await expect(page.getByRole("tablist", { name: "Chapters" })).toHaveCount(0);
+  await expect(page.locator(`[data-tour="film-step"]`)).toHaveCount(0);
 });

@@ -2,54 +2,40 @@
 
 import { useState } from "react";
 import * as Popover from "@radix-ui/react-popover";
-import {
-  ChevronDown,
-  Quote,
-  Mail,
-  FileText,
-  UploadCloud,
-  CheckCircle2,
-  ArrowRight,
-  ArrowLeft,
-  Split,
-  Flag,
-  FileSignature,
-  MessageSquareReply,
-  Search,
-  Bell,
-} from "lucide-react";
+import { ChevronDown, Quote, Mail, UploadCloud, Check, ArrowLeft, Search, Bell, RotateCcw } from "lucide-react";
 import { actions, useApp, useDealView } from "@/lib/store";
 import { getDeal } from "@data/index";
-import { DEV, LENA } from "@data/deals/people";
-import { reasonFor, type TermView } from "@/lib/derive";
-import { Button, HonestyChip, Modal, StatusBadge, Tick, cx, fmtDate } from "@/components/ui";
+import type { TermView } from "@/lib/derive";
+import { Button, cx, fmtDate } from "@/components/ui";
 import { SourceMessage } from "./SourceText";
 import { SirionMark } from "./SirionMark";
 
-// A mock of the Sirion web app: white top bar, grey canvas, a request form in
-// collapsible sections, and documents and a summary on the right. It replaces a
-// separate review screen: the owner checks the request where it will live.
+// A mock of the Sirion web app: solid top bar, grey canvas, a request form in
+// collapsible sections, documents and the submit panel on the right. The owner
+// checks the request where it will live, already filled from Outlook.
 
 export function SirionChrome({ crumb, children }: { crumb: string; children: React.ReactNode }) {
   return (
-    <div className="flex h-full min-h-0 flex-col bg-canvas" data-tour="sirion-app">
-      <header className="flex h-12 shrink-0 items-center gap-4 border-b border-line bg-white px-4">
-        <span className="flex items-center gap-2 text-h3 text-ink">
-          <SirionMark size={22} /> Sirion
+    <div className="sirion-enter flex h-full min-h-0 flex-col bg-canvas" data-tour="sirion-app">
+      <header className="flex h-12 shrink-0 items-center gap-5 bg-teal px-4 text-white">
+        <span className="flex items-center gap-2 text-h3 font-medium">
+          <SirionMark size={22} inverse /> Sirion
         </span>
         <nav className="hidden items-center gap-1 text-small md:flex" aria-hidden>
           {["Home", "Requests", "Contracts", "Reports"].map((n) => (
-            <span key={n} className={cx("rounded-chip px-2.5 py-1", n === "Requests" ? "bg-tone-success-bg text-teal" : "text-ink-muted")}>
+            <span key={n} className={cx("rounded-chip px-2.5 py-1", n === "Requests" ? "bg-white text-teal" : "text-white")}>
               {n}
             </span>
           ))}
         </nav>
-        <span className="ml-auto hidden h-8 w-[220px] items-center gap-2 rounded-chip border border-line px-2 text-small text-ink-muted lg:flex" aria-hidden>
+        <span className="ml-auto hidden h-8 w-[220px] items-center gap-2 rounded-chip bg-white px-2 text-small text-ink-muted lg:flex" aria-hidden>
           <Search size={14} strokeWidth={1.5} /> Search
         </span>
-        <HonestyChip kind="mocked" title="Mock of the Sirion web app" />
-        <Bell size={17} strokeWidth={1.5} className="hidden text-ink-muted sm:block" aria-hidden />
-        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-teal text-xs text-white" aria-hidden>
+        <span className="rounded-pill border border-white px-2 text-xs leading-5" title="Mock of the Sirion web app">
+          Mock
+        </span>
+        <Bell size={17} strokeWidth={1.5} className="hidden sm:block" aria-hidden />
+        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs font-medium text-teal" aria-hidden>
           MS
         </span>
       </header>
@@ -65,18 +51,15 @@ export function SirionChrome({ crumb, children }: { crumb: string; children: Rea
   );
 }
 
-function Cite({ messageId, quote, label }: { messageId: string; quote?: string; label?: string }) {
-  const deal = getDeal("DL-1042");
-  const m = deal.messages.find((x) => x.id === messageId)!;
+/** One quiet source button per value: click to read the sentence it came from. */
+export function Source({ messageId, quote }: { messageId: string; quote?: string }) {
+  const m = getDeal("DL-1042").messages.find((x) => x.id === messageId)!;
+  const who = m.kind === "pdf" ? "the quote PDF" : `${m.from.name}'s email`;
   return (
     <Popover.Root>
       <Popover.Trigger asChild>
-        <button
-          className="inline-flex h-7 items-center gap-1 rounded-pill border border-line bg-white px-2 text-xs text-ink-muted hover:border-teal hover:text-teal"
-          aria-label={`Source: ${m.kind === "pdf" ? m.filename : `${m.from.name}'s email`}, ${fmtDate(m.date)}`}
-        >
-          <Quote size={11} strokeWidth={1.75} aria-hidden />
-          {label ?? (m.kind === "pdf" ? "Quote PDF" : m.from.name.split(" ")[0])}
+        <button className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-muted hover:bg-surface-alt hover:text-teal" aria-label={`Source: ${who}, ${fmtDate(m.date)}`} title={`From ${who}`}>
+          <Quote size={14} strokeWidth={1.75} aria-hidden />
         </button>
       </Popover.Trigger>
       <Popover.Portal>
@@ -88,41 +71,32 @@ function Cite({ messageId, quote, label }: { messageId: string; quote?: string; 
   );
 }
 
-function Section({ title, count, children, tour, defaultOpen = true }: { title: string; count?: string; children: React.ReactNode; tour?: string; defaultOpen?: boolean }) {
-  const [open, setOpen] = useState(defaultOpen);
+function Section({ title, children, tour }: { title: string; children: React.ReactNode; tour?: string }) {
+  const [open, setOpen] = useState(true);
   return (
-    <section className="overflow-hidden rounded-card bg-white shadow-card" data-tour={tour}>
+    <section className="rounded-card bg-white shadow-card" data-tour={tour}>
       <button onClick={() => setOpen((o) => !o)} aria-expanded={open} className="flex min-h-12 w-full items-center gap-2 px-5 text-left">
-        <span className="text-h3 text-teal">{title}</span>
-        {count && <span className="text-xs text-ink-muted">{count}</span>}
+        <span className="h-4 w-1 rounded-pill bg-teal" aria-hidden />
+        <span className="text-h3 font-medium text-ink">{title}</span>
         <ChevronDown size={18} strokeWidth={1.5} className={cx("ml-auto text-ink-muted transition-transform", !open && "-rotate-90")} aria-hidden />
       </button>
-      {open && <div className="border-t border-line px-5 py-3">{children}</div>}
+      {open && <div className="px-5 pb-3">{children}</div>}
     </section>
   );
 }
 
-function Row({ label, children, cites, tour }: { label: string; children: React.ReactNode; cites?: React.ReactNode; tour?: string }) {
+function Row({ label, children, source, tour }: { label: string; children: React.ReactNode; source?: React.ReactNode; tour?: string }) {
   return (
-    <div className="grid gap-1 border-b border-line py-2.5 last:border-b-0 sm:grid-cols-[180px_1fr_auto] sm:items-center sm:gap-3" data-tour={tour}>
-      <span className="text-small text-ink-muted">{label}</span>
+    <div className="grid min-h-11 grid-cols-[1fr_32px] items-center gap-x-3 border-t border-line py-1.5 sm:grid-cols-[170px_1fr_32px]" data-tour={tour}>
+      <span className="col-span-2 text-xs text-ink-muted sm:col-span-1 sm:text-small">{label}</span>
       <span className="min-w-0 text-small text-ink">{children}</span>
-      {cites && <span className="flex flex-wrap gap-1">{cites}</span>}
+      <span>{source}</span>
     </div>
   );
 }
 
-function TermCites({ t }: { t: TermView }) {
-  // The final step carries the agreement; show it and the quote that states it.
-  const shown = t.steps.filter((s) => s.role !== "statement").slice(-2);
-  return (
-    <>
-      {shown.map((s, i) => (
-        <Cite key={i} messageId={s.messageId} quote={s.quote} />
-      ))}
-    </>
-  );
-}
+/** The step that settled a term: its last offer, acceptance or resolution. */
+const settling = (t: TermView) => [...t.steps].reverse().find((s) => s.role !== "statement") ?? t.steps[0];
 
 export function SirionRequest() {
   const dealId = useApp((s) => s.dealId);
@@ -131,306 +105,208 @@ export function SirionRequest() {
   const deal = getDeal(dealId);
   const [checked, setChecked] = useState(false);
   const submitted = !!ds.submit.requestId;
-  const agreed = view.terms.filter((t) => (t.status === "accepted" || t.status === "offEmail") && t.evidenceStatus !== "conflict");
-  const conflicts = view.terms.filter((t) => t.evidenceStatus === "conflict");
-  const open = view.terms.filter((t) => t.goesToLegalOpen && t.evidenceStatus !== "conflict");
+  const term = (k: string) => view.terms.find((t) => t.key === k)!;
+  const core = (k: string) => view.core.find((c) => c.key === k)!;
   const filled = view.core.filter((c) => c.value !== null).length;
-  const hardBlockers = view.blockers.filter((b) => b.kind === "conflict" || b.kind === "core-missing" || b.kind === "entity");
-  const supplierContact = deal.messages.find((m) => m.from.email.endsWith(deal.supplier.domain))?.from;
-  const coreRow = (key: string) => view.core.find((c) => c.key === key)!;
+  const conflict = view.terms.find((t) => t.needsDecision);
+  const blocked = view.blockers.some((b) => b.kind === "conflict" || b.kind === "core-missing" || b.kind === "entity");
 
-  const field = (key: string, tour?: string) => {
-    const c = coreRow(key);
+  if (submitted) return <Created />;
+
+  const field = (key: string, label?: string) => {
+    const c = core(key);
     return (
-      <Row
-        key={key}
-        label={c.label}
-        tour={tour ?? `core-${key}`}
-        cites={c.source === "ai" ? c.evidence.slice(0, 2).map((e, i) => <Cite key={i} messageId={e.messageId} quote={e.quote} />) : undefined}
-      >
-        {c.value !== null ? (
-          c.value
-        ) : (
-          <input
-            className="min-h-11 w-full rounded-chip border border-line-strong px-2 text-small"
-            placeholder="Not in the added emails. Type it here."
-            aria-label={c.label}
-            onChange={(e) => actions.typeCore(key, e.target.value)}
-            data-tour={`type-${key}`}
-          />
+      <Row key={key} label={label ?? c.label} tour={`core-${key}`} source={c.source === "ai" && c.evidence[0] ? <Source messageId={c.evidence[0].messageId} quote={c.evidence[0].quote} /> : undefined}>
+        {c.value ?? (
+          <input className="min-h-10 w-full rounded-chip border border-line-strong px-2 text-small" placeholder="Not in the emails. Type it here." aria-label={c.label} onChange={(e) => actions.typeCore(key, e.target.value)} data-tour={`type-${key}`} />
         )}
       </Row>
     );
   };
 
-  return (
-    <SirionChrome crumb={`Requests / ${submitted ? ds.submit.requestId : `New request (${dealId})`}`}>
-      <div className="mx-auto max-w-[1180px]">
-        {submitted && (
-          <div className="mb-3 flex flex-wrap items-center gap-3 rounded-card border border-teal bg-white p-4 shadow-card fade-in" role="status" data-tour="receipt">
-            <CheckCircle2 size={26} strokeWidth={1.5} className="text-teal" aria-hidden />
-            <div className="min-w-0 flex-1">
-              <p className="text-h3 text-ink">
-                Request <span className="text-teal">{ds.submit.requestId}</span> sent to {view.route?.queue ?? "Legal"}
-              </p>
-              <p className="text-small text-ink-muted" data-tour="typed-count">
-                {view.typedByHand} of 7 fields typed by hand · {agreed.length} agreed terms with sources · {view.openForLegal.length} open items marked for Legal
-              </p>
-            </div>
-            <Button variant="primary" onClick={() => actions.setView("legal")} icon={<ArrowRight size={16} strokeWidth={1.5} aria-hidden />} data-tour="open-legal">
-              See what Legal receives
-            </Button>
-          </div>
-        )}
+  const termRow = (k: string) => {
+    const t = term(k);
+    if (t.evidenceStatus === "conflict") return <ConflictRow key={k} t={t} />;
+    const agreed = t.status === "accepted" || t.status === "offEmail";
+    const s = agreed ? settling(t) : undefined;
+    return (
+      <Row key={k} label={t.label} tour={`term-${k}`} source={s ? <Source messageId={s.messageId} quote={s.quote} /> : undefined}>
+        {agreed ? t.value : <span className="text-ink-muted">Flagged for Legal</span>}
+      </Row>
+    );
+  };
 
-        <div className="mb-3 flex flex-wrap items-center gap-3 rounded-card bg-white px-5 py-3 shadow-card">
+  const groups = deal.threads
+    .map((t) => ({ t, n: t.messageIds.filter((id) => view.addedIds.has(id)).length, pdf: t.messageIds.some((id) => view.addedIds.has(id) && id.startsWith("pdf")) }))
+    .filter((g) => g.n > 0);
+
+  return (
+    <SirionChrome crumb={`Requests / New request (${dealId})`}>
+      <div className="mx-auto max-w-[1120px]">
+        <div className="mb-3 flex items-center gap-3 px-1 py-2">
           <div className="min-w-0 flex-1">
-            <h1 className="text-h2 text-ink">{submitted ? "Contract request" : "Create request"}</h1>
-            <p className="text-small text-ink-muted">
-              {deal.title} · prefilled from {view.coverage.messagesRead} emails and {view.coverage.pdfsRead} PDF in Outlook
-            </p>
+            <h1 className="text-h1 text-ink">New intake request</h1>
+            <p className="text-small text-ink-muted">Filled in from Outlook. Check it, then submit.</p>
           </div>
-          {!submitted && (
-            <>
-              <Button variant="secondary" onClick={() => actions.setView("inbox")}>
-                Cancel
-              </Button>
-              <Button variant="primary" onClick={() => actions.openSubmit()} disabled={hardBlockers.length > 0} data-tour="submit" title={hardBlockers[0]?.label}>
-                Submit request
-              </Button>
-            </>
-          )}
+          <Button variant="secondary" onClick={() => actions.setView("inbox")}>
+            Cancel
+          </Button>
         </div>
 
-        <div className="grid items-start gap-3 lg:grid-cols-[1fr_340px]">
+        <div className="grid items-start gap-4 lg:grid-cols-[1fr_320px]">
           <div className="space-y-3">
             <Section title="Request type">
-              <Row label="Request">New supplier contract</Row>
-              <Row label="Contract type" cites={view.contractType.verified ? view.contractType.evidence.map((e, i) => <Cite key={i} messageId={e.messageId} quote={e.quote} />) : undefined}>
+              <Row label="Contract type" source={view.contractType.verified && view.contractType.evidence[0] ? <Source messageId={view.contractType.evidence[0].messageId} quote={view.contractType.evidence[0].quote} /> : undefined}>
                 {view.contractType.suggestion}
-                {view.repository.matches[0] && <span className="block text-xs text-ink-muted">Existing {view.repository.matches[0].id}, signed {fmtDate(view.repository.matches[0].signed)} {view.repository.matches[0].signed.slice(0, 4)}. Legal decides the paper.</span>}
               </Row>
             </Section>
-
-            <Section title="Basic information" count={`${filled} of 7 filled from email`} tour="basic-info">
-              {["legalEntity", "scope", "value", "termStart", "dataAccess", "costCentre"].map((k) => field(k))}
+            <Section title="Basic information" tour="basic-info">
+              {field("legalEntity", "Supplier")}
+              {field("scope")}
+              {field("value", "Annual value")}
+              {field("termStart", "Term")}
+              {field("costCentre")}
             </Section>
-
-            <Section title="Commercial terms" count={`${agreed.length} agreed${conflicts.length ? `, ${conflicts.length} to settle` : ""}`} tour="commercial">
-              {agreed.map((t) => (
-                <Row key={t.key} label={t.label} tour={`term-${t.key}`} cites={<TermCites t={t} />}>
-                  <span className="flex flex-wrap items-center gap-2">
-                    {t.value}
-                    <StatusBadge status={t.status} label={t.status === "accepted" && t.resolution?.type === "picked" ? "Picked by you" : "Agreed by both"} />
-                  </span>
-                </Row>
-              ))}
-              {conflicts.map((t) => (
-                <ConflictRow key={t.key} t={t} />
-              ))}
-              {open.length > 0 && (
-                <div className="mt-2 rounded-chip bg-surface-alt p-3" data-tour="legal-open-list">
-                  <p className="flex items-center gap-1.5 text-small text-ink">
-                    <Flag size={14} strokeWidth={1.5} className="text-tone-info-fg" aria-hidden /> Goes to Legal as open, not as agreed ({open.length})
-                  </p>
-                  <ul className="mt-1 space-y-0.5">
-                    {open.map((t) => (
-                      <li key={t.key} className="text-xs text-ink-muted">
-                        <span className="text-ink">{t.label}:</span> {reasonFor(t)}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+            <Section title="Commercial terms" tour="commercial">
+              {["uplift", "sla", "payment"].map(termRow)}
             </Section>
-
             <Section title="Stakeholders">
-              {field("requester", "core-requester")}
+              {field("requester")}
               <Row label="Contract owner">{deal.owner.name}, Procurement</Row>
-              {supplierContact && <Row label="Supplier contact">{supplierContact.name}, {deal.supplier.name}</Row>}
-              <Row label="Finance">{LENA.name}, FP&A</Row>
-              <Row label="Legal reviewer">
-                {DEV.name}
-                {view.route && <span className="block text-xs text-ink-muted">Routed to {view.route.queue} by rule {view.route.ruleId}: {view.route.rule}</span>}
-              </Row>
             </Section>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-3 lg:sticky lg:top-0">
             <section className="rounded-card bg-white p-4 shadow-card" data-tour="documents" aria-label="Documents">
-              <h2 className="text-h3 text-teal">Documents</h2>
-              <p className="mt-0.5 text-xs text-ink-muted">Added from Outlook ({view.added.length})</p>
-              <ul className="thin-scroll mt-2 max-h-[248px] overflow-y-auto">
-                {view.added.map((a) => {
-                  const m = deal.messages.find((x) => x.id === a.messageId)!;
-                  return (
-                    <li key={a.messageId} className="flex items-center gap-2 border-t border-line py-1.5 first:border-t-0">
-                      {m.kind === "pdf" ? <FileText size={14} strokeWidth={1.5} className="shrink-0 text-tone-danger-fg" aria-hidden /> : <Mail size={14} strokeWidth={1.5} className="shrink-0 text-ink-muted" aria-hidden />}
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-xs text-ink">{m.kind === "pdf" ? m.filename : m.subject.replace(/^RE: /, "")}</span>
-                        <span className="block truncate text-xs text-ink-muted">
-                          {m.from.name} · {fmtDate(m.date)}
-                        </span>
+              <h2 className="text-h3 font-medium text-ink">Documents</h2>
+              <ul className="mt-2 space-y-2">
+                {groups.map(({ t, n, pdf }) => (
+                  <li key={t.id} className="flex items-center gap-2.5">
+                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-chip bg-surface-alt text-teal">
+                      <Mail size={15} strokeWidth={1.5} aria-hidden />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-small text-ink">{t.subject}</span>
+                      <span className="block text-xs text-ink-muted">
+                        {n - (pdf ? 1 : 0)} email{n - (pdf ? 1 : 0) === 1 ? "" : "s"}
+                        {pdf ? " and the quote PDF" : ""} · from Outlook
                       </span>
-                    </li>
-                  );
-                })}
+                    </span>
+                  </li>
+                ))}
               </ul>
-              <div className="mt-3 flex flex-col items-center rounded-chip border border-dashed border-line-strong px-3 py-4 text-center" aria-hidden>
-                <UploadCloud size={20} strokeWidth={1.5} className="text-ink-muted" />
-                <span className="mt-1 text-xs text-ink-muted">Drag other files here, or browse</span>
+              <div className="mt-3 flex items-center justify-center gap-2 rounded-chip border border-dashed border-line-strong py-3 text-xs text-ink-muted" aria-hidden>
+                <UploadCloud size={16} strokeWidth={1.5} /> Drop other files here
               </div>
             </section>
 
-            <section className="rounded-card bg-white p-4 shadow-card" data-tour="summary" aria-label="Request summary">
-              <h2 className="text-h3 text-teal">Request summary</h2>
-              <dl className="mt-2 space-y-1.5 text-small">
+            <section className="rounded-card bg-white p-4 shadow-card" data-tour="summary" aria-label="Submit">
+              <dl className="space-y-1.5 text-small">
                 {[
-                  ["Fields filled from email", `${filled} of 7`],
+                  ["Filled from email", `${filled} of 7`],
                   ["Typed by hand", String(view.typedByHand)],
-                  ["Agreed terms, with sources", String(agreed.length)],
-                  ["Conflicts to settle", String(view.terms.filter((t) => t.needsDecision).length)],
-                  ["Open items for Legal", String(view.openForLegal.length)],
-                  ["Route", view.route ? view.route.queue : "Set when value and data access are known"],
+                  ["Flagged for Legal", String(view.openForLegal.length + (conflict ? 1 : 0))],
                 ].map(([k, v]) => (
                   <div key={k} className="flex justify-between gap-3">
                     <dt className="text-ink-muted">{k}</dt>
-                    <dd className="text-right text-ink">{v}</dd>
+                    <dd className="font-medium text-ink">{v}</dd>
                   </div>
                 ))}
               </dl>
-              <div className="mt-3 flex flex-wrap gap-1">
-                <HonestyChip kind="ai" />
-                <HonestyChip kind="live" title="Citations, contradictions and routing are checked by code in your browser" />
-              </div>
+              <label className="mt-3 flex cursor-pointer items-start gap-2.5 border-t border-line pt-3 text-small text-ink" data-tour="confirm-check">
+                <input type="checkbox" checked={checked} onChange={(e) => setChecked(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--brand-primary)]" />
+                I checked these values against their sources
+              </label>
+              <Button
+                variant="primary"
+                className="mt-3 w-full"
+                disabled={blocked || !checked || ds.submit.status === "pending"}
+                onClick={() => actions.confirmAndSubmit()}
+                data-tour="submit"
+                title={blocked ? "Pick the payment terms first" : !checked ? "Tick the check first" : undefined}
+              >
+                {ds.submit.status === "pending" ? "Submitting" : "Submit request"}
+              </Button>
+              {ds.submit.status === "failed" && <p className="mt-2 text-xs text-tone-danger-fg">{ds.submit.error} Retry is safe.</p>}
             </section>
           </div>
         </div>
       </div>
-
-      <Modal open={ds.submit.status === "confirming" || ds.submit.status === "pending" || ds.submit.status === "failed"} onOpenChange={(o) => !o && actions.cancelSubmit()} title={`Submit ${dealId} to Legal`}>
-        <p className="text-small text-ink">
-          {agreed.length} agreed terms go with their sources. {view.openForLegal.length} items go as open, with a reason. Nothing was typed by hand.
-        </p>
-        <Tick tour="confirm-check" className="mt-3 border border-line" checked={checked} onChange={setChecked} label="I checked the prefilled values against their cited emails" />
-        {ds.submit.status === "failed" && <p className="mt-2 text-small text-tone-danger-fg">{ds.submit.error} Retry is safe: it will not create a second request.</p>}
-        <div className="mt-4 flex justify-between gap-3">
-          <Button variant="secondary" onClick={() => actions.cancelSubmit()}>
-            Back
-          </Button>
-          <Button variant="primary" disabled={!checked || ds.submit.status === "pending"} onClick={() => actions.confirmAndSubmit()} data-tour="confirm-submit">
-            {ds.submit.status === "pending" ? "Submitting" : "Submit request"}
-          </Button>
-        </div>
-      </Modal>
     </SirionChrome>
   );
 }
 
 function ConflictRow({ t }: { t: TermView }) {
   const opts = t.conflict?.options ?? [];
-  const resolved = t.resolution;
-  const where = (id: string, author: string) => (id.startsWith("pdf") ? "the quote PDF" : `${author}'s email`);
-  if (resolved) {
-    return (
-      <Row label={t.label} tour={`term-${t.key}`} cites={resolved.type === "picked" ? <Cite messageId={resolved.messageId} quote={opts.find((o) => o.messageId === resolved.messageId)?.quote} /> : undefined}>
-        <span className="flex flex-wrap items-center gap-2">
-          {resolved.type === "open" ? "Not settled" : resolved.value}
-          <StatusBadge status={resolved.type === "open" ? "openForLegal" : "accepted"} label={resolved.type === "open" ? "Sent to Legal as open" : "Picked by you"} />
-          <button onClick={() => actions.resolveTerm(t.key, undefined)} className="min-h-9 px-1 text-xs text-teal hover:underline">
-            Change
-          </button>
-        </span>
-      </Row>
-    );
-  }
+  const picked = t.resolution?.type === "picked" ? t.resolution.value : null;
+  const where = (id: string, author: string) => (id.startsWith("pdf") ? "Quote PDF" : `${author.split(" ")[0]}'s email`);
   return (
-    <div className="my-2 rounded-chip border border-quartz p-3" data-tour={`conflict-${t.key}`} role="group" aria-label={`${t.label}: values conflict`}>
-      <p className="flex flex-wrap items-center gap-2 text-small text-ink">
-        <Split size={15} strokeWidth={1.5} className="text-tone-danger-fg" aria-hidden />
-        <span>
-          <strong className="font-medium">{t.label}:</strong> {opts.map((o) => `${where(o.messageId, o.author)} says ${o.value}`).join(", but ")}.
-        </span>
-      </p>
-      <p className="mt-0.5 text-xs text-ink-muted">Pick the one that holds, or let Legal settle it.</p>
-      <div className="mt-2 flex flex-wrap items-center gap-2" data-tour={`options-${t.key}`}>
-        {opts.map((o, i) => (
-          <span key={i} className="inline-flex items-center gap-1">
-            <Button size="sm" variant="secondary" onClick={() => actions.resolveTerm(t.key, { type: "picked", value: o.value, messageId: o.messageId })} data-tour={`pick-${t.key}-${i}`}>
-              Use {o.value}
-            </Button>
-            <Cite messageId={o.messageId} quote={o.quote} />
-          </span>
-        ))}
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() =>
-            actions.resolveTerm(t.key, {
-              type: "open",
-              reason: opts.map((o) => `${o.value} (${where(o.messageId, o.author)}, ${fmtDate(o.date)})`).join(" vs ") + ". Confirm which applies.",
-              owner: "Legal",
-            })
-          }
-          data-tour={`mark-open-${t.key}`}
-          icon={<Flag size={14} strokeWidth={1.5} aria-hidden />}
-        >
-          Send to Legal as open
-        </Button>
+    <div className="border-t border-line py-2.5 sm:grid sm:grid-cols-[170px_1fr] sm:gap-x-3" data-tour={`term-${t.key}`}>
+      <span className="text-small text-ink-muted">{t.label}</span>
+      <div>
+        {!picked && <p className="mb-1.5 text-small text-ink">The email and the quote disagree. Which holds?</p>}
+        <div className="inline-flex rounded-button border border-line-strong p-0.5" role="radiogroup" aria-label={`${t.label}: pick a value`} data-tour={`options-${t.key}`}>
+          {opts.map((o, i) => {
+            const on = picked === o.value;
+            return (
+              <button
+                key={i}
+                role="radio"
+                aria-checked={on}
+                onClick={() => actions.resolveTerm(t.key, { type: "picked", value: o.value, messageId: o.messageId })}
+                className={cx("flex min-h-10 items-center gap-1.5 rounded-[10px] px-3 text-small", on ? "bg-teal text-white" : "text-ink hover:bg-surface-alt")}
+                data-tour={`pick-${t.key}-${i}`}
+              >
+                {on && <Check size={14} strokeWidth={2} aria-hidden />}
+                {o.value}
+                <span className={cx("text-xs", on ? "text-white" : "text-ink-muted")}>· {where(o.messageId, o.author)}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
 }
 
-export function LegalView() {
+/** The end of the story: the intake request exists in Sirion. */
+function Created() {
   const ds = useApp((s) => s.deals[s.dealId]);
   const view = useDealView();
-  const deal = view.deal;
-  const evidenced = view.terms.filter((t) => (t.status === "accepted" || t.status === "offEmail") && t.confirmed);
-  const openTerms = view.terms.filter((t) => !evidenced.includes(t));
+  const value = view.core.find((c) => c.key === "value")?.value;
   return (
-    <SirionChrome crumb={`Legal intake / ${ds.submit.requestId}`}>
-      <div className="mx-auto max-w-[980px] space-y-3" data-tour="legal">
-        <div className="rounded-card bg-white px-5 py-3 shadow-card">
-          <h1 className="text-h2 text-ink">Legal intake: {ds.submit.requestId}</h1>
-          <p className="text-small text-ink-muted">
-            {deal.supplier.legalEntity} · from {deal.owner.name} · {view.route?.queue} · seen by {DEV.name}
+    <SirionChrome crumb={`Requests / ${ds.submit.requestId}`}>
+      <div className="flex min-h-full items-center justify-center py-6">
+        <section className="w-full max-w-[560px] rounded-card bg-white p-8 text-center shadow-card fade-in" role="status" data-tour="receipt">
+          <span className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-full bg-teal text-white">
+            <Check size={28} strokeWidth={2} aria-hidden />
+          </span>
+          <h1 className="mt-4 text-h1 text-ink">Intake request created</h1>
+          <p className="mt-1 text-h3 font-medium text-teal">{ds.submit.requestId}</p>
+          <p className="mt-2 text-small text-ink-muted">
+            {view.deal.supplier.name} · {value} · routed to {view.route?.queue ?? "Legal"}
           </p>
-        </div>
-        <section className="rounded-card bg-white p-5 shadow-card" data-tour="legal-evidenced" aria-label="Agreed terms">
-          <h2 className="text-h3 text-teal">Agreed by both sides, with sources</h2>
-          {evidenced.map((t) => (
-            <Row key={t.key} label={t.label} cites={<TermCites t={t} />}>
-              {t.value}
-            </Row>
-          ))}
-        </section>
-        <section className="rounded-card bg-white p-5 shadow-card" data-tour="legal-open" aria-label="Open items">
-          <h2 className="text-h3 text-teal">Open: for Legal to settle</h2>
-          {openTerms.map((t) => (
-            <Row key={t.key} label={t.label}>
-              {t.resolution?.type === "open" ? t.resolution.reason : reasonFor(t)}
-              <span className="block text-xs text-ink-muted">Owner: {t.openOwner}</span>
-            </Row>
-          ))}
-        </section>
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-card bg-white px-5 py-3 shadow-card">
-          <p className="text-small text-ink-muted" role="status">
-            {ds.legalDecision
-              ? ds.legalDecision === "start"
-                ? "Recorded: Legal started drafting without asking for context. That is the second half of the north star."
-                : "Recorded: Legal asked procurement for more context."
-              : "Can Legal start drafting from this alone? Their answer is recorded."}
-          </p>
-          <div className="flex gap-4">
-            <Button variant="secondary" onClick={() => actions.legalDecide("ask")} icon={<MessageSquareReply size={16} strokeWidth={1.5} aria-hidden />} disabled={!!ds.legalDecision}>
-              Ask procurement
+          <dl className="mt-6 grid grid-cols-3 gap-2 border-t border-line pt-5" data-tour="typed-count">
+            {[
+              [`${view.core.filter((c) => c.value !== null).length}/7`, "fields from email"],
+              [String(view.typedByHand), "typed by hand"],
+              [String(view.openForLegal.length), "flagged for Legal"],
+            ].map(([n, l]) => (
+              <div key={l}>
+                <dt className="text-h1 text-ink">{n}</dt>
+                <dd className="text-xs text-ink-muted">{l}</dd>
+              </div>
+            ))}
+          </dl>
+          <div className="mt-6 flex justify-center gap-3">
+            <Button variant="secondary" onClick={() => actions.setView("inbox")} icon={<ArrowLeft size={15} strokeWidth={1.5} aria-hidden />}>
+              Back to Outlook
             </Button>
-            <Button variant="primary" onClick={() => actions.legalDecide("start")} icon={<FileSignature size={16} strokeWidth={1.5} aria-hidden />} disabled={!!ds.legalDecision} data-tour="start-drafting">
-              Start drafting
+            <Button variant="ghost" onClick={() => actions.resetDeal()} icon={<RotateCcw size={15} strokeWidth={1.5} aria-hidden />}>
+              Start again
             </Button>
           </div>
-        </div>
+        </section>
       </div>
     </SirionChrome>
   );
