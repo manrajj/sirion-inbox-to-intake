@@ -200,9 +200,16 @@ export function checkChaseDraft(draft: ChaseDraftOutput, deal: Deal, messagesByI
   const reasons: string[] = [];
   const usable: string[] = [];
   const excluded: string[] = [];
+  // The supplier's own thread: a thread whose only outside sender is the supplier.
+  const ownThread = (threadId: string) => {
+    const t = deal.threads.find((x) => x.id === threadId);
+    if (!t) return false;
+    const parties = t.messageIds.map((mid) => messagesById.get(mid)).filter(Boolean).map((m) => senderParty(m!, deal));
+    return parties.includes("supplier") && !parties.includes("other");
+  };
   for (const id of draft.sourceMessageIds) {
     const m = messagesById.get(id);
-    if (m && senderParty(m, deal) === "supplier") usable.push(id);
+    if (m && ownThread(m.threadId)) usable.push(id);
     else excluded.push(id);
   }
   if (excluded.length > 0) reasons.push(`${excluded.length} source${excluded.length > 1 ? "s" : ""} outside ${deal.supplier.name}'s own thread removed`);

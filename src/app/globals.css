@@ -1,0 +1,116 @@
+@import "../styles/tokens.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* Visible focus ring everywhere (WCAG 2.4.7). */
+:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.on-stage :focus-visible {
+  outline-color: var(--brand-secondary);
+}
+
+/* Feedback timing: 150 to 200 ms for hover, press and focus (Doherty). */
+button,
+a,
+[role="tab"],
+input,
+select,
+textarea {
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    opacity 0.18s ease;
+}
+
+/* The peak moment: the cited sentence lights up. */
+.cite-mark {
+  background: rgb(129 139 251 / 0.25); /* Lilac at 25% */
+  box-shadow: inset 2px 0 0 var(--brand-primary);
+  padding: 1px 2px 1px 6px;
+  border-radius: 2px;
+  animation: cite-in 0.3s ease both;
+}
+@keyframes cite-in {
+  from {
+    background: rgb(129 139 251 / 0);
+    box-shadow: inset 0 0 0 var(--brand-primary);
+  }
+  to {
+    background: rgb(129 139 251 / 0.25);
+    box-shadow: inset 2px 0 0 var(--brand-primary);
+  }
+}
+
+.fade-in {
+  animation: fade-in 0.3s ease both;
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-alt) 0%, #ffffff 50%, var(--surface-alt) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s ease infinite;
+}
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* Faint Lilac and Cloud radial glow behind product frames on light pages. */
+.glow-light {
+  background: radial-gradient(60% 60% at 50% 40%, rgb(129 139 251 / 0.16) 0%, rgb(245 246 246 / 0) 70%);
+}
+/* Teal and Midnight radial glow on the Start here hero. */
+.glow-stage {
+  background: radial-gradient(55% 60% at 70% 50%, rgb(13 94 104 / 0.55) 0%, rgb(11 24 33 / 0) 70%);
+}
+
+.thin-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
