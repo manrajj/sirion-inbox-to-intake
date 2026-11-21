@@ -186,10 +186,16 @@ export function threadOf(deal: Deal, messageId: string) {
 
 export function threadAttachments(deal: Deal, messageId: string): Message[] {
   const t = threadOf(deal, messageId);
-  return t.messageIds.map((id) => deal.messages.find((m) => m.id === id)!).filter((m) => m.kind === "pdf");
+  const ids = new Set<string>();
+  t.messageIds.forEach((id) => {
+    const m = deal.messages.find((x) => x.id === id)!;
+    if (m.kind === "pdf") ids.add(id);
+    (m.attachmentIds ?? []).forEach((a) => ids.add(a));
+  });
+  return Array.from(ids).map((id) => deal.messages.find((m) => m.id === id)!);
 }
 
-function itemsFromTicks(deal: Deal, ds: DealState, openId: string): { ids: string[]; via: AddedItem["via"] } {
+export function itemsFromTicks(deal: Deal, ds: DealState, openId: string): { ids: string[]; via: AddedItem["via"] } {
   const ids: string[] = [];
   const t = threadOf(deal, openId);
   if (ds.ticks["thread"]) {

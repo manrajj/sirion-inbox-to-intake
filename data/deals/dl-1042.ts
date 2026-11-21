@@ -17,7 +17,7 @@ export const DL1042: Deal = {
   openMessageId: "bl-06",
   threads: [
     { id: "t-req", subject: "Request: marketing analytics platform", label: "Priya's request (internal)", messageIds: ["rq-01", "rq-02", "rq-03"] },
-    { id: "t-bl", subject: "Brightline proposal for Halden", label: "Brightline negotiation", messageIds: ["bl-01", "bl-02", "bl-03", "bl-04", "bl-05", "bl-06"] },
+    { id: "t-bl", subject: "Brightline proposal for Halden", label: "Brightline negotiation", messageIds: ["bl-01", "bl-02", "bl-03", "bl-04", "bl-05", "bl-06", "pdf-q2291"] },
     { id: "t-fin", subject: "Budget check: Brightline analytics", label: "Finance budget check (internal)", messageIds: ["fn-01", "fn-02"] },
     { id: "t-cx", subject: "Corvex quote: analytics platform", label: "Corvex quote (rival)", messageIds: ["cx-01"] },
   ],
