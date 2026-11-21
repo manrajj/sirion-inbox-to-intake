@@ -21,7 +21,7 @@ export default function Page() {
     <NarrativePage eyebrow="Stated assumptions" title="What we assume, and how we would check" next={{ href: "/product/", label: "Live product" }}>
       <ul className="grid gap-2 md:grid-cols-3">
         {ASSUMPTIONS.map((a, i) => (
-          <li key={a.text} className="flex flex-col rounded-card border border-line p-4">
+          <li key={a.text} className="flex flex-col rounded-card border border-line p-4 bg-white shadow-card">
             <div className="flex items-center justify-between text-xs text-ink-muted">
               <span>{a.area}</span>
               <span>A{i + 1}</span>
@@ -31,7 +31,7 @@ export default function Page() {
           </li>
         ))}
       </ul>
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-card bg-surface-alt p-4">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-card p-4 bg-white shadow-card">
         <p className="text-small text-ink">The biggest risk is that the problem is smaller than assumed. The learning plan tests that first.</p>
         <Link href="/next/" className="inline-flex min-h-11 items-center gap-2 text-small text-teal hover:underline">
           See the learning plan <ArrowRight size={15} strokeWidth={1.5} aria-hidden />

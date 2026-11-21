@@ -60,7 +60,7 @@ The model's job is to extract and classify. Code decides what is shown as agreed
 
 ## UX laws applied
 
-1. Jakob: mail layout and a right-hand add-in pane, as in Outlook and Gmail; review uses a reading pane.
+1. Jakob: the inbox follows Outlook's web layout (command bar, folders, message list, reading pane, add-in pane on the right); review uses a reading pane.
 2. Fitts: targets at least 44 px, 8 px apart; Submit sits after the last field; Confirm and Change are never adjacent.
 3. Miller: fields in four groups; IDs and money formatted; nothing to remember across screens.
 4. Hick: one primary action per screen; detail behind Timeline, Checks and Details.
@@ -98,8 +98,8 @@ Fixed during the audit:
 ### Sirion Kit
 
 - No Lilac text on white: Pass. Lilac is used only on the Midnight stage (hero, film).
-- No hex outside the token table: Pass. All colours come from `src/styles/tokens.css`; the film cursor uses token variables.
-- One Teal or Amethyst moment per view: Pass. Amethyst appears once, on "Watch the 2-minute walkthrough".
+- No hex outside the token table: Pass. All colours come from `src/styles/tokens.css`, including the mock mail client's blue and greys; the film cursor uses token variables.
+- One Teal or Amethyst moment per view: Pass. Amethyst appears once, on "Watch the 2-minute walkthrough". The mock inbox uses its own mail blue, so Sirion's teal marks only the add-in.
 - Contrast 4.5:1 or better: Pass. An automated scan of every text element on all nine pages, at 1280 and 390 px wide, found no failures.
 - Keyboard and focus: Pass. Skip link first, visible focus ring, the main flow completes by keyboard alone (tested), `prefers-reduced-motion` respected.
 

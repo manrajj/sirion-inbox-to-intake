@@ -26,7 +26,7 @@ export default function Page() {
             <h2 className="mb-2 text-h3 text-ink-muted">Who it affects, in order</h2>
             <ol className="grid grid-cols-2 gap-2">
               {WHO.map((w, i) => (
-                <li key={w.who} className={`rounded-card border p-3 ${w.first ? "border-teal" : "border-line"}`}>
+                <li key={w.who} className={`rounded-card border bg-white p-3 shadow-card ${w.first ? "border-teal" : "border-line"}`}>
                   <div className="text-small text-ink">
                     {i + 1}. {w.who}
                   </div>
@@ -35,11 +35,11 @@ export default function Page() {
               ))}
             </ol>
           </section>
-          <section className="rounded-card bg-surface-alt p-4" aria-label="Core pain">
+          <section className="rounded-card p-4 bg-white shadow-card" aria-label="Core pain">
             <h2 className="text-h3 text-teal">The core pain: raising the request</h2>
             <p className="mt-1 text-small text-ink">The deal sits across several threads and attachments. The owner reopens them, works out what was finally agreed and retypes it. That is slow, and under time pressure owners submit a thin summary.</p>
           </section>
-          <section className="rounded-card border border-line p-4" aria-label="Knock-on pain">
+          <section className="rounded-card border border-line p-4 bg-white shadow-card" aria-label="Knock-on pain">
             <h2 className="text-h3 text-ink">The knock-on pain: what gets lost</h2>
             <p className="mt-1 text-small text-ink">Conditions, reversals and open items get flattened when retyped. Legal rebuilds context by email, and anything it misses lands in the contract.</p>
           </section>
@@ -48,7 +48,7 @@ export default function Page() {
           <h2 className="mb-2 text-h3 text-ink-muted">Why we believe it is real, and how we will test it</h2>
           <ul className="space-y-2">
             {EVIDENCE.map((e) => (
-              <li key={e.claim} className="rounded-card border border-line p-3">
+              <li key={e.claim} className="rounded-card border border-line p-3 bg-white shadow-card">
                 <p className="text-small text-ink">{e.claim}</p>
                 <div className="mt-1.5">
                   <SourceTag type={e.type}>{e.source}</SourceTag>

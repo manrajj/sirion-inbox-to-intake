@@ -27,14 +27,14 @@ export function NextDetails() {
       <Drawer trigger={<Button variant="secondary">Open questions</Button>} title="Open questions">
         <ul className="space-y-2">
           {QUESTIONS.map((q) => (
-            <li key={q} className="rounded-card border border-line p-3 text-small text-ink">{q}</li>
+            <li key={q} className="rounded-card border border-line p-3 text-small text-ink bg-white shadow-card">{q}</li>
           ))}
         </ul>
       </Drawer>
       <Drawer trigger={<Button variant="secondary">Risks</Button>} title="Risks and mitigations">
         <ul className="space-y-2">
           {RISKS.map(([r, m]) => (
-            <li key={r} className="rounded-card border border-line p-3 text-small">
+            <li key={r} className="rounded-card border border-line p-3 text-small bg-white shadow-card">
               <div className="text-ink">{r}</div>
               <div className="text-ink-muted">{m}</div>
             </li>

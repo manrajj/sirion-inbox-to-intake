@@ -20,14 +20,14 @@ export default function Page() {
     <NarrativePage eyebrow="Brief item 1 · Why this stage" title="Fix the brief's losses where they start" next={{ href: "/problem/", label: "The problem" }}>
       <div className="grid gap-4 md:grid-cols-3">
         {POINTS.map((p) => (
-          <section key={p.title} className="rounded-card border border-line p-5">
+          <section key={p.title} className="rounded-card border border-line p-5 bg-white shadow-card">
             <p.icon size={20} strokeWidth={1.5} className="text-ink-muted" aria-hidden />
             <h2 className="mt-2 text-h3 text-ink">{p.title}</h2>
             <p className="mt-1 text-small text-ink-muted">{p.body}</p>
           </section>
         ))}
       </div>
-      <section className="mt-6 rounded-card bg-surface-alt p-5" aria-label="How a term lost at intake becomes the brief's losses">
+      <section className="mt-6 rounded-card p-5 bg-white shadow-card" aria-label="How a term lost at intake becomes the brief's losses">
         <h2 className="text-h2 text-ink">How a term lost at intake becomes the brief's losses</h2>
         <div className="mt-1 hidden grid-cols-[1fr_24px_1fr_24px_1fr] gap-2 text-xs text-ink-muted md:grid">
           <span>Lost at intake</span>

@@ -58,11 +58,11 @@ export function Sidebar() {
 
   return (
     <aside
-      className="flex w-full shrink-0 flex-col border-l border-line bg-surface-alt md:w-[360px]"
+      className="flex w-full shrink-0 flex-col overflow-hidden rounded-[8px] bg-surface-alt shadow-card md:w-[360px]"
       aria-label="Sirion deal sidebar"
       data-tour="sidebar"
     >
-      <header className="flex items-center justify-between border-b border-line px-4 py-2">
+      <header className="flex items-center justify-between border-b border-line bg-white px-4 py-1.5">
         <span className="flex items-center gap-2 text-h3 text-ink">
           <CircleDot size={16} strokeWidth={1.5} className="text-teal" aria-hidden /> Sirion
         </span>

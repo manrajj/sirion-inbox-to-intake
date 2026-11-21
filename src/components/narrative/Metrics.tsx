@@ -49,7 +49,7 @@ export function Metrics() {
   const northStar = (
     <div className="grid gap-4 pt-4 lg:grid-cols-[1fr_340px]">
       <div className="space-y-3">
-        <section className="rounded-card border border-line p-5" aria-label="North star">
+        <section className="rounded-card border border-line p-5 bg-white shadow-card" aria-label="North star">
           <div className="text-xs text-ink-muted">North star</div>
           <h2 className="text-h1 text-teal">Clean intake rate</h2>
           <p className="mt-2 text-small text-ink">
@@ -71,7 +71,7 @@ export function Metrics() {
             Denominator: all eligible supplier deals, including those raised manually or abandoned, so leaving hard deals out of the tool lowers the score. Reported weekly as two halves, so a drop shows which side failed.
           </p>
         </section>
-        <section className="flex items-start gap-3 rounded-card border border-line p-4" aria-label="Guardrail tests">
+        <section className="flex items-start gap-3 rounded-card border border-line p-4 bg-white shadow-card" aria-label="Guardrail tests">
           <ShieldCheck size={22} strokeWidth={1.5} className="mt-0.5 shrink-0 text-teal" aria-hidden />
           <div>
             <div className="text-h3 text-ink" data-tour="guardrail-count">
@@ -82,7 +82,7 @@ export function Metrics() {
           </div>
         </section>
       </div>
-      <aside className="rounded-card bg-surface-alt p-4" aria-label="This session" data-tour="this-session">
+      <aside className="rounded-card p-4 bg-white shadow-card" aria-label="This session" data-tour="this-session">
         <div className="flex items-center justify-between">
           <h3 className="text-h3 text-ink">This session</h3>
           <HonestyChip kind="live" />
@@ -95,13 +95,13 @@ export function Metrics() {
             ["Citations verified", counters.cites],
             ["Requests submitted", counters.submitted],
           ].map(([k, v]) => (
-            <div key={k as string} className="rounded-chip bg-white p-3">
+            <div key={k as string} className="rounded-chip bg-surface-alt p-3">
               <dd className="text-[40px] leading-[44px] tracking-[-0.02em] text-teal">{v}</dd>
               <dt className="text-xs text-ink-muted">{k}</dt>
             </div>
           ))}
         </dl>
-        <p className="mt-2 rounded-chip bg-white p-3 text-xs text-ink">
+        <p className="mt-2 rounded-chip bg-surface-alt p-3 text-xs text-ink">
           Legal decision:{" "}
           {counters.legalStart + counters.legalAsk === 0 ? (
             <span className="text-ink-muted">none yet</span>
@@ -143,7 +143,7 @@ export function Metrics() {
           </tbody>
         </table></div>
       </section>
-      <section aria-label="Guardrails" className="rounded-card bg-surface-alt p-4">
+      <section aria-label="Guardrails" className="rounded-card p-4 bg-white shadow-card">
         <h3 className="mb-2 text-h3 text-ink">Guardrails and counter metrics</h3>
         <ul className="space-y-2">
           {GUARDRAILS.map(([k, v]) => (
@@ -161,7 +161,7 @@ export function Metrics() {
       <h3 className="mb-2 text-h3 text-ink">What would make us rethink</h3>
       <ul className="grid gap-2 md:grid-cols-2">
         {RETHINK.map(([s, t]) => (
-          <li key={s} className="rounded-card border border-line p-4">
+          <li key={s} className="rounded-card border border-line p-4 bg-white shadow-card">
             <div className="text-small text-ink">{s}</div>
             <div className="mt-1 text-small text-teal">{t}</div>
           </li>
@@ -173,7 +173,7 @@ export function Metrics() {
 
   const measure = (
     <div className="grid gap-4 pt-4 md:grid-cols-2">
-      <section className="rounded-card border border-line p-4" aria-label="Instrumented">
+      <section className="rounded-card border border-line p-4 bg-white shadow-card" aria-label="Instrumented">
         <h3 className="text-h3 text-ink">What is instrumented</h3>
         <ul className="mt-2 space-y-1 text-small text-ink">
           <li>Every add: deal ID, message ID, content hash, who, when, picked or suggested</li>
@@ -183,7 +183,7 @@ export function Metrics() {
           <li>Legal: started drafting or asked procurement</li>
         </ul>
       </section>
-      <section className="rounded-card border border-line p-4" aria-label="Pilot">
+      <section className="rounded-card border border-line p-4 bg-white shadow-card" aria-label="Pilot">
         <h3 className="text-h3 text-ink">How a pilot runs</h3>
         <ul className="mt-2 space-y-1 text-small text-ink">
           <li>Shadow trial first: the sidebar runs beside the manual process; owners do not submit from it</li>

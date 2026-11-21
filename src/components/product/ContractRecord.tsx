@@ -25,7 +25,7 @@ export function ContractRecord() {
   const srcMsg = src ? byId.get(src.messageId) : undefined;
 
   return (
-    <div className="thin-scroll h-full overflow-y-auto p-6" data-tour="record">
+    <div className="thin-scroll h-full overflow-y-auto bg-canvas p-6" data-tour="record">
       <div className="mx-auto max-w-[1160px]">
         <div className="mb-3 flex flex-wrap items-center gap-3">
           <Button size="sm" variant="ghost" onClick={() => actions.setView("legal")} icon={<ArrowLeft size={15} strokeWidth={1.5} aria-hidden />}>
@@ -50,7 +50,7 @@ export function ContractRecord() {
         </div>
 
         <div className="grid gap-4 lg:grid-cols-[1fr_400px]">
-          <section aria-label="Clauses" className="rounded-card border border-line bg-white">
+          <section aria-label="Clauses" className="rounded-card border border-line bg-white shadow-card">
             {CLAUSES.map((c) => (
               <div key={c.id} className={cx("border-b border-line p-4 last:border-b-0", c.trail && "bg-surface-alt")} data-tour={c.trail ? "clause-uplift" : undefined}>
                 <div className="flex items-center gap-2">
@@ -69,7 +69,7 @@ export function ContractRecord() {
 
           <aside aria-label="Deal trail" className="space-y-3">
             {trailOpen && (
-              <section className="rounded-card border border-line bg-white p-4 fade-in" data-tour="deal-trail">
+              <section className="rounded-card border border-line bg-white shadow-card p-4 fade-in" data-tour="deal-trail">
                 <div className="mb-2 flex flex-wrap items-center gap-2">
                   <History size={15} strokeWidth={1.5} className="text-teal" aria-hidden />
                   <h3 className="text-h3 text-ink">Deal trail for 3.2</h3>
@@ -102,7 +102,7 @@ export function ContractRecord() {
               </section>
             )}
             {srcMsg && (
-              <section className="rounded-card border border-line bg-surface-alt p-4 fade-in">
+              <section className="rounded-card border border-line bg-white p-4 shadow-card fade-in">
                 <SourceMessage message={srcMsg} quote={src?.quote} />
               </section>
             )}

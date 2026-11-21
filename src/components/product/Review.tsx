@@ -42,8 +42,8 @@ export function Review() {
   const coreBy = (g: "supplier" | "internal") => view.core.filter((c) => CORE_FIELDS.find((f) => f.key === c.key)!.group === g);
 
   return (
-    <div className="flex h-full min-h-0 flex-col" data-tour="review">
-      <div className="flex flex-wrap items-center gap-3 border-b border-line px-4 py-2">
+    <div className="flex h-full min-h-0 flex-col bg-canvas" data-tour="review">
+      <div className="flex flex-wrap items-center gap-3 border-b border-line bg-white px-4 py-2">
         <Button size="sm" variant="ghost" onClick={() => actions.setView("inbox")} icon={<ArrowLeft size={15} strokeWidth={1.5} aria-hidden />}>
           Inbox
         </Button>
@@ -59,7 +59,7 @@ export function Review() {
       </div>
       <CoveragePanel />
       <div className="flex min-h-0 flex-1">
-        <div className="thin-scroll min-w-0 flex-1 overflow-y-auto px-4 pb-6 pt-3">
+        <div className="thin-scroll min-w-0 flex-1 overflow-y-auto px-4 pb-6 pt-4">
           {view.suspicious.length > 0 && (
             <div className="mb-3 rounded-card border-2 border-quartz bg-white p-3 text-small text-ink">
               Supplier text tried to instruct the AI (“{view.suspicious[0].quote.slice(0, 70)}…”). Ignored. The route comes from Legal's rules only.
@@ -90,12 +90,12 @@ export function Review() {
           </Group>
           <SubmitBar />
         </div>
-        <aside className="thin-scroll hidden w-[42%] max-w-[520px] shrink-0 overflow-y-auto border-l border-line bg-surface-alt p-4 md:block" aria-label="Source viewer" data-tour="source-viewer">
+        <aside className="thin-scroll hidden w-[42%] max-w-[520px] shrink-0 overflow-y-auto border-l border-line bg-surface-alt p-4 pt-4 md:block" aria-label="Source viewer" data-tour="source-viewer">
           <div className="mb-2 flex items-center justify-between">
             <span className="text-small text-ink-muted">Source</span>
             {source?.quote && <span className="text-xs text-ink-muted">Cited sentence highlighted</span>}
           </div>
-          <div className="rounded-card border border-line bg-white p-4">
+          <div className="rounded-card bg-white p-4 shadow-card">
             {srcMsg ? (
               <SourceMessage message={srcMsg} quote={source?.quote} />
             ) : (
@@ -112,9 +112,9 @@ export function Review() {
 
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="mb-4" aria-label={title}>
-      <h3 className="mb-1 border-b border-line pb-1 text-h3 text-teal">{title}</h3>
-      <div>{children}</div>
+    <section className="mb-3 rounded-card bg-white px-4 pb-2 pt-3 shadow-card" aria-label={title}>
+      <h3 className="mb-1 text-h3 text-teal">{title}</h3>
+      <div className="[&>*:last-child]:border-b-0">{children}</div>
     </section>
   );
 }
@@ -473,7 +473,7 @@ function SubmitBar() {
   const submitted = !!ds.submit.requestId;
   const todo = view.blockers.filter((b) => b.kind !== "record");
   return (
-    <section className="mt-4 rounded-card border border-line bg-white p-4" aria-label="Submit" data-tour="submit-bar">
+    <section className="mt-4 rounded-card border border-line bg-white p-4 shadow-card" aria-label="Submit" data-tour="submit-bar">
       {todo.length > 0 && !submitted && (
         <div className="mb-3">
           <div className="text-small text-ink">{todo.length} to do before submit</div>

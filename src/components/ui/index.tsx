@@ -53,16 +53,16 @@ export const Button = React.forwardRef<
 // ---------------------------------------------------------------- Status badges
 
 const STATUS: Record<DisplayStatus, { label: string; icon: React.ElementType; cls: string }> = {
-  accepted: { label: "Accepted by both", icon: Check, cls: "bg-teal text-white" },
-  conditional: { label: "Conditional", icon: Clock, cls: "bg-lime text-ink" },
-  conflict: { label: "Conflict", icon: Split, cls: "bg-quartz text-ink" },
-  openForLegal: { label: "Open for Legal", icon: Flag, cls: "bg-lilac text-ink" },
-  offEmail: { label: "Owner-entered", icon: Pencil, cls: "bg-mint text-ink" },
+  accepted: { label: "Accepted by both", icon: Check, cls: "bg-tone-success-bg text-tone-success-fg" },
+  conditional: { label: "Conditional", icon: Clock, cls: "bg-tone-warn-bg text-tone-warn-fg" },
+  conflict: { label: "Conflict", icon: Split, cls: "bg-tone-danger-bg text-tone-danger-fg" },
+  openForLegal: { label: "Open for Legal", icon: Flag, cls: "bg-tone-info-bg text-tone-info-fg" },
+  offEmail: { label: "Owner-entered", icon: Pencil, cls: "bg-tone-success-bg text-tone-success-fg" },
   notNegotiated: { label: "Not yet negotiated", icon: CircleDashed, cls: "bg-white border border-line text-ink-muted" },
-  proposed: { label: "Proposed", icon: ArrowUpRight, cls: "bg-white border border-ink-muted text-ink" },
-  countered: { label: "Countered", icon: Repeat, cls: "bg-white border border-ink-muted text-ink" },
-  withdrawn: { label: "Withdrawn", icon: Undo2, cls: "bg-white border border-ink-muted text-ink" },
-  heldBack: { label: "Held back", icon: EyeOff, cls: "bg-white border-2 border-quartz text-ink" },
+  proposed: { label: "Proposed", icon: ArrowUpRight, cls: "bg-tone-neutral-bg text-ink" },
+  countered: { label: "Countered", icon: Repeat, cls: "bg-tone-neutral-bg text-ink" },
+  withdrawn: { label: "Withdrawn", icon: Undo2, cls: "bg-tone-neutral-bg text-ink-muted" },
+  heldBack: { label: "Held back", icon: EyeOff, cls: "bg-tone-danger-bg text-tone-danger-fg border border-quartz" },
 };
 
 export const STEP_STATUS: Record<string, DisplayStatus> = {
@@ -92,7 +92,7 @@ export function statusLabel(s: DisplayStatus) {
 
 export function SuspiciousBadge() {
   return (
-    <span className="inline-flex items-center gap-1 rounded-pill border border-quartz px-2.5 py-0.5 text-xs text-ink" style={{ paddingLeft: 10, paddingRight: 10 }}>
+    <span className="inline-flex items-center gap-1 rounded-pill bg-tone-danger-bg px-2.5 py-0.5 text-xs text-tone-danger-fg" style={{ paddingLeft: 10, paddingRight: 10 }}>
       <ShieldAlert size={13} strokeWidth={1.75} aria-hidden />
       Suspicious
     </span>
@@ -118,7 +118,7 @@ export function HonestyChip({ kind, className, title }: { kind: Honesty; classNa
 
 export function Eyebrow({ children, stage }: { children: React.ReactNode; stage?: boolean }) {
   return (
-    <span className={cx("inline-flex rounded-pill px-3 py-0.5 text-xs", stage ? "border border-ink-muted text-lilac" : "bg-surface-alt text-ink-muted")}>{children}</span>
+    <span className={cx("inline-flex rounded-pill px-3 py-0.5 text-xs", stage ? "border border-ink-muted text-lilac" : "border border-line bg-white text-ink-muted")}>{children}</span>
   );
 }
 
@@ -126,7 +126,7 @@ export function Eyebrow({ children, stage }: { children: React.ReactNode; stage?
 
 export function Card({ className, children, as: As = "div", ...rest }: React.HTMLAttributes<HTMLElement> & { as?: React.ElementType }) {
   return (
-    <As className={cx("rounded-card border border-line bg-white p-6", className)} {...rest}>
+    <As className={cx("rounded-card border border-line bg-white p-6 shadow-card", className)} {...rest}>
       {children}
     </As>
   );

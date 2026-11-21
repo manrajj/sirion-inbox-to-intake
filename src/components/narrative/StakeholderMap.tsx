@@ -156,7 +156,7 @@ export function StakeholderMap() {
         <p className="absolute bottom-2 left-3 text-xs text-ink-muted">Dashed lines are conflicts. Select a person or a line.</p>
       </div>
 
-      <aside className="flex flex-col rounded-card bg-surface-alt p-5" aria-live="polite" aria-label="Details">
+      <aside className="flex flex-col rounded-card p-5 bg-white shadow-card" aria-live="polite" aria-label="Details">
         {node && (
           <div className="fade-in" key={node.label}>
             <div className="text-xs text-ink-muted">{node.sub}</div>
@@ -197,7 +197,7 @@ export function StakeholderMap() {
                 <dt className="text-xs text-ink-muted">The trade-off</dt>
                 <dd className="text-ink">{conflict.tradeoff}</dd>
               </div>
-              <div className="rounded-chip border-l-2 border-teal bg-white p-3">
+              <div className="rounded-chip border-l-2 border-teal bg-tone-success-bg p-3">
                 <dt className="text-xs text-teal">How the product resolves it</dt>
                 <dd className="mt-1 text-ink">{conflict.resolution}</dd>
               </div>
@@ -227,7 +227,7 @@ function RolesDrawer() {
       <p className="mb-3 text-small text-ink">Designed for the procurement owner first. It must earn Legal's and IT's trust to be deployed.</p>
       <ul className="space-y-2">
         {ROLES.map(([role, who, wants, fears]) => (
-          <li key={role + who} className="rounded-card border border-line p-3">
+          <li key={role + who} className="rounded-card border border-line p-3 bg-white shadow-card">
             <div className="text-xs text-ink-muted">{role}</div>
             <div className="text-small text-ink">{who}</div>
             <div className="mt-1 text-xs text-ink">Wants: {wants}</div>

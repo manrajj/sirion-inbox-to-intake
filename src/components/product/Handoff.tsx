@@ -13,7 +13,7 @@ export function Receipt() {
   const view = useDealView();
   const p = buildPayload(view);
   return (
-    <div className="thin-scroll h-full overflow-y-auto p-6" data-tour="receipt">
+    <div className="thin-scroll h-full overflow-y-auto bg-canvas p-6" data-tour="receipt">
       <div className="mx-auto max-w-[880px]">
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <CheckCircle2 size={28} strokeWidth={1.5} className="text-teal" aria-hidden />
@@ -93,7 +93,7 @@ export function LegalView() {
       <div className="space-y-4">
         <section aria-label="Evidenced terms" data-tour="legal-evidenced">
           <h3 className="mb-1 text-h3 text-teal">Evidenced commercial position</h3>
-          <ul className="divide-y divide-line rounded-card border border-line bg-white">
+          <ul className="divide-y divide-line rounded-card border border-line bg-white shadow-card">
             {evidencedTerms.map((t) => (
               <li key={t.key} className="flex flex-wrap items-center gap-2 px-3 py-2">
                 <span className="w-44 text-small text-ink-muted">{t.label}</span>
@@ -114,7 +114,7 @@ export function LegalView() {
         </section>
         <section aria-label="Open items" data-tour="legal-open">
           <h3 className="mb-1 text-h3 text-teal">Open items</h3>
-          <ul className="divide-y divide-line rounded-card border border-line bg-white">
+          <ul className="divide-y divide-line rounded-card border border-line bg-white shadow-card">
             {openTerms.map((t) => (
               <li key={t.key} className="flex flex-wrap items-center gap-2 px-3 py-2">
                 <span className="w-44 text-small text-ink-muted">{t.label}</span>
@@ -125,7 +125,7 @@ export function LegalView() {
             ))}
           </ul>
         </section>
-        <section aria-label="Paper" className="rounded-card border border-line bg-white p-3">
+        <section aria-label="Paper" className="rounded-card border border-line bg-white shadow-card p-3">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-small text-ink-muted">Suggested paper</span>
             <span className="text-small text-ink">{view.contractType.suggestion}</span>
@@ -136,7 +136,7 @@ export function LegalView() {
           </p>
         </section>
       </div>
-      <aside className="rounded-card border border-line bg-surface-alt p-3" aria-label="Source">
+      <aside className="rounded-card border border-line bg-white p-3 shadow-card" aria-label="Source">
         {srcMsg ? <SourceMessage message={srcMsg} quote={src?.quote} /> : <p className="text-small text-ink-muted">Click a source number to read the sentence it came from.</p>}
       </aside>
     </div>
@@ -171,7 +171,7 @@ export function LegalView() {
           ["Payment terms", ref("payment")?.confirmed && ref("payment")?.value ? ref("payment")!.value : "Open for Legal"],
           ["Renewal date", p.core.termStart ?? "Not evidenced"],
         ].map(([k, v]) => (
-          <div key={k} className="rounded-card border border-line bg-white p-3">
+          <div key={k} className="rounded-card border border-line bg-white shadow-card p-3">
             <dt className="text-xs text-ink-muted">{k}</dt>
             <dd className="text-h3 text-ink">{v}</dd>
           </div>
@@ -181,7 +181,7 @@ export function LegalView() {
   );
 
   return (
-    <div className="thin-scroll h-full overflow-y-auto p-6" data-tour="legal">
+    <div className="thin-scroll h-full overflow-y-auto bg-canvas p-6" data-tour="legal">
       <div className="mx-auto max-w-[1100px]">
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="text-h1 text-ink">Legal intake: {ds.submit.requestId}</h2>

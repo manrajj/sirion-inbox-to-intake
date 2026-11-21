@@ -1,12 +1,14 @@
 /* Sirion Kit tokens (candidate-made kit inspired by Sirion's public brand; not official Sirion material). */
 :root {
   --surface: #ffffff;
-  --surface-alt: #f5f6f6; /* Cloud */
+  --surface-alt: #f4f6f8; /* Cloud, cooled slightly */
+  --canvas: #eef1f4; /* app background behind cards */
   --surface-stage: #0b1821; /* Midnight */
   --ink: #0b1821;
   --ink-muted: #5a646b;
   --ink-on-stage: #f5f6f6;
-  --line: #c9ced1;
+  --line: #d6dce1;
+  --line-strong: #8f9aa3; /* input and checkbox borders, 3:1 on white */
   --brand-primary: #0d5e68; /* Teal */
   --brand-secondary: #818bfb; /* Lilac */
   --brand-accent: #92429f; /* Amethyst */
@@ -16,6 +18,36 @@
   --lime: #e4e267;
   --quartz: #e69d8d;
   --glow-teal: 0 0 20px 0 #0d5e68;
+  --shadow-card: 0 1px 2px rgb(11 24 33 / 0.06), 0 2px 8px rgb(11 24 33 / 0.05);
+  --shadow-pop: 0 8px 28px rgb(11 24 33 / 0.16);
+
+  /* Status tones: soft tint behind, dark text in front (all 6:1 or better). */
+  --tone-success-bg: #e2f1ee;
+  --tone-success-fg: #0b4f57;
+  --tone-warn-bg: #fbf1c7;
+  --tone-warn-fg: #634c00;
+  --tone-danger-bg: #fde6e1;
+  --tone-danger-fg: #962a18;
+  --tone-info-bg: #eaecfe;
+  --tone-info-fg: #383c9c;
+  --tone-neutral-bg: #edf0f3;
+
+  /* Mail client mock: Fluent-style neutrals and blue, used only inside the mock inbox. */
+  --mail-blue: #0f6cbd;
+  --mail-blue-dark: #115ea3;
+  --mail-blue-soft: #ebf3fc;
+  --mail-selected: #cfe4fa;
+  --mail-bg: #f0f0f0;
+  --mail-pane: #fafafa;
+  --mail-text: #242424;
+  --mail-muted: #616161;
+  --mail-line: #e0e0e0;
+  --avatar-1: #0f6cbd;
+  --avatar-2: #6b4ea0;
+  --avatar-3: #a4262c;
+  --avatar-4: #036c70;
+  --avatar-5: #8a3707;
+  --avatar-6: #3b6c11;
 
   --space-1: 8px;
   --space-2: 16px;

@@ -17,7 +17,7 @@ export default function Page() {
     <NarrativePage eyebrow="What's next" title="Learn in four steps, each ending in a decision" next={{ href: "/sources/", label: "Sources" }}>
       <ol className="grid gap-3 md:grid-cols-4">
         {STAGES.map((s) => (
-          <li key={s.n} className="flex flex-col rounded-card border border-line p-4">
+          <li key={s.n} className="flex flex-col rounded-card border border-line p-4 bg-white shadow-card">
             <div className="text-xs text-ink-muted">Stage {s.n} · {s.when}</div>
             <h2 className="mt-1 text-h3 text-ink">{s.title}</h2>
             <p className="mt-1 flex-1 text-small text-ink-muted">{s.what}</p>
@@ -26,7 +26,7 @@ export default function Page() {
         ))}
       </ol>
       <div className="mt-4 grid gap-4 md:grid-cols-[1fr_auto]">
-        <section className="rounded-card bg-surface-alt p-4" aria-label="Deferred">
+        <section className="rounded-card p-4 bg-white shadow-card" aria-label="Deferred">
           <h2 className="text-h3 text-ink">Deferred from v1, on purpose</h2>
           <ul className="mt-2 flex flex-wrap gap-2">
             {DEFERRED.map((d) => (

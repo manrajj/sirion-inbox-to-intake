@@ -126,7 +126,7 @@ export function HowItDecides({ trigger }: { trigger: React.ReactNode }) {
 }
 
 export const UX_NOTES = [
-  "Jakob: mail layout and a right-hand add-in pane, as in Outlook and Gmail; review uses a reading pane.",
+  "Jakob: the inbox follows Outlook's web layout, with the add-in pane on the right; review uses a reading pane.",
   "Fitts: targets at least 44 px, 8 px apart; Submit sits after the last field; Confirm and Change are never adjacent.",
   "Miller: fields in four groups; IDs and money formatted; nothing to remember across screens.",
   "Hick: one primary action per screen; detail behind Timeline, Checks and Details.",

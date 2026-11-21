@@ -15,15 +15,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const path = usePathname() || "/";
   const norm = path.endsWith("/") ? path : path + "/";
   useEffect(() => hydrateFromSession(), []);
+  // The live product gets the room: the section nav collapses to an icon rail there.
+  const compact = norm === "/product/";
   return (
     <div className="flex min-h-screen">
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded-button focus:bg-white focus:p-3">
         Skip to content
       </a>
-      <nav aria-label="Sections" className="sticky top-0 hidden h-screen w-[208px] shrink-0 flex-col border-r border-line bg-surface-alt px-3 py-5 lg:flex">
-        <Link href="/" className="mb-6 flex items-center gap-2 px-3 text-h3 text-ink">
+      <nav aria-label="Sections" className={cx("sticky top-0 hidden h-screen shrink-0 flex-col border-r border-line bg-surface-alt py-5 lg:flex", compact ? "w-[64px] px-2" : "w-[208px] px-3")}>
+        <Link href="/" className={cx("mb-6 flex min-h-11 items-center gap-2 text-h3 text-ink", compact ? "justify-center px-0" : "px-3")} aria-label={compact ? "Sirion Inbox-to-Intake, start" : undefined}>
           <CircleDot size={18} strokeWidth={1.5} className="text-teal" aria-hidden />
-          <span>
+          <span className={compact ? "sr-only" : undefined}>
             Sirion <span className="text-ink-muted">Inbox-to-Intake</span>
           </span>
         </Link>
@@ -36,21 +38,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <Link
                   href={n.href}
                   aria-current={active ? "page" : undefined}
+                  title={compact ? n.label : undefined}
                   className={cx(
-                    "flex min-h-11 items-center gap-3 rounded-button px-3 text-small",
+                    "flex min-h-11 items-center gap-3 rounded-button text-small",
+                    compact ? "justify-center px-0" : "px-3",
                     active ? "bg-white text-teal" : "text-ink hover:bg-white",
                   )}
                   style={active ? { boxShadow: "inset 0 0 0 1px var(--line)" } : undefined}
                 >
                   <Icon size={17} strokeWidth={1.5} aria-hidden />
-                  <span className="flex-1">{n.label}</span>
-                  <span className="text-xs text-ink-muted">{i + 1}</span>
+                  <span className={compact ? "sr-only" : "flex-1"}>{n.label}</span>
+                  {!compact && <span className="text-xs text-ink-muted">{i + 1}</span>}
                 </Link>
               </li>
             );
           })}
         </ol>
-        <p className="mt-auto px-3 text-xs leading-4 text-ink-muted">
+        <p className={cx("mt-auto px-3 text-xs leading-4 text-ink-muted", compact && "sr-only")}>
           A candidate prototype for the Sirion APM case. Not a Sirion product. All data is synthetic.
         </p>
       </nav>

@@ -59,7 +59,7 @@ export default function Page() {
     <NarrativePage eyebrow="Sources" title="Where every claim comes from" lead="Pages opened 17 to 21 Nov 2026. Vendor pages describe claimed capabilities, not tested behaviour.">
       <div className="columns-1 gap-4 md:columns-2 xl:columns-3">
         {GROUPS.map((g) => (
-          <section key={g.title} className="mb-4 break-inside-avoid rounded-card border border-line p-4">
+          <section key={g.title} className="mb-4 break-inside-avoid rounded-card border border-line p-4 bg-white shadow-card">
             <h2 className="text-h3 text-ink">{g.title}</h2>
             <ul className="mt-1">
               {g.items.map((i) => (
