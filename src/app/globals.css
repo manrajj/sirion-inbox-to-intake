@@ -177,12 +177,12 @@ textarea {
 
 /* Outlook hands over to Sirion: a short branded beat, then the request. */
 .opening-sirion {
-  animation: opening-sirion 0.9s ease forwards;
+  animation: opening-sirion 1.8s ease forwards;
 }
 @keyframes opening-sirion {
   0% { opacity: 0; }
-  15% { opacity: 1; }
-  65% { opacity: 1; }
+  10% { opacity: 1; }
+  78% { opacity: 1; }
   100% { opacity: 0; }
 }
 /* Outlook mobile opens an add-in as a sheet that slides up. */

@@ -17,6 +17,7 @@ import {
   Copy,
   Link2,
   Unlink,
+  Pencil,
 } from "lucide-react";
 import { actions, useApp, useDealView, threadOf, threadAttachments, relatedThreads } from "@/lib/store";
 import { getDeal } from "@data/index";
@@ -78,6 +79,8 @@ function MatchReason() {
   } else {
     text = <>Mentions {first}, the supplier on this request.</>;
   }
+  // Only a mismatch is worth the space; a matching email needs no note.
+  if (ok) return null;
   return (
     <p
       className={cx(
@@ -140,9 +143,6 @@ export function Sidebar({ mobile }: { mobile?: boolean } = {}) {
           <button onClick={() => actions.toggleSidebar(false)} className="inline-flex h-8 w-7 items-center justify-center rounded-[4px] text-mail-muted hover:bg-mail-blue-soft" aria-label="Close Sirion">
             <X size={15} strokeWidth={1.75} />
           </button>
-        </span>
-        <span className="flex h-10 items-center px-3 text-small text-mail-muted" aria-hidden>
-          My Day
         </span>
       </header>
       )}
@@ -274,11 +274,9 @@ function Answer() {
               {agreed.map((t) => {
                 const s = settling(t);
                 return (
-                  <li key={t.key} className="flex items-start gap-2 py-1 text-small leading-6 text-ink" data-tour={`agreed-${t.key}`}>
-                    <span aria-hidden>•</span>
-                    <span className="flex-1">
-                      {t.label}: <strong className="font-medium">{t.value}</strong>
-                    </span>
+                  <li key={t.key} className="group flex items-start gap-1 py-1 text-small leading-6 text-ink" data-tour={`agreed-${t.key}`}>
+                    <span aria-hidden className="mr-1">•</span>
+                    <AgreedValue t={t} />
                     <button
                       onClick={() => citeInMail(s.messageId, s.quote)}
                       className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-ink-muted hover:bg-surface-alt hover:text-teal"
@@ -292,7 +290,6 @@ function Answer() {
                 );
               })}
             </ul>
-            <p className="mt-2 text-xs text-ink-muted">Example AI output, checked against the emails in your browser.</p>
             <Button size="sm" variant="primary" className="mt-3 w-full" onClick={() => actions.setView("sirion")} icon={<ArrowRight size={15} strokeWidth={1.5} aria-hidden />} data-tour="answer-review">
               Review and submit in Sirion
             </Button>
@@ -300,6 +297,53 @@ function Answer() {
         )}
       </div>
     </section>
+  );
+}
+
+/** An agreed term in the assistant's answer, with a pencil to correct it. The edit carries into the Sirion request and is logged. */
+function AgreedValue({ t }: { t: TermView }) {
+  const [editing, setEditing] = useState(false);
+  const [v, setV] = useState(t.value ?? "");
+  const edited = t.resolution?.type === "offEmail";
+  if (editing)
+    return (
+      <form
+        className="flex flex-1 flex-wrap items-center gap-1"
+        onSubmit={(e) => {
+          e.preventDefault();
+          actions.editTerm(t.key, v);
+          setEditing(false);
+        }}
+      >
+        <span className="w-full text-xs text-ink-muted">{t.label}</span>
+        <input autoFocus value={v} onChange={(e) => setV(e.target.value)} onKeyDown={(e) => e.key === "Escape" && setEditing(false)} className="min-h-8 min-w-0 flex-1 rounded-chip border border-teal px-2 text-small outline-none" aria-label={`New value for ${t.label}`} data-tour={`agreed-input-${t.key}`} />
+        <button type="submit" className="inline-flex min-h-8 items-center rounded-button bg-teal px-2.5 text-xs text-white" data-tour={`agreed-save-${t.key}`}>
+          Save
+        </button>
+        <button type="button" onClick={() => setEditing(false)} className="inline-flex min-h-8 items-center rounded-button px-1.5 text-xs text-ink-muted">
+          Cancel
+        </button>
+      </form>
+    );
+  return (
+    <>
+      <span className="flex-1">
+        {t.label}: <strong className="font-medium">{t.value}</strong>
+        {edited && <span className="ml-1.5 rounded-pill bg-tone-info-bg px-1.5 text-xs text-tone-info-fg">Edited</span>}
+      </span>
+      <button
+        onClick={() => {
+          setV(t.value ?? "");
+          setEditing(true);
+        }}
+        className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-ink-muted hover:bg-surface-alt hover:text-teal"
+        aria-label={`Edit ${t.label.toLowerCase()}`}
+        title="Edit"
+        data-tour={`agreed-edit-${t.key}`}
+      >
+        <Pencil size={13} strokeWidth={1.75} aria-hidden />
+      </button>
+    </>
   );
 }
 

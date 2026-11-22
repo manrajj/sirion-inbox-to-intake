@@ -71,7 +71,7 @@ function YouAreInSirion() {
         <SirionMark size={18} />
       </span>
       <p className="text-small text-ink">
-        <b className="font-medium">You are in Sirion now.</b> <span className="text-ink-muted">The draft came across from the Outlook add-in. Check it, edit anything, then submit.</span>
+        <b className="font-medium">You are in Sirion now.</b>
       </p>
     </div>
   );
@@ -427,9 +427,6 @@ function Created() {
           <p className="text-xs text-ink-muted">Submitted from draft {view.deal.id}</p>
           <p className="mt-2 text-small text-ink-muted">
             {view.deal.supplier.name} · {value}
-          </p>
-          <p className="mt-1 text-small text-ink" data-tour="route">
-            Routed to {view.route?.queue ?? "Legal"}
           </p>
           <div className="mt-6 flex justify-center gap-3">
             <Button variant="secondary" onClick={() => actions.setView("inbox")} icon={<ArrowLeft size={15} strokeWidth={1.5} aria-hidden />}>

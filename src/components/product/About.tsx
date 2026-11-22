@@ -22,7 +22,7 @@ const FLOW = [
   { icon: Mail, title: "Deal agreed in email", body: "Six emails and a quote PDF with the supplier." },
   { icon: PanelRight, title: "Open Sirion in Outlook", body: "One click starts a draft intake request from the thread." },
   { icon: FileCheck2, title: "Filled in and quoted", body: "Every value shows the sentence it came from. Edit anything." },
-  { icon: Send, title: "Submit in Sirion", body: "Your click. The request goes to Legal, nothing retyped." },
+  { icon: Send, title: "Submit in Sirion", body: "The request goes to Legal, nothing retyped." },
 ];
 
 export function AboutPage() {

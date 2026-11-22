@@ -14,18 +14,25 @@ test("main deal by hand: create the deal, ask what's agreed, open the request in
   await expect(page.locator(t("reading"))).toHaveCount(0, { timeout: 10_000 });
   await expect(page.locator(t("toast"))).toContainText("Draft DL-1042 saved with 12 emails and 1 PDF.");
   await expect(page.locator(t("toast"))).toContainText("Not submitted yet");
-  await expect(page.locator(t("match-reason"))).toContainText("brightline-analytics.example");
+  await expect(page.locator(t("match-reason"))).toHaveCount(0);
 
   await page.click(t("card-agreed"));
   await expect(page.locator(t("assessing"))).toBeVisible();
   await expect(page.locator(t("agreed-uplift"))).toContainText("4%");
   await page.click(t("cite-uplift"));
   await expect(page.locator(t("cite-mark"))).toContainText("the annual uplift stays at 4%");
+  // A term can be corrected right in the assistant's answer
+  await page.click(t("agreed-edit-sla"));
+  await page.fill(t("agreed-input-sla"), "99.95% uptime; 5% monthly credit");
+  await page.click(t("agreed-save-sla"));
+  await expect(page.locator(t("agreed-sla"))).toContainText("99.95% uptime");
+  await expect(page.locator(t("agreed-sla"))).toContainText("Edited");
   await page.click(t("panel-back"));
 
   await page.click(t("review-in-sirion"));
   await expect(page.locator(t("sirion-app"))).toBeVisible();
   await expect(page.locator(t("core-costCentre"))).toContainText("MKT-4410");
+  await expect(page.locator(t("term-sla"))).toContainText("99.95% uptime");
   // Every value is quoted: the source opens the exact sentence
   await expect(page.locator(t("core-payment")).or(page.locator(t("term-payment")))).toContainText("Net 45");
   await page.click(t("source-payment"));

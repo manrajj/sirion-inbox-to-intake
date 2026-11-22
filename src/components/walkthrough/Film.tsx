@@ -85,6 +85,25 @@ export function Film() {
   const controlsRef = useRef<HTMLDivElement>(null);
   const side = useRef<{ name: string | null; at: "below" | "above" | "right" | "left" | "inside" | null }>({ name: null, at: null });
   const [say, setSay] = useState("");
+  // The note is one element for the whole film: it glides to each new place and its text
+  // cross-fades, so it never blinks or redraws between steps.
+  const [shown, setShown] = useState("");
+  const textRef = useRef<HTMLParagraphElement>(null);
+  const cpos = useRef({ x: 0, y: 0, init: false });
+  useEffect(() => {
+    if (say === shown) return;
+    const el = textRef.current;
+    if (!el || !shown) {
+      setShown(say);
+      return;
+    }
+    el.style.opacity = "0";
+    const id = window.setTimeout(() => {
+      setShown(say);
+      el.style.opacity = "1";
+    }, 160);
+    return () => window.clearTimeout(id);
+  }, [say]); // eslint-disable-line react-hooks/exhaustive-deps
   // The note floats beside its target with an arrow pointing at it. Its side is chosen once
   // per step, where it fits without covering the target or the controls, so it never jumps.
   const placeCallout = useCallback((r: DOMRect, a: { x: number; y: number; w: number; h: number }) => {
@@ -115,8 +134,14 @@ export function Film() {
       sd.name = targetName.current;
       sd.at = (["below", "above", "right", "left"] as const).find((at) => fits(pos(at, t))) ?? "inside";
     }
-    const p = pos(sd.at!, a);
-    box.style.transform = `translate(${Math.round(p.left)}px, ${Math.round(p.top)}px)`;
+    const goal = pos(sd.at!, a);
+    const c = cpos.current;
+    const k = !c.init || reduced ? 1 : 0.14;
+    c.x += (goal.left - c.x) * k;
+    c.y += (goal.top - c.y) * k;
+    c.init = true;
+    const p = { left: c.x, top: c.y };
+    box.style.transform = `translate(${p.left.toFixed(1)}px, ${p.top.toFixed(1)}px)`;
     box.style.opacity = "1";
     // The arrow sits on the edge facing the target, lined up with the target's centre.
     const st = arrow.style;
@@ -125,7 +150,7 @@ export function Film() {
     const ay = Math.max(14, Math.min(chh - 14, a.y + a.h / 2 - p.top));
     st.left = sd.at === "below" || sd.at === "above" ? `${ax - 7}px` : sd.at === "right" ? "-7px" : `${cw - 7}px`;
     st.top = sd.at === "below" ? "-7px" : sd.at === "above" ? `${chh - 7}px` : `${ay - 7}px`;
-  }, []);
+  }, [reduced]);
 
   useEffect(() => {
     if (!open) return;
@@ -142,6 +167,7 @@ export function Film() {
       if (!el || !el.isConnected) {
         if (spotRef.current) spotRef.current.style.opacity = "0";
         if (calloutRef.current) calloutRef.current.style.opacity = "0";
+        cpos.current.init = false;
       }
       if (el && el.isConnected) {
         const r = el.getBoundingClientRect();
@@ -160,6 +186,7 @@ export function Film() {
         if (a.fadeUntil) {
           a.fadeUntil = 0;
           a.init = false; // snap to the new target while hidden
+          cpos.current.init = false;
         }
         if (r.width > 0) {
           const k = reduced || !a.init ? 1 : 0.12;
@@ -230,7 +257,7 @@ export function Film() {
             targetName.current = step.target ?? null;
             setHasTarget(true);
           }
-          if (!(await sleep(reduced ? 80 : 650, id))) return;
+          if (!(await sleep(reduced ? 80 : 900, id))) return;
           if (!pos.current.actionDone) {
             if (step.click && el) {
               setDown(true);
@@ -240,7 +267,7 @@ export function Film() {
             pos.current.actionDone = true;
             setTimeout(() => setDown(false), 180);
           }
-          if (!(await sleep(Math.max(300, step.ms - 650), id))) return;
+          if (!(await sleep(Math.max(300, step.ms - 900), id))) return;
         }
       }
       if (runId.current === id) {
@@ -299,6 +326,7 @@ export function Film() {
   useEffect(() => {
     opener = (c: number) => {
       cur.current.init = false;
+      cpos.current.init = false;
       setOpen(true);
       seek(c);
     };
@@ -371,8 +399,8 @@ export function Film() {
           data-tour="film-callout"
         >
           <span ref={arrowRef} className="absolute h-3.5 w-3.5 rotate-45 bg-white" aria-hidden />
-          <p key={say} className="callout-in relative text-[15px] font-medium leading-[21px]">
-            {say}
+          <p ref={textRef} className="relative text-[15px] font-medium leading-[21px]" style={{ transition: reduced ? "none" : "opacity 0.16s ease" }}>
+            {shown}
           </p>
         </div>
       )}

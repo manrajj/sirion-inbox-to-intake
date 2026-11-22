@@ -27,7 +27,10 @@ export interface Chapter {
 
 const UPLIFT_CONFIRM = "Confirmed: we will waive the $5,000 setup fee, and the annual uplift stays at 4%.";
 
-export const CHAPTERS: Chapter[] = [
+/** Overall pace: every step's time is stretched by this, so the film never feels rushed. */
+const PACE = 1.35;
+
+const SCRIPT: Chapter[] = [
   {
     id: "pain",
     title: "The deal is in email",
@@ -98,7 +101,8 @@ export const CHAPTERS: Chapter[] = [
         say: "Now click Review and submit in Sirion.",
         ms: 2400,
       },
-      { target: "sirion-here", do: () => actions.setView("sirion"), say: "This is the Sirion app. The draft request is already filled in.", ms: 3600 },
+      { target: "opening-sirion", do: () => actions.setView("sirion"), say: "The Sirion app opens.", ms: 1500 },
+      { target: "sirion-here", say: "This is the Sirion app. The draft request is already filled in.", ms: 3600 },
       { target: "documents", say: "The emails and the quote came across with it.", ms: 2600 },
     ],
   },
@@ -124,6 +128,8 @@ export const CHAPTERS: Chapter[] = [
     ],
   },
 ];
+
+export const CHAPTERS: Chapter[] = SCRIPT.map((c) => ({ ...c, steps: c.steps.map((st) => ({ ...st, ms: Math.round(st.ms * PACE) })) }));
 
 export const TOTAL_MS = CHAPTERS.reduce((a, c) => a + c.steps.reduce((b, s) => b + s.ms, 0), 0);
 export const chapterMs = (i: number) => CHAPTERS[i].steps.reduce((b, s) => b + s.ms, 0);

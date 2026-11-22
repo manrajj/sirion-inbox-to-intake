@@ -58,7 +58,7 @@ function OpeningSirion({ view }: { view: string }) {
   useEffect(() => {
     if (prev.current === "inbox" && view === "sirion") {
       setShow(true);
-      const t = setTimeout(() => setShow(false), 900);
+      const t = setTimeout(() => setShow(false), 1800);
       prev.current = view;
       return () => clearTimeout(t);
     }
