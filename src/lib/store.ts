@@ -55,6 +55,8 @@ export interface AppState {
   pendingToast?: { text: string; sub?: string } | null;
   /** Phone layout only: the Outlook mobile inbox list, or one open conversation. */
   mailScreen?: "list" | "read";
+  /** The viewer has opened the Sirion add-in at least once, so the inbox context label can go. */
+  addinSeen?: boolean;
 }
 
 const DEMO_START = Date.parse("2026-11-18T09:30:00Z");
@@ -100,6 +102,7 @@ function initial(): AppState {
     toast: null,
     pendingToast: null,
     mailScreen: "list",
+    addinSeen: false,
   };
 }
 
@@ -250,7 +253,7 @@ export const actions = {
   },
   resetDeal(id = state.dealId) {
     setDeal((_, deal) => freshDeal(deal), id);
-    set((s) => ({ ...s, view: "inbox", source: null, chaseFor: null, atOpen: false, panel: "home", toast: null, pendingToast: null, sidebarOpen: false, mailScreen: "list", openMessageId: getDeal(id).openMessageId }));
+    set((s) => ({ ...s, view: "inbox", source: null, chaseFor: null, atOpen: false, panel: "home", toast: null, pendingToast: null, sidebarOpen: false, mailScreen: "list", addinSeen: false, openMessageId: getDeal(id).openMessageId }));
   },
   setFilm(on: boolean) {
     state = { ...state, film: on };
@@ -321,7 +324,10 @@ export const actions = {
     set((s) => ({ ...s, openMessageId: id }));
   },
   toggleSidebar(open?: boolean) {
-    set((s) => ({ ...s, sidebarOpen: open ?? !s.sidebarOpen }));
+    set((s) => {
+      const next = open ?? !s.sidebarOpen;
+      return { ...s, sidebarOpen: next, addinSeen: s.addinSeen || next };
+    });
   },
   pickDeal(dealId: string, via: DealState["pickedVia"] = "owner") {
     tick(3);

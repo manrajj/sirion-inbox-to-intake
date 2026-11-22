@@ -688,10 +688,12 @@ export const INBOX_CONTEXT = "Manraj's inbox (Procurement Contract Manager). The
 
 /** A quiet line that tells a first-time viewer whose inbox this is, before they open the add-in. */
 export function InboxContext({ className, compact }: { className?: string; compact?: boolean }) {
+  const seen = useApp((s) => !!s.addinSeen);
+  if (seen) return null;
   return (
     <div className={className} data-tour="inbox-context">
-      <p className={cx("flex w-full items-start gap-2.5 rounded-[10px] border border-mail-line bg-mail-blue-soft font-medium text-mail-text", compact ? "px-3 py-2.5 text-small leading-5" : "px-4 py-3 text-[15px] leading-6")}>
-        <Info size={18} strokeWidth={2} className={cx("shrink-0 text-mail-blue", compact ? "mt-[1px]" : "mt-[3px]")} aria-hidden />
+      <p className={cx("flex w-full items-start gap-2.5 rounded-[10px] bg-amethyst font-medium text-white shadow-pop", compact ? "px-3 py-2.5 text-small leading-5" : "px-4 py-3 text-[15px] leading-6")}>
+        <Info size={18} strokeWidth={2} className={cx("shrink-0 text-white", compact ? "mt-[1px]" : "mt-[3px]")} aria-hidden />
         <span>{INBOX_CONTEXT}</span>
       </p>
     </div>
