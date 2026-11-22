@@ -284,7 +284,7 @@ export function AboutPage() {
               <p className="mb-3 text-small text-ink-muted">Each threshold is an assumption, set before the pilot.</p>
               <div className="grid gap-3 md:grid-cols-3">
                 {[
-                  ["People edit more than 20% of auto-filled values after 4 weeks.", "Rethink how values are pulled from emails."],
+                  ["Procurement managers edit more than 20% of auto-filled values after 4 weeks.", "Rethink how values are pulled from emails."],
                   ["Legal sends back more than 25% of requests for missing information.", "The form isn't capturing the right fields. Redesign it with Legal."],
                   ["Fewer than 40% of eligible deals use the add-in by week 6.", "The add-in isn't where the work happens. Find out where managers actually raise requests, and rethink the entry point."],
                 ].map(([ifx, then]) => (
