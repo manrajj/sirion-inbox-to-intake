@@ -8,7 +8,7 @@ import { cx, fmtDate } from "@/components/ui";
 import { Highlighted } from "./SourceText";
 import { Sidebar } from "./Sidebar";
 import { SirionMark } from "./SirionMark";
-import { Avatar } from "./MailClient";
+import { Avatar, InboxContext } from "./MailClient";
 
 // Outlook on a phone, in the layout of the Outlook mobile app: the inbox as a full-screen
 // list with Focused and Other, a tab bar and a compose button; a conversation opens full
@@ -73,6 +73,7 @@ function InboxList() {
             <ListFilter size={16} strokeWidth={1.75} /> Filter
           </span>
         </div>
+        <InboxContext className="mt-2 flex" wrap />
       </header>
       <ul className="thin-scroll min-h-0 flex-1 overflow-y-auto" aria-label="Messages">
         {rows.map(({ t, latest, count, hasAttachment, unread }) => (

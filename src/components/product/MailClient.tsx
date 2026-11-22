@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import {
+  Info,
   Grip,
   Play,
   RotateCcw,
@@ -307,6 +308,7 @@ export function MailClient() {
                 />
                 <IconBtn icon={Ellipsis} label="More" />
               </span>
+              <InboxContext className="mx-3 hidden min-w-0 flex-1 justify-center lg:flex" />
               <span className="ml-auto flex items-center gap-1">
                 <span className="hidden text-xs text-mail-muted xl:inline">
                   Apps
@@ -679,5 +681,22 @@ function Folder({
         </span>
       ) : null}
     </li>
+  );
+}
+
+export const INBOX_CONTEXT = "Manraj's inbox (Procurement Contract Manager). The Brightline deal was agreed in these emails.";
+
+/** A quiet line that tells a first-time viewer whose inbox this is, before they open the add-in. */
+export function InboxContext({ className, wrap }: { className?: string; wrap?: boolean }) {
+  return (
+    <span className={className} data-tour="inbox-context">
+      <span
+        className={cx("inline-flex min-w-0 gap-1.5 bg-mail-blue-soft px-3 text-xs text-mail-text", wrap ? "items-start rounded-[10px] py-1.5 leading-[18px]" : "items-center rounded-pill py-1")}
+        title={INBOX_CONTEXT}
+      >
+        <Info size={13} strokeWidth={1.75} className={cx("shrink-0 text-mail-blue", wrap && "mt-[2.5px]")} aria-hidden />
+        <span className={wrap ? "" : "truncate"}>{INBOX_CONTEXT}</span>
+      </span>
+    </span>
   );
 }
