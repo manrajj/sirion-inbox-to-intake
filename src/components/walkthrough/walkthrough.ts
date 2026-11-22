@@ -45,7 +45,7 @@ const SCRIPT: Chapter[] = [
           actions.setMailScreen("list");
         },
         target: "thread-t-bl",
-        say: "Manraj agreed a deal with Brightline in this email thread.",
+        say: "Manraj (Procurement Contract Manager) agreed a deal with Brightline in this email thread.",
         ms: 3200,
       },
       {

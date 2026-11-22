@@ -413,8 +413,6 @@ function ConflictRow({ t }: { t: TermView }) {
 /** The end of the story: the intake request exists in Sirion. */
 function Created() {
   const ds = useApp((s) => s.deals[s.dealId]);
-  const view = useDealView();
-  const value = view.core.find((c) => c.key === "value")?.value;
   return (
     <SirionChrome crumb={`Requests / ${ds.submit.requestId}`}>
       <div className="flex min-h-full items-center justify-center py-6">
@@ -424,10 +422,6 @@ function Created() {
           </span>
           <h1 className="mt-4 text-h1 text-ink">Intake request created</h1>
           <p className="mt-1 text-h3 font-medium text-teal">{ds.submit.requestId}</p>
-          <p className="text-xs text-ink-muted">Submitted from draft {view.deal.id}</p>
-          <p className="mt-2 text-small text-ink-muted">
-            {view.deal.supplier.name} · {value}
-          </p>
           <div className="mt-6 flex justify-center gap-3">
             <Button variant="secondary" onClick={() => actions.setView("inbox")} icon={<ArrowLeft size={15} strokeWidth={1.5} aria-hidden />}>
               Back to Outlook

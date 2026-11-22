@@ -60,6 +60,12 @@ export function CoachMark({ target, label }: { target: string | null; label: str
     let raf = 0;
     let scrolled = false;
     const loop = () => {
+      // Wait while the "Opening your draft in Sirion" hand-off covers the screen
+      if (document.querySelector('[data-tour="opening-sirion"]')) {
+        setRect(null);
+        raf = requestAnimationFrame(loop);
+        return;
+      }
       const els = Array.from(document.querySelectorAll<HTMLElement>(`[data-tour="${target}"]`));
       const el = els.find((e) => e.getClientRects().length > 0 && e.offsetParent !== null);
       if (el && !scrolled) {
