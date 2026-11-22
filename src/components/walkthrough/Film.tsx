@@ -407,9 +407,9 @@ export function Film() {
 
       {/* Controls: a small pill in the top corner, out of the way of the product */}
       {!ended && (
-        <div ref={controlsRef} className="fixed right-2 top-2 z-[71] overflow-hidden rounded-card bg-white shadow-pop">
-          <div className="flex items-center gap-0.5 py-1 pl-3 pr-1">
-            <span className="mr-1 whitespace-nowrap text-xs font-medium text-teal" data-tour="film-step">
+        <div ref={controlsRef} className="fixed left-1/2 top-3 z-[71] max-w-[calc(100vw-16px)] -translate-x-1/2 overflow-hidden rounded-card bg-white shadow-pop ring-1 ring-line">
+          <div className="flex items-center gap-1 py-1.5 pl-4 pr-1.5 sm:gap-1.5">
+            <span className="mr-1 whitespace-nowrap text-small font-medium text-teal sm:mr-2 sm:text-body" data-tour="film-step">
               <span className="sm:hidden">
                 {chapter + 1}/{CHAPTERS.length}
               </span>
@@ -418,16 +418,16 @@ export function Film() {
               </span>
             </span>
             <CtrlButton label="Previous step (Left arrow)" onClick={() => seek(Math.max(0, chapter - 1))}>
-              <SkipBack size={15} strokeWidth={1.5} />
+              <SkipBack size={19} strokeWidth={1.5} />
             </CtrlButton>
             <CtrlButton label={playing ? "Pause (Space)" : "Play (Space)"} onClick={() => (playing ? pause() : resume())} primary>
-              {playing ? <Pause size={15} strokeWidth={1.5} /> : <Play size={15} strokeWidth={1.5} />}
+              {playing ? <Pause size={19} strokeWidth={1.5} /> : <Play size={19} strokeWidth={1.5} />}
             </CtrlButton>
             <CtrlButton label="Next step (Right arrow)" onClick={() => seek(Math.min(CHAPTERS.length - 1, chapter + 1))}>
-              <SkipForward size={15} strokeWidth={1.5} />
+              <SkipForward size={19} strokeWidth={1.5} />
             </CtrlButton>
-            <button onClick={takeOver} className="ml-0.5 inline-flex h-9 items-center gap-1.5 rounded-button px-2 text-small text-teal hover:bg-surface-alt" data-tour="take-over" aria-label="Take over">
-              <Hand size={15} strokeWidth={1.5} aria-hidden /> <span className="hidden sm:inline">Take over</span>
+            <button onClick={takeOver} className="ml-0.5 inline-flex h-11 items-center gap-1.5 rounded-button border border-line px-3 text-body text-teal hover:bg-surface-alt" data-tour="take-over" aria-label="Take over">
+              <Hand size={18} strokeWidth={1.5} aria-hidden /> <span className="hidden sm:inline">Take over</span>
             </button>
           </div>
           <div className="h-[3px] bg-surface-alt" aria-hidden>
@@ -496,7 +496,7 @@ function CtrlButton({ label, onClick, children, primary }: { label: string; onCl
       aria-label={label}
       title={label}
       className={cx(
-        "inline-flex h-9 w-9 items-center justify-center rounded-button",
+        "inline-flex h-11 w-11 items-center justify-center rounded-button",
         primary ? "bg-teal text-white hover:opacity-90" : "text-ink hover:bg-surface-alt",
       )}
     >

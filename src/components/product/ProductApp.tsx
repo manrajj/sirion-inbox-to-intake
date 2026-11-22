@@ -83,7 +83,7 @@ function Toast() {
   }, [toast]);
   if (!toast) return null;
   return (
-    <div className="pointer-events-none absolute inset-x-0 top-2 z-30 flex justify-center px-3 md:bottom-4 md:top-auto">
+    <div className="pointer-events-none absolute inset-x-0 top-12 z-30 flex justify-center px-3 md:bottom-4 md:top-auto">
       <div role="status" aria-live="polite" className="pointer-events-auto flex max-w-[640px] items-center gap-3 rounded-card bg-teal py-2 pl-4 pr-2 text-small text-white shadow-pop fade-in" data-tour="toast">
         <CheckCircle2 size={18} strokeWidth={1.75} className="shrink-0" aria-hidden />
         <span className="min-w-0">
