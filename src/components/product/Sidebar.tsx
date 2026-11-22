@@ -95,7 +95,7 @@ function MatchReason() {
 /** Open a cited sentence in the mail reading pane. */
 export const citeInMail = (messageId: string, quote?: string) => actions.cite(messageId, quote);
 
-export function Sidebar() {
+export function Sidebar({ mobile }: { mobile?: boolean } = {}) {
   const dealId = useApp((s) => s.dealId);
   const ds = useApp((s) => s.deals[s.dealId]);
   const openId = useApp((s) => s.openMessageId);
@@ -115,8 +115,23 @@ export function Sidebar() {
   const counts = [emailsLeft ? `${emailsLeft} email${emailsLeft === 1 ? "" : "s"}` : "", pdfsLeft ? `${pdfsLeft} PDF` : ""].filter(Boolean).join(", ");
 
   return (
-    <aside className="flex w-full shrink-0 flex-col overflow-hidden rounded-[8px] border border-addin-line bg-addin-bg shadow-card md:w-[340px]" aria-label="Sirion add-in" data-tour="sidebar">
-      {/* Tab header, as Outlook shows add-ins */}
+    <aside
+      className={cx("flex shrink-0 flex-col overflow-hidden bg-addin-bg", mobile ? "h-full w-full" : "w-[340px] rounded-[8px] border border-addin-line shadow-card")}
+      aria-label="Sirion add-in"
+      data-tour="sidebar"
+    >
+      {mobile ? (
+        // Outlook mobile opens an add-in full screen, with a plain title bar and a close button.
+        <header className="flex h-12 shrink-0 items-center border-b border-addin-line bg-white px-1 text-mail-text">
+          <button onClick={() => actions.toggleSidebar(false)} className="inline-flex h-11 w-11 items-center justify-center rounded-full text-mail-text" aria-label="Close Sirion">
+            <X size={20} strokeWidth={1.75} />
+          </button>
+          <span className="flex flex-1 items-center justify-center gap-1.5 text-[15px] font-semibold">
+            <SirionMark size={15} /> Sirion
+          </span>
+          <span className="w-11" aria-hidden />
+        </header>
+      ) : (
       <header className="flex h-10 shrink-0 items-end border-b border-addin-line bg-white pl-2 text-mail-text">
         <span className="flex h-10 items-center gap-1.5 border-b-2 border-teal px-2 text-small font-semibold">
           <SirionMark size={13} />
@@ -130,6 +145,7 @@ export function Sidebar() {
           My Day
         </span>
       </header>
+      )}
 
       {/* The draft request this email belongs to: one name, nothing else */}
       <div className="flex h-10 shrink-0 items-center justify-center px-2">
@@ -277,7 +293,7 @@ function Answer() {
               })}
             </ul>
             <p className="mt-2 text-xs text-ink-muted">Example AI output, checked against the emails in your browser.</p>
-            <Button size="sm" variant="primary" className="mt-3 w-full" onClick={() => actions.setView("sirion")} icon={<ArrowRight size={15} strokeWidth={1.5} aria-hidden />}>
+            <Button size="sm" variant="primary" className="mt-3 w-full" onClick={() => actions.setView("sirion")} icon={<ArrowRight size={15} strokeWidth={1.5} aria-hidden />} data-tour="answer-review">
               Review and submit in Sirion
             </Button>
           </>

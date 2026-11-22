@@ -36,7 +36,7 @@ import {
 import { actions, useApp, threadOf } from "@/lib/store";
 import { getDeal } from "@data/index";
 import { BUYER_DOMAIN, domainOf } from "@/lib/checks";
-import { cx, fmtDate, HonestyChip } from "@/components/ui";
+import { cx, fmtDate } from "@/components/ui";
 import type { Person } from "@/lib/types";
 import { Highlighted } from "./SourceText";
 import { Sidebar } from "./Sidebar";
@@ -69,7 +69,7 @@ function initials(name: string) {
   ).toUpperCase();
 }
 
-function Avatar({ person, size = 32 }: { person: Person; size?: number }) {
+export function Avatar({ person, size = 32 }: { person: Person; size?: number }) {
   let h = 0;
   for (const c of person.email) h = (h * 31 + c.charCodeAt(0)) >>> 0;
   return (
@@ -185,11 +185,6 @@ export function MailClient() {
           <span>Search</span>
         </div>
         <span className="ml-auto flex items-center gap-1">
-          <HonestyChip
-            kind="mocked"
-            title="A mock of Outlook on the web with the Sirion add-in"
-            className="hidden bg-white text-ink-muted lg:inline-flex"
-          />
           <AboutButton />
           <button
             onClick={() => startFilm(0)}

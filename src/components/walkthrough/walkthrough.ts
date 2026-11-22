@@ -5,9 +5,12 @@
 
 import { actions, getState } from "@/lib/store";
 import { sirion } from "@/lib/submit";
+import { getDeal } from "@data/index";
 
 export interface Step {
   target?: string;
+  /** What the floating note beside the target says. Falls back to the chapter caption. */
+  say?: string;
   do?: () => void | Promise<void>;
   /** A DOM click on the target, for local UI state only. */
   click?: boolean;
@@ -19,8 +22,6 @@ export interface Chapter {
   id: string;
   title: string;
   caption: string;
-  /** Which screen edge the caption bar docks to for this chapter, chosen to keep its targets clear. */
-  dock?: "top" | "bottom";
   steps: Step[];
 }
 
@@ -29,93 +30,97 @@ const UPLIFT_CONFIRM = "Confirmed: we will waive the $5,000 setup fee, and the a
 export const CHAPTERS: Chapter[] = [
   {
     id: "pain",
-    dock: "bottom",
     title: "The deal is in email",
-    caption: "Manraj agreed a deal with Brightline over six emails and a quote. Now it has to go into Sirion.",
+    caption: "Manraj agreed a deal with Brightline over email. Now it has to go into Sirion.",
     steps: [
       {
         do: () => {
           actions.toggleSidebar(false);
           actions.setView("inbox");
+          actions.setMailScreen("list");
         },
-        target: "inbox",
-        ms: 3000,
+        target: "thread-t-bl",
+        say: "Manraj agreed a deal with Brightline in this email thread.",
+        ms: 3200,
       },
-      { target: "thread-t-bl", ms: 2500 },
-      { target: "attachment", ms: 2500 },
+      {
+        target: "attachment",
+        do: () => {
+          actions.openMessage(getDeal(getState().dealId).openMessageId);
+          actions.setMailScreen("read");
+        },
+        say: "The final quote is attached. Now this has to go into Sirion.",
+        ms: 3200,
+      },
     ],
   },
   {
     id: "sidebar",
-    dock: "bottom",
     title: "Open Sirion",
-    caption: "Sirion sits beside the email. There is no intake request for it yet.",
+    caption: "Sirion sits beside the email. There is no intake request for this thread yet.",
     steps: [
-      { target: "open-sidebar", do: () => actions.toggleSidebar(true), ms: 2500 },
-      { target: "sidebar", ms: 3000 },
+      { target: "open-sidebar", do: () => actions.toggleSidebar(true), say: "Open the Sirion add-in from the email.", ms: 2600 },
+      { target: "deal-chip", say: "Sirion sits beside the email. There is no intake request for this thread yet.", ms: 3400 },
     ],
   },
   {
     id: "add",
-    dock: "top",
     title: "Start the request",
-    caption: "One click starts a draft intake request and adds this thread, the quote, and the two internal threads about Brightline.",
+    caption: "One click starts a draft request from this thread.",
     steps: [
-      { target: "create-deal", do: () => actions.createDeal(), ms: 2400 },
-      { target: "reading", do: () => actions.setReading(2), ms: 1500 },
-      { target: "reading", do: () => actions.setReading(3), ms: 1500 },
-      { target: "toast", do: () => actions.finishReading(), ms: 3000 },
+      { target: "create-deal", do: () => actions.createDeal(), say: "One click starts a draft request from this thread.", ms: 2600 },
+      { target: "reading", do: () => actions.setReading(2), say: "Sirion reads the emails and the quote.", ms: 1500 },
+      { target: "reading", do: () => actions.setReading(3), say: "Sirion reads the emails and the quote.", ms: 1300 },
+      { target: "toast", do: () => actions.finishReading(), say: "The draft is saved. Nothing is submitted yet.", ms: 3200 },
     ],
   },
   {
     id: "agreed",
-    dock: "bottom",
-    title: "What's agreed",
+    title: "Check what's agreed",
     caption: "Ask what's agreed. Every term comes with the sentence it came from.",
     steps: [
-      { target: "assistant-prompt", do: () => actions.setPanel("agreed"), ms: 1400 },
-      { target: "agreed-list", ms: 2400 },
-      { target: "cite-mark", do: () => actions.cite("bl-06", UPLIFT_CONFIRM), ms: 3400 },
+      { target: "card-agreed", do: () => actions.setPanel("agreed"), say: "Ask what's agreed so far.", ms: 2000 },
+      { target: "agreed-list", say: "Each agreed term, with a quote button beside it.", ms: 2600 },
+      { target: "cite-mark", do: () => actions.cite("bl-06", UPLIFT_CONFIRM), say: "The quote button shows the exact sentence in the email.", ms: 3400 },
     ],
   },
   {
     id: "request",
-    dock: "top",
-    title: "Into Sirion",
-    caption: "In Sirion, the draft request is already filled in.",
+    title: "Open it in Sirion",
+    caption: "Click Review and submit in Sirion. The Sirion app opens with the draft filled in.",
     steps: [
       {
-        target: "review-in-sirion",
+        target: "answer-review",
         do: () => {
-          actions.setPanel("home");
-          actions.selectSource("bl-06");
+          actions.toggleSidebar(true);
+          actions.setPanel("agreed");
         },
-        ms: 2000,
+        say: "Now click Review and submit in Sirion.",
+        ms: 2400,
       },
-      { target: "basic-info", do: () => actions.setView("sirion"), ms: 3200 },
-      { target: "documents", ms: 2400 },
+      { target: "sirion-here", do: () => actions.setView("sirion"), say: "This is the Sirion app. The draft request is already filled in.", ms: 3600 },
+      { target: "documents", say: "The emails and the quote came across with it.", ms: 2600 },
     ],
   },
   {
     id: "quoted",
-    dock: "top",
-    title: "Quoted from the emails",
-    caption: "Every value shows where it came from. Click a source to read the exact sentence.",
+    title: "Check and edit",
+    caption: "Every value shows where it came from. Anything wrong can be edited.",
     steps: [
-      { target: "source-payment", ms: 1400 },
-      { target: "source-payment", click: true, visual: true, ms: 700 },
-      { target: "source-popover", visual: true, ms: 3600 },
-      { target: "source-payment", click: true, visual: true, ms: 700 },
+      { target: "source-payment", say: "Every value shows where it came from.", ms: 2200 },
+      { target: "source-payment", click: true, visual: true, say: "Click it to read the exact sentence.", ms: 700 },
+      { target: "source-popover", visual: true, say: "This is the sentence the value came from.", ms: 3400 },
+      { target: "source-payment", click: true, visual: true, say: "Every value shows where it came from.", ms: 600 },
+      { target: "edit-scope", say: "Spot a mistake? Click the pencil to edit any value. The change is logged.", ms: 3400 },
     ],
   },
   {
     id: "submit",
-    dock: "top",
-    title: "Request created",
-    caption: "Nothing typed by hand. The intake request is in Sirion.",
+    title: "Submit",
+    caption: "Submit. Nothing was typed by hand.",
     steps: [
-      { target: "submit", do: () => actions.confirmAndSubmit(), ms: 2200 },
-      { target: "receipt", ms: 3600 },
+      { target: "submit", do: () => actions.confirmAndSubmit(), say: "Click Submit. Nothing was typed by hand.", ms: 2400 },
+      { target: "receipt", say: "The intake request is in Sirion and on its way to Legal.", ms: 3600 },
     ],
   },
 ];

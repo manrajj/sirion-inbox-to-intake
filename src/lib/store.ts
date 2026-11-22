@@ -50,7 +50,11 @@ export interface AppState {
   /** Which view the add-in shows: suggestions, or one of its two answers. */
   panel: Panel;
   /** Confirmation after material is added to the deal. */
-  toast: { text: string; n: number } | null;
+  toast: { text: string; sub?: string; n: number } | null;
+  /** Shown once the reading finishes, so the toast only reports what has happened. */
+  pendingToast?: { text: string; sub?: string } | null;
+  /** Phone layout only: the Outlook mobile inbox list, or one open conversation. */
+  mailScreen?: "list" | "read";
 }
 
 const DEMO_START = Date.parse("2026-11-18T09:30:00Z");
@@ -94,8 +98,12 @@ function initial(): AppState {
     film: false,
     panel: "home",
     toast: null,
+    pendingToast: null,
+    mailScreen: "list",
   };
 }
+
+const isPhone = () => typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(max-width: 767px)").matches;
 
 let state: AppState = initial();
 const listeners = new Set<() => void>();
@@ -242,7 +250,7 @@ export const actions = {
   },
   resetDeal(id = state.dealId) {
     setDeal((_, deal) => freshDeal(deal), id);
-    set((s) => ({ ...s, view: "inbox", source: null, chaseFor: null, atOpen: false, panel: "home", toast: null, sidebarOpen: false, openMessageId: getDeal(id).openMessageId }));
+    set((s) => ({ ...s, view: "inbox", source: null, chaseFor: null, atOpen: false, panel: "home", toast: null, pendingToast: null, sidebarOpen: false, mailScreen: "list", openMessageId: getDeal(id).openMessageId }));
   },
   setFilm(on: boolean) {
     state = { ...state, film: on };
@@ -285,14 +293,23 @@ export const actions = {
     const deal = getDeal(state.dealId);
     actions.pickDeal(deal.id, "owner");
     const ids = relatedThreads(deal).flatMap((t) => t.messageIds);
-    actions.addMessages(ids, "thread");
+    actions.addMessages(ids, "thread", false, true);
     const msgs = ids.map((id) => deal.messages.find((m) => m.id === id)!);
     const pdfs = msgs.filter((m) => m.kind === "pdf").length;
     const emails = msgs.length - pdfs;
-    set((s) => ({
-      ...s,
-      toast: { text: `Draft request ${deal.id} started in Sirion. Added ${emails} emails and ${pdfs} PDF.`, n: (s.toast?.n ?? 0) + 1 },
-    }));
+    actions.queueToast(`Draft ${deal.id} saved with ${emails} emails and ${pdfs} PDF.`, "Not submitted yet. Review it in Sirion, then submit.");
+  },
+  /** The toast waits until the reading is done, so it never runs ahead of what has happened. */
+  queueToast(text: string, sub?: string) {
+    if (state.deals[state.dealId].reading) set((s) => ({ ...s, pendingToast: { text, sub }, toast: null }));
+    else set((s) => ({ ...s, pendingToast: null, toast: { text, sub, n: (s.toast?.n ?? 0) + 1 } }));
+  },
+  flushToast() {
+    const p = state.pendingToast;
+    if (p) set((s) => ({ ...s, pendingToast: null, toast: { ...p, n: (s.toast?.n ?? 0) + 1 } }));
+  },
+  setMailScreen(screen: "list" | "read") {
+    set((s) => ({ ...s, mailScreen: screen }));
   },
   setPanel(panel: Panel) {
     set((s) => ({ ...s, panel }));
@@ -337,7 +354,7 @@ export const actions = {
     set((s) => ({ ...s, atOpen: open }));
   },
   /** Adds messages. Domain mismatch pauses for a warning first. Nothing is attached without this click. */
-  addMessages(ids: string[], via: AddedItem["via"], force = false) {
+  addMessages(ids: string[], via: AddedItem["via"], force = false, quiet = false) {
     const deal = getDeal(state.dealId);
     const ds = state.deals[state.dealId];
     if (!ds.pickedDealId) return;
@@ -363,7 +380,7 @@ export const actions = {
       const pdfs = toAdd.filter((id) => deal.messages.find((m) => m.id === id)?.kind === "pdf").length;
       const emails = toAdd.length - pdfs;
       const parts = [emails ? `${emails} email${emails === 1 ? "" : "s"}` : "", pdfs ? `${pdfs} PDF${pdfs === 1 ? "" : "s"}` : ""].filter(Boolean).join(" and ");
-      set((s) => ({ ...s, toast: { text: `Added ${parts} to the request in Sirion`, n: (s.toast?.n ?? 0) + 1 } }));
+      if (!quiet) actions.queueToast(`Added ${parts} to the draft request`, "Not submitted yet.");
       actions.runReading();
     }
   },
@@ -385,13 +402,17 @@ export const actions = {
     [2, 3].forEach((n, i) =>
       setTimeout(() => setDeal((d) => (d.reading ? { ...d, reading: n } : d), id), stepMs * (i + 1)),
     );
-    setTimeout(() => setDeal((d) => ({ ...d, reading: 0, hasRead: true }), id), stepMs * 3);
+    setTimeout(() => {
+      setDeal((d) => ({ ...d, reading: 0, hasRead: true }), id);
+      actions.flushToast();
+    }, stepMs * 3);
   },
   /** For the walkthrough's seek: finish any reading instantly. */
   finishReading() {
     Object.keys(state.deals).forEach((id) => {
       if (state.deals[id].reading) setDeal((d) => ({ ...d, reading: 0, hasRead: true }), id);
     });
+    actions.flushToast();
   },
   removeItem(messageId: string) {
     tick(4);
@@ -405,7 +426,8 @@ export const actions = {
   /** Open a cited sentence in the mail reading pane. PDFs open under the email that carried them. */
   cite(messageId: string, quote?: string) {
     const m = getDeal(state.dealId).messages.find((x) => x.id === messageId);
-    set((s) => ({ ...s, view: "inbox", source: { messageId, quote }, openMessageId: m?.kind === "pdf" && m.parentId ? m.parentId : messageId }));
+    const phone = isPhone();
+    set((s) => ({ ...s, view: "inbox", source: { messageId, quote }, openMessageId: m?.kind === "pdf" && m.parentId ? m.parentId : messageId, mailScreen: "read", sidebarOpen: phone ? false : s.sidebarOpen }));
   },
   selectSource(messageId: string, quote?: string) {
     set((s) => ({ ...s, source: { messageId, quote } }));
@@ -423,6 +445,39 @@ export const actions = {
         confirmedCore: { ...d.decisions.confirmedCore, [key]: false },
       },
     }));
+  },
+  /** The owner corrects a value Sirion filled in. The change is logged with the old value. */
+  editCore(key: string, value: string) {
+    const old = dealView(state).core.find((c) => c.key === key)?.value ?? "";
+    if (value.trim() === "" || value === old) return;
+    tick(5);
+    setDeal((d) =>
+      log(
+        { ...d, decisions: { ...d.decisions, typedCore: { ...d.decisions.typedCore, [key]: value }, confirmedCore: { ...d.decisions.confirmedCore, [key]: false } } },
+        "Manraj Singh",
+        "Edited",
+        `${key}: "${old}" to "${value}"`,
+      ),
+    );
+  },
+  undoEditCore(key: string) {
+    setDeal((d) => log({ ...d, decisions: { ...d.decisions, typedCore: { ...d.decisions.typedCore, [key]: undefined } } }, "Manraj Singh", "Undid edit", key));
+  },
+  editTerm(key: string, value: string) {
+    const old = dealView(state).terms.find((t) => t.key === key)?.value ?? "";
+    if (value.trim() === "" || value === old) return;
+    tick(5);
+    setDeal((d) =>
+      log(
+        { ...d, decisions: { ...d.decisions, resolutions: { ...d.decisions.resolutions, [key]: { type: "offEmail", value, note: "Edited by the owner in Sirion" } }, confirmedTerms: { ...d.decisions.confirmedTerms, [key]: false } } },
+        "Manraj Singh",
+        "Edited",
+        `${key}: "${old}" to "${value}"`,
+      ),
+    );
+  },
+  undoEditTerm(key: string) {
+    setDeal((d) => log({ ...d, decisions: { ...d.decisions, resolutions: { ...d.decisions.resolutions, [key]: undefined } } }, "Manraj Singh", "Undid edit", key));
   },
   pickCore(key: string, value: string) {
     setDeal((d) => log({ ...d, decisions: { ...d.decisions, pickedCore: { ...d.decisions.pickedCore, [key]: value } } }, "Manraj Singh", "Picked value", `${key}: ${value}`));

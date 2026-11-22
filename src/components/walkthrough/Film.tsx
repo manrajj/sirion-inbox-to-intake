@@ -1,7 +1,6 @@
 "use client";
 
 import { SHOW_NARRATIVE } from "@/lib/nav";
-import { openAbout } from "@/components/product/About";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Play, Pause, SkipBack, SkipForward, RotateCcw, Hand, X, BarChart3, MousePointerClick } from "lucide-react";
@@ -77,29 +76,57 @@ export function Film() {
   // The spotlight and cursor glide to their target every frame (eased, no CSS
   // transitions), so scrolling, re-renders and screen changes never make them jump.
   const spotRef = useRef<HTMLDivElement>(null);
-  const captionRef = useRef<HTMLDivElement>(null);
   const chapterRef = useRef(0);
   const cursorRef = useRef<HTMLDivElement>(null);
   const targetName = useRef<string | null>(null);
   const cur = useRef({ x: 0, y: 0, w: 0, h: 0, cx: -60, cy: -60, init: false, name: null as string | null, fadeUntil: 0 });
-  const dockRef = useRef<{ ch: number; at: "top" | "bottom"; moved: boolean; scrolledAt: number }>({ ch: -1, at: "bottom", moved: false, scrolledAt: 0 });
-  const [dock, setDock] = useState<"top" | "bottom">("bottom");
-  const [barVisible, setBarVisible] = useState(true);
-  const dockTimer = useRef(0);
-  const moveDock = useCallback((at: "top" | "bottom") => {
-    dockRef.current.at = at;
-    window.clearTimeout(dockTimer.current);
-    setBarVisible(false);
-    dockTimer.current = window.setTimeout(() => {
-      setDock(at);
-      setBarVisible(true);
-    }, 200);
+  const calloutRef = useRef<HTMLDivElement>(null);
+  const arrowRef = useRef<HTMLSpanElement>(null);
+  const controlsRef = useRef<HTMLDivElement>(null);
+  const side = useRef<{ name: string | null; at: "below" | "above" | "right" | "left" | "inside" | null }>({ name: null, at: null });
+  const [say, setSay] = useState("");
+  // The note floats beside its target with an arrow pointing at it. Its side is chosen once
+  // per step, where it fits without covering the target or the controls, so it never jumps.
+  const placeCallout = useCallback((r: DOMRect, a: { x: number; y: number; w: number; h: number }) => {
+    const box = calloutRef.current;
+    const arrow = arrowRef.current;
+    if (!box || !arrow) return;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const cw = box.offsetWidth;
+    const chh = box.offsetHeight;
+    const gap = 16;
+    const m = 8;
+    const ctl = controlsRef.current?.getBoundingClientRect();
+    const clampX = (x: number) => Math.max(m, Math.min(vw - cw - m, x));
+    const clampY = (y: number) => Math.max(m, Math.min(vh - chh - m, y));
+    const pos = (at: string, t: { x: number; y: number; w: number; h: number }) => {
+      if (at === "below") return { left: clampX(t.x + t.w / 2 - cw / 2), top: t.y + t.h + gap };
+      if (at === "above") return { left: clampX(t.x + t.w / 2 - cw / 2), top: t.y - gap - chh };
+      if (at === "right") return { left: t.x + t.w + gap, top: clampY(t.y + t.h / 2 - chh / 2) };
+      if (at === "left") return { left: t.x - gap - cw, top: clampY(t.y + t.h / 2 - chh / 2) };
+      return { left: clampX(t.x + t.w / 2 - cw / 2), top: clampY(t.y + Math.min(t.h - chh - 12, 24)) };
+    };
+    const hits = (p: { left: number; top: number }, q?: DOMRect) => !!q && p.left < q.right && p.left + cw > q.left && p.top < q.bottom && p.top + chh > q.top;
+    const fits = (p: { left: number; top: number }) => p.left >= m && p.top >= m && p.left + cw <= vw - m && p.top + chh <= vh - m && !hits(p, ctl);
+    const sd = side.current;
+    if (sd.name !== targetName.current || !sd.at) {
+      const t = { x: r.x, y: r.y, w: r.width, h: r.height };
+      sd.name = targetName.current;
+      sd.at = (["below", "above", "right", "left"] as const).find((at) => fits(pos(at, t))) ?? "inside";
+    }
+    const p = pos(sd.at!, a);
+    box.style.transform = `translate(${Math.round(p.left)}px, ${Math.round(p.top)}px)`;
+    box.style.opacity = "1";
+    // The arrow sits on the edge facing the target, lined up with the target's centre.
+    const st = arrow.style;
+    st.display = sd.at === "inside" ? "none" : "block";
+    const ax = Math.max(14, Math.min(cw - 14, a.x + a.w / 2 - p.left));
+    const ay = Math.max(14, Math.min(chh - 14, a.y + a.h / 2 - p.top));
+    st.left = sd.at === "below" || sd.at === "above" ? `${ax - 7}px` : sd.at === "right" ? "-7px" : `${cw - 7}px`;
+    st.top = sd.at === "below" ? "-7px" : sd.at === "above" ? `${chh - 7}px` : `${ay - 7}px`;
   }, []);
-  useEffect(() => {
-    const want = CHAPTERS[chapter]?.dock ?? "bottom";
-    dockRef.current = { ch: chapter, at: dockRef.current.at, moved: false, scrolledAt: 0 };
-    if (want !== dockRef.current.at || want !== dock) moveDock(want);
-  }, [chapter]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (!open) return;
     let raf = 0;
@@ -112,31 +139,12 @@ export function Film() {
       }
       const a = cur.current;
       // A target that has left the screen (for example Submit, once the request is created) hides the spotlight.
-      if ((!el || !el.isConnected) && spotRef.current) spotRef.current.style.opacity = "0";
+      if (!el || !el.isConnected) {
+        if (spotRef.current) spotRef.current.style.opacity = "0";
+        if (calloutRef.current) calloutRef.current.style.opacity = "0";
+      }
       if (el && el.isConnected) {
         const r = el.getBoundingClientRect();
-        // The caption bar is docked to the top or bottom edge. Each chapter names its edge in
-        // the script; only if a target would still end up under the bar does it move, once,
-        // to the other edge, and it stays there for the rest of that chapter.
-        const bar = captionRef.current;
-        if (bar && dockRef.current.ch === chapterRef.current && !dockRef.current.moved) {
-          const h = bar.offsetHeight;
-          const big = r.height > window.innerHeight * 0.6;
-          const covered = dockRef.current.at === "bottom" ? r.bottom > window.innerHeight - h - 8 : r.top < h + 8;
-          if (!big && r.height > 0 && covered) {
-            // First try to scroll the target clear of the bar; move the bar only if that fails.
-            const d = dockRef.current;
-            if (!d.scrolledAt) {
-              d.scrolledAt = performance.now();
-              el.scrollIntoView({ block: "center", behavior: reduced ? "auto" : "smooth" });
-            } else if (performance.now() - d.scrolledAt > 700) {
-              d.moved = true;
-              moveDock(d.at === "bottom" ? "top" : "bottom");
-            }
-          } else if (dockRef.current.scrolledAt && performance.now() - dockRef.current.scrolledAt > 700) {
-            dockRef.current.scrolledAt = 0;
-          }
-        }
         // A jump to a far-away target (often on another screen) fades out and back in, instead of sweeping across.
         if (a.name !== targetName.current) {
           a.name = targetName.current;
@@ -145,6 +153,7 @@ export function Film() {
         }
         if (a.fadeUntil && performance.now() < a.fadeUntil) {
           if (spotRef.current) spotRef.current.style.opacity = "0";
+          if (calloutRef.current) calloutRef.current.style.opacity = "0";
           raf = requestAnimationFrame(loop);
           return;
         }
@@ -173,6 +182,7 @@ export function Film() {
             st.height = `${a.h + pad * 2}px`;
           }
           if (cursorRef.current) cursorRef.current.style.transform = `translate(${a.cx}px, ${a.cy}px)`;
+          placeCallout(r, a);
         }
       }
       const p = pos.current;
@@ -181,7 +191,7 @@ export function Film() {
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [open, reduced]);
+  }, [open, reduced, placeCallout]);
 
   const sleep = (ms: number, id: number) =>
     new Promise<boolean>((resolve) => {
@@ -202,6 +212,7 @@ export function Film() {
           const skip = c === fromChapter && s === fromStep && skipAction;
           pos.current = { chapter: c, step: s, actionDone: skip, stepStart: performance.now(), stepMs: step.ms, base: chapterStart(c) + steps.slice(0, s).reduce((a, x) => a + x.ms, 0) };
 
+          setSay(step.say ?? CHAPTERS[c].caption);
           let el = step.target ? findVisible(step.target) : null;
           // If the target only exists after the action (a new screen), act first.
           if (step.target && !el && step.do && !skip) {
@@ -213,6 +224,7 @@ export function Film() {
           }
           if (runId.current !== id) return;
           if (el) {
+            if (targetName.current !== (step.target ?? null)) side.current.at = null;
             el.scrollIntoView({ block: "nearest", inline: "nearest", behavior: reduced ? "auto" : "smooth" });
             targetEl.current = el;
             targetName.current = step.target ?? null;
@@ -334,7 +346,7 @@ export function Film() {
           className="pointer-events-none fixed left-0 top-0 z-[61] rounded-[14px]"
           style={{
             opacity: hasTarget ? 1 : 0,
-            boxShadow: "0 0 0 2px var(--brand-primary), 0 0 24px 4px rgb(13 94 104 / 0.55), 0 0 0 9999px rgb(11 24 33 / 0.55)",
+            boxShadow: "0 0 0 2px var(--brand-primary), 0 0 24px 4px rgb(13 94 104 / 0.55), 0 0 0 9999px rgb(11 24 33 / 0.45)",
             transition: "opacity 0.3s ease",
           }}
         />
@@ -349,49 +361,49 @@ export function Film() {
         </div>
       )}
 
-      {/* Caption bar: docked to the top or bottom edge, compact, with the controls at its end. */}
+      {/* The note beside the target, with an arrow pointing at it */}
       {!ended && (
         <div
-          ref={captionRef}
-          className={cx("fixed inset-x-0 z-[70] border-line bg-white text-ink shadow-pop", dock === "top" ? "top-0 border-b" : "bottom-0 border-t")}
-          style={{
-            opacity: barVisible ? 1 : 0,
-            transform: barVisible ? "translateY(0)" : `translateY(${dock === "top" ? "-100%" : "100%"})`,
-            transition: reduced ? "none" : "opacity 0.2s ease, transform 0.2s ease",
-          }}
+          ref={calloutRef}
+          className="pointer-events-none fixed left-0 top-0 z-[70] w-[min(340px,calc(100vw-24px))] rounded-card bg-white px-4 py-3 text-ink shadow-pop"
+          style={{ opacity: 0, transition: reduced ? "none" : "opacity 0.25s ease" }}
           aria-live="polite"
+          data-tour="film-callout"
         >
-          <div className={cx("absolute inset-x-0 h-[3px] bg-surface-alt", dock === "top" ? "bottom-0" : "top-0")} aria-hidden>
-            <div className="h-full bg-teal transition-[width] duration-300 ease-linear" style={{ width: `${Math.min(100, (elapsed / TOTAL_MS) * 100)}%` }} />
-          </div>
-          <div className="mx-auto flex max-w-[1200px] items-center gap-3 px-3 py-2 sm:gap-5 sm:px-5 sm:py-2.5">
-            <div className="min-w-0 flex-1">
-              <div className="text-xs font-medium text-teal" data-tour="film-step">
+          <span ref={arrowRef} className="absolute h-3.5 w-3.5 rotate-45 bg-white" aria-hidden />
+          <p key={say} className="callout-in relative text-[15px] font-medium leading-[21px]">
+            {say}
+          </p>
+        </div>
+      )}
+
+      {/* Controls: a small pill in the top corner, out of the way of the product */}
+      {!ended && (
+        <div ref={controlsRef} className="fixed right-2 top-2 z-[71] overflow-hidden rounded-card bg-white shadow-pop">
+          <div className="flex items-center gap-0.5 py-1 pl-3 pr-1">
+            <span className="mr-1 whitespace-nowrap text-xs font-medium text-teal" data-tour="film-step">
+              <span className="sm:hidden">
+                {chapter + 1}/{CHAPTERS.length}
+              </span>
+              <span className="hidden sm:inline">
                 Step {chapter + 1} of {CHAPTERS.length} · {ch.title}
-              </div>
-              <p key={chapter} className="fade-in text-[15px] font-medium leading-5 text-ink sm:text-[17px] sm:leading-6">
-                {ch.caption}
-              </p>
-            </div>
-            <div className="flex shrink-0 items-center gap-0.5">
-              <CtrlButton label="Previous step (Left arrow)" onClick={() => seek(Math.max(0, chapter - 1))}>
-                <SkipBack size={16} strokeWidth={1.5} />
-              </CtrlButton>
-              <CtrlButton label={playing ? "Pause (Space)" : "Play (Space)"} onClick={() => (playing ? pause() : resume())} primary>
-                {playing ? <Pause size={16} strokeWidth={1.5} /> : <Play size={16} strokeWidth={1.5} />}
-              </CtrlButton>
-              <CtrlButton label="Next step (Right arrow)" onClick={() => seek(Math.min(CHAPTERS.length - 1, chapter + 1))}>
-                <SkipForward size={16} strokeWidth={1.5} />
-              </CtrlButton>
-              <button
-                onClick={takeOver}
-                className="ml-1 inline-flex h-10 items-center gap-1.5 rounded-button border border-line px-2.5 text-small text-teal hover:bg-surface-alt sm:px-3"
-                data-tour="take-over"
-                aria-label="Take over"
-              >
-                <Hand size={15} strokeWidth={1.5} aria-hidden /> <span className="hidden sm:inline">Take over</span>
-              </button>
-            </div>
+              </span>
+            </span>
+            <CtrlButton label="Previous step (Left arrow)" onClick={() => seek(Math.max(0, chapter - 1))}>
+              <SkipBack size={15} strokeWidth={1.5} />
+            </CtrlButton>
+            <CtrlButton label={playing ? "Pause (Space)" : "Play (Space)"} onClick={() => (playing ? pause() : resume())} primary>
+              {playing ? <Pause size={15} strokeWidth={1.5} /> : <Play size={15} strokeWidth={1.5} />}
+            </CtrlButton>
+            <CtrlButton label="Next step (Right arrow)" onClick={() => seek(Math.min(CHAPTERS.length - 1, chapter + 1))}>
+              <SkipForward size={15} strokeWidth={1.5} />
+            </CtrlButton>
+            <button onClick={takeOver} className="ml-0.5 inline-flex h-9 items-center gap-1.5 rounded-button px-2 text-small text-teal hover:bg-surface-alt" data-tour="take-over" aria-label="Take over">
+              <Hand size={15} strokeWidth={1.5} aria-hidden /> <span className="hidden sm:inline">Take over</span>
+            </button>
+          </div>
+          <div className="h-[3px] bg-surface-alt" aria-hidden>
+            <div className="h-full bg-teal transition-[width] duration-300 ease-linear" style={{ width: `${Math.min(100, (elapsed / TOTAL_MS) * 100)}%` }} />
           </div>
         </div>
       )}
@@ -418,7 +430,7 @@ export function Film() {
                 className="inline-flex min-h-12 items-center gap-2 rounded-button border border-ink-muted px-6 text-body text-ink-on-stage hover:border-ink-on-stage"
                 onClick={() => {
                   takeOver();
-                  openAbout();
+                  router.push("/about/");
                 }}
                 data-tour="film-about"
               >
@@ -456,7 +468,7 @@ function CtrlButton({ label, onClick, children, primary }: { label: string; onCl
       aria-label={label}
       title={label}
       className={cx(
-        "inline-flex h-10 w-10 items-center justify-center rounded-button",
+        "inline-flex h-9 w-9 items-center justify-center rounded-button",
         primary ? "bg-teal text-white hover:opacity-90" : "text-ink hover:bg-surface-alt",
       )}
     >

@@ -14,7 +14,7 @@ export interface Coach {
   label: string;
 }
 
-export function useCoach(): Coach {
+export function useCoach(mobile = false): Coach {
   const s = useApp((x) => x);
   const view = useDealView();
   const ds = s.deals[s.dealId];
@@ -29,10 +29,11 @@ export function useCoach(): Coach {
     if (view.core.some((c) => c.value === null))
       return { stage: 2, target: "submit-fix", label: mainAdded ? "Some fields are empty. Fill them in." : "Add the Brightline emails first" };
     if (conflict) return { stage: 2, target: `options-${conflict.key}`, label: "The email and the quote disagree. Pick one." };
-    return { stage: 3, target: "submit", label: "Everything is filled in. Check it and submit." };
+    return { stage: 3, target: "submit", label: "All filled in. Check the values, edit any with the pencil, then submit." };
   }
   if (s.view === "inbox") {
-    if (!s.sidebarOpen) return { stage: picked ? 2 : 0, target: "open-sidebar", label: picked ? "Open Sirion again" : "Start here: open the Sirion add-in" };
+    if (mobile && !s.sidebarOpen && (s.mailScreen ?? "list") === "list") return { stage: 0, target: "thread-t-bl", label: picked ? "Open the Brightline email" : "Start here: open the Brightline email" };
+    if (!s.sidebarOpen) return { stage: picked ? 2 : 0, target: "open-sidebar", label: picked ? "Open Sirion again" : mobile ? "Tap Sirion to open the add-in" : "Start here: open the Sirion add-in" };
     if (ds.pendingWarning) return { stage: 1, target: "mismatch-cancel", label: "Wrong supplier. Don't add it." };
     if (ds.reading) return { stage: 1, target: null, label: "" };
     if (!picked) return { stage: 1, target: "create-deal", label: "Start the intake request here" };
@@ -41,7 +42,7 @@ export function useCoach(): Coach {
         return { stage: 1, target: "thread-t-bl", label: "Open the Brightline email" };
       return { stage: 1, target: "add-to-sirion", label: "Add this email thread to the request" };
     }
-    if (s.panel !== "home") return { stage: 2, target: null, label: "" };
+    if (s.panel !== "home") return { stage: 2, target: "answer-review", label: "Now review and submit it in Sirion" };
     return { stage: 2, target: "review-in-sirion", label: "Now review and submit it in Sirion" };
   }
   return { stage: 0, target: null, label: "" };
@@ -81,10 +82,11 @@ export function CoachMark({ target, label }: { target: string | null; label: str
   // Place the label beside the target where there is room, so it never hides the content around it.
   let pos: React.CSSProperties;
   const midY = Math.max(8, Math.min(vh - 60, rect.top + rect.height / 2 - 22));
-  if (rect.right + 16 + W < vw) pos = { left: rect.right + 16, top: midY, justifyContent: "flex-start" };
-  else if (rect.left - 16 - W > 0) pos = { left: rect.left - 16 - W, top: midY, justifyContent: "flex-end" };
-  else if (rect.bottom + 56 < vh) pos = { left: Math.max(8, Math.min(vw - W - 8, rect.left + rect.width / 2 - W / 2)), top: rect.bottom + 12, justifyContent: "center" };
-  else pos = { left: Math.max(8, Math.min(vw - W - 8, rect.left + rect.width / 2 - W / 2)), bottom: vh - rect.top + 12, justifyContent: "center" };
+  const cx0 = Math.max(8, Math.min(vw - W - 8, rect.left + rect.width / 2 - W / 2));
+  if (rect.bottom + 84 < vh) pos = { left: cx0, top: rect.bottom + 12, justifyContent: "center" };
+  else if (rect.top - 84 > 0) pos = { left: cx0, bottom: vh - rect.top + 12, justifyContent: "center" };
+  else if (rect.right + 16 + W < vw) pos = { left: rect.right + 16, top: midY, justifyContent: "flex-start" };
+  else pos = { left: Math.max(8, rect.left - 16 - W), top: midY, justifyContent: "flex-end" };
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 z-40" data-coach={target}>
       <div

@@ -9,9 +9,11 @@ test("main deal by hand: create the deal, ask what's agreed, open the request in
   await expect(page.locator(t("deal-chip"))).toContainText("No request yet");
   await expect(page.locator('[data-coach="create-deal"]')).toHaveCount(1);
   await page.click(t("create-deal"));
-  await expect(page.locator(t("toast"))).toContainText("Draft request DL-1042 started in Sirion. Added 12 emails and 1 PDF.");
   await expect(page.locator(t("deal-chip"))).toContainText("Brightline Analytics request · DL-1042");
+  // The toast only reports what has happened: it waits for the reading, and says the draft is not submitted.
   await expect(page.locator(t("reading"))).toHaveCount(0, { timeout: 10_000 });
+  await expect(page.locator(t("toast"))).toContainText("Draft DL-1042 saved with 12 emails and 1 PDF.");
+  await expect(page.locator(t("toast"))).toContainText("Not submitted yet");
   await expect(page.locator(t("match-reason"))).toContainText("brightline-analytics.example");
 
   await page.click(t("card-agreed"));
@@ -29,6 +31,15 @@ test("main deal by hand: create the deal, ask what's agreed, open the request in
   await page.click(t("source-payment"));
   await expect(page.locator(t("source-popover"))).toContainText("Net 45");
   await page.keyboard.press("Escape");
+  await expect(page.locator(t("sirion-here"))).toContainText("You are in Sirion now");
+  // Any value can be edited; the edit is marked and can be undone
+  await page.click(t("edit-scope"));
+  await page.fill(t("input-scope"), "Brightline Insights platform, 30 named users");
+  await page.click(t("save-scope"));
+  await expect(page.locator(t("core-scope"))).toContainText("30 named users");
+  await expect(page.locator(t("edited-scope"))).toContainText("Edited by you");
+  await page.locator(t("edited-scope")).getByRole("button").click();
+  await expect(page.locator(t("core-scope"))).toContainText("25 named users");
   await expect(page.locator(t("submit"))).toBeEnabled();
   await page.click(t("submit"));
   await expect(page.locator(t("receipt"))).toContainText("Intake request created", { timeout: 10_000 });

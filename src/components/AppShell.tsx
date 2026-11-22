@@ -17,7 +17,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const norm = path.endsWith("/") ? path : path + "/";
   useEffect(() => hydrateFromSession(), []);
   // The prototype shows full screen, with no site header. Narrative pages keep the header.
-  const fullScreen = norm === "/" || norm === "/product/";
+  const fullScreen = norm === "/" || norm === "/product/" || norm === "/about/";
   return (
     <div className="flex min-h-screen flex-col">
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded-button focus:bg-white focus:p-3">

@@ -2,52 +2,136 @@
 
 import { useState } from "react";
 import * as Popover from "@radix-ui/react-popover";
-import { ChevronDown, Quote, Mail, UploadCloud, Check, ArrowLeft, Search, Bell, RotateCcw, Info } from "lucide-react";
+import { ChevronDown, Quote, Mail, UploadCloud, Check, ArrowLeft, Search, Bell, RotateCcw, Info, Pencil, Menu, Undo2 } from "lucide-react";
+import { useIsMobile } from "@/lib/useIsMobile";
 import { actions, useApp, useDealView, threadOf, threadAttachments } from "@/lib/store";
 import { getDeal } from "@data/index";
 import type { TermView } from "@/lib/derive";
 import { Button, cx, fmtDate } from "@/components/ui";
 import { SourceMessage } from "./SourceText";
-import { SirionLogo } from "./SirionMark";
+import { SirionLogo, SirionMark } from "./SirionMark";
 import { AboutButton } from "./About";
 
 // A mock of the Sirion web app: solid top bar, grey canvas, a request form in
 // collapsible sections, documents and the submit panel on the right. The owner
 // checks the request where it will live, already filled from Outlook.
 
-export function SirionChrome({ crumb, children }: { crumb: string; children: React.ReactNode }) {
+export function SirionChrome({ crumb, children, footer }: { crumb: string; children: React.ReactNode; footer?: React.ReactNode }) {
+  const mobile = useIsMobile();
   return (
     <div className="sirion-enter flex h-full min-h-0 flex-col bg-canvas" data-tour="sirion-app">
-      <header className="flex h-12 shrink-0 items-center gap-3 bg-teal px-3 sm:gap-5 sm:px-4 text-white">
-        <SirionLogo size={20} inverse />
-        <nav className="hidden items-center gap-1 text-small md:flex" aria-hidden>
-          {["Home", "Requests", "Contracts", "Reports"].map((n) => (
-            <span key={n} className={cx("rounded-chip px-2.5 py-1", n === "Requests" ? "bg-white text-teal" : "text-white")}>
-              {n}
-            </span>
-          ))}
-        </nav>
-        <span className="ml-auto hidden h-8 w-[220px] items-center gap-2 rounded-chip bg-white px-2 text-small text-ink-muted lg:flex" aria-hidden>
-          <Search size={14} strokeWidth={1.5} /> Search
-        </span>
-        <AboutButton onDark />
-        <span className="hidden rounded-pill border border-white px-2 text-xs leading-5 sm:inline" title="Mock of the Sirion web app">
-          Mock
-        </span>
-        <Bell size={17} strokeWidth={1.5} className="hidden sm:block" aria-hidden />
-        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs font-medium text-teal" aria-hidden>
-          MS
-        </span>
-      </header>
-      <div className="flex shrink-0 items-center gap-2 px-6 pt-3 text-xs text-ink-muted">
+      {mobile ? (
+        // Sirion on a phone: a compact bar with the menu, the logo and the user.
+        <header className="flex h-12 shrink-0 items-center gap-3 bg-teal px-3 text-white">
+          <Menu size={20} strokeWidth={1.75} aria-hidden />
+          <SirionLogo size={18} inverse />
+          <Bell size={18} strokeWidth={1.5} className="ml-auto" aria-hidden />
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs font-medium text-teal" aria-hidden>
+            MS
+          </span>
+        </header>
+      ) : (
+        <header className="flex h-12 shrink-0 items-center gap-3 bg-teal px-3 text-white sm:gap-5 sm:px-4">
+          <SirionLogo size={20} inverse />
+          <nav className="hidden items-center gap-1 text-small md:flex" aria-hidden>
+            {["Home", "Requests", "Contracts", "Reports"].map((n) => (
+              <span key={n} className={cx("rounded-chip px-2.5 py-1", n === "Requests" ? "bg-white text-teal" : "text-white")}>
+                {n}
+              </span>
+            ))}
+          </nav>
+          <span className="ml-auto hidden h-8 w-[220px] items-center gap-2 rounded-chip bg-white px-2 text-small text-ink-muted lg:flex" aria-hidden>
+            <Search size={14} strokeWidth={1.5} /> Search
+          </span>
+          <AboutButton onDark />
+          <Bell size={17} strokeWidth={1.5} className="hidden sm:block" aria-hidden />
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs font-medium text-teal" aria-hidden>
+            MS
+          </span>
+        </header>
+      )}
+      <div className="flex shrink-0 items-center gap-2 px-4 pt-3 text-xs text-ink-muted md:px-6">
         <button onClick={() => actions.setView("inbox")} className="inline-flex min-h-9 items-center gap-1 rounded-chip pr-2 text-teal hover:underline" data-tour="back-to-outlook">
-          <ArrowLeft size={14} strokeWidth={1.5} aria-hidden /> Back to Outlook
+          <ArrowLeft size={14} strokeWidth={1.5} aria-hidden /> {mobile ? "Outlook" : "Back to Outlook"}
         </button>
         <span aria-hidden>·</span>
-        <span>{crumb}</span>
+        <span className="truncate">{crumb}</span>
       </div>
-      <div className="thin-scroll min-h-0 flex-1 overflow-y-auto px-4 pb-8 pt-2 md:px-6">{children}</div>
+      <div className="thin-scroll min-h-0 flex-1 overflow-y-auto px-3 pb-8 pt-2 md:px-6">{children}</div>
+      {footer}
     </div>
+  );
+}
+
+/** Says plainly that this screen is the Sirion app, opened from the Outlook add-in. */
+function YouAreInSirion() {
+  return (
+    <div className="mb-3 flex items-center gap-3 rounded-card border border-addin-line bg-addin-bg px-4 py-3" data-tour="sirion-here">
+      <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-white shadow-card">
+        <SirionMark size={18} />
+      </span>
+      <p className="text-small text-ink">
+        <b className="font-medium">You are in Sirion now.</b> <span className="text-ink-muted">The draft came across from the Outlook add-in. Check it, edit anything, then submit.</span>
+      </p>
+    </div>
+  );
+}
+
+/** A value with a pencil: click to correct it. The change is logged; undo puts the email's value back. */
+function Editable({ k, value, edited, onSave, onUndo }: { k: string; value: React.ReactNode; edited: boolean; onSave: (v: string) => void; onUndo: () => void }) {
+  const [editing, setEditing] = useState(false);
+  const [v, setV] = useState("");
+  if (editing)
+    return (
+      <form
+        className="flex flex-wrap items-center gap-1.5"
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSave(v);
+          setEditing(false);
+        }}
+      >
+        <input
+          autoFocus
+          value={v}
+          onChange={(e) => setV(e.target.value)}
+          onKeyDown={(e) => e.key === "Escape" && setEditing(false)}
+          className="min-h-9 min-w-0 flex-1 rounded-chip border border-teal px-2 text-small outline-none ring-1 ring-teal"
+          aria-label="New value"
+          data-tour={`input-${k}`}
+        />
+        <button type="submit" className="inline-flex min-h-9 items-center rounded-button bg-teal px-3 text-xs text-white" data-tour={`save-${k}`}>
+          Save
+        </button>
+        <button type="button" onClick={() => setEditing(false)} className="inline-flex min-h-9 items-center rounded-button px-2 text-xs text-ink-muted hover:bg-surface-alt">
+          Cancel
+        </button>
+      </form>
+    );
+  return (
+    <span className="group flex flex-wrap items-center gap-x-1.5 gap-y-1">
+      <span>{value}</span>
+      {edited && (
+        <span className="inline-flex items-center gap-1 rounded-pill bg-tone-info-bg px-2 text-xs leading-5 text-tone-info-fg" data-tour={`edited-${k}`}>
+          Edited by you
+          <button onClick={onUndo} className="inline-flex items-center gap-0.5 underline-offset-2 hover:underline" aria-label="Undo edit, use the email's value">
+            <Undo2 size={11} strokeWidth={2} aria-hidden /> Undo
+          </button>
+        </span>
+      )}
+      <button
+        onClick={() => {
+          setV(typeof value === "string" ? value : "");
+          setEditing(true);
+        }}
+        className="inline-flex h-7 w-7 items-center justify-center rounded-full text-ink-muted hover:bg-surface-alt hover:text-teal"
+        aria-label="Edit this value"
+        title="Edit"
+        data-tour={`edit-${k}`}
+      >
+        <Pencil size={13} strokeWidth={1.75} aria-hidden />
+      </button>
+    </span>
   );
 }
 
@@ -106,6 +190,7 @@ function Row({ label, children, source, tour }: { label: string; children: React
 const settling = (t: TermView) => [...t.steps].reverse().find((s) => s.role !== "statement") ?? t.steps[0];
 
 export function SirionRequest() {
+  const mobile = useIsMobile();
   const dealId = useApp((s) => s.dealId);
   const ds = useApp((s) => s.deals[s.dealId]);
   const view = useDealView();
@@ -144,12 +229,21 @@ export function SirionRequest() {
 
   if (submitted) return <Created />;
 
+  // A value the owner corrected over one Sirion filled in from the emails.
+  const edited = (key: string) => {
+    const c = core(key);
+    return c.source === "typed" && (c.aiEvidence?.length ?? 0) > 0;
+  };
   const field = (key: string, label?: string) => {
     const c = core(key);
     return (
-      <Row key={key} label={label ?? c.label} tour={`core-${key}`} source={c.source === "ai" && c.evidence[0] ? <Source messageId={c.evidence[0].messageId} quote={c.evidence[0].quote} tour={`source-${key}`} /> : undefined}>
-        {c.value ?? (
-          <input className="min-h-10 w-full rounded-chip border border-line-strong px-2 text-small" placeholder="Not in the emails. Type it here." aria-label={c.label} onChange={(e) => actions.typeCore(key, e.target.value)} data-tour={`type-${key}`} />
+      <Row key={key} label={label ?? c.label} tour={`core-${key}`} source={(c.source === "ai" || edited(key)) && c.aiEvidence?.[0] ? <Source messageId={c.aiEvidence[0].messageId} quote={c.aiEvidence[0].quote} tour={`source-${key}`} /> : undefined}>
+        {c.value !== null && (c.source === "ai" || edited(key)) ? (
+          <Editable k={key} value={c.value} edited={edited(key)} onSave={(v) => actions.editCore(key, v)} onUndo={() => actions.undoEditCore(key)} />
+        ) : (
+          c.value ?? (
+            <input className="min-h-10 w-full rounded-chip border border-line-strong px-2 text-small" placeholder="Not in the emails. Type it here." aria-label={c.label} onChange={(e) => actions.typeCore(key, e.target.value)} data-tour={`type-${key}`} />
+          )
         )}
       </Row>
     );
@@ -160,9 +254,14 @@ export function SirionRequest() {
     if (t.evidenceStatus === "conflict") return <ConflictRow key={k} t={t} />;
     const agreed = t.status === "accepted" || t.status === "offEmail";
     const s = agreed ? settling(t) : undefined;
+    const termEdited = t.resolution?.type === "offEmail";
     return (
       <Row key={k} label={t.label} tour={`term-${k}`} source={s ? <Source messageId={s.messageId} quote={s.quote} tour={`source-${k}`} /> : undefined}>
-        {agreed ? t.value : <span className="text-ink-muted">Flagged for Legal</span>}
+        {agreed ? (
+          <Editable k={k} value={t.value ?? ""} edited={termEdited} onSave={(v) => actions.editTerm(k, v)} onUndo={() => actions.undoEditTerm(k)} />
+        ) : (
+          <span className="text-ink-muted">Flagged for Legal</span>
+        )}
       </Row>
     );
   };
@@ -171,17 +270,54 @@ export function SirionRequest() {
     .map((t) => ({ t, n: t.messageIds.filter((id) => view.addedIds.has(id)).length, pdf: t.messageIds.some((id) => view.addedIds.has(id) && id.startsWith("pdf")) }))
     .filter((g) => g.n > 0);
 
+  const submitPanel = (
+    <section className={mobile ? "border-t border-line bg-white px-4 pb-4 pt-3 shadow-pop" : "rounded-card bg-white p-4 shadow-card"} data-tour="summary" aria-label="Submit">
+      <p className="text-small text-ink">
+        {missing.length ? "Not ready yet." : "Ready to submit."}{" "}
+        <span className="text-ink-muted">Every value links to the email it came from.</span>
+      </p>
+      <Button
+        variant="primary"
+        className="mt-3 w-full"
+        disabled={blocked || ds.submit.status === "pending"}
+        onClick={() => actions.confirmAndSubmit()}
+        data-tour="submit"
+        aria-describedby={why ? "submit-why" : undefined}
+      >
+        {ds.submit.status === "pending" ? "Submitting" : "Submit request"}
+      </Button>
+      {why && (
+        <div id="submit-why" className="mt-2.5 flex items-start gap-2 rounded-chip bg-tone-info-bg px-3 py-2 text-small text-tone-info-fg" data-tour="submit-why" role="status">
+          <Info size={15} strokeWidth={1.75} className="mt-[3px] shrink-0" aria-hidden />
+          <span className="min-w-0">
+            {why.text}
+            {why.fix && (
+              <button onClick={why.fix.run} className="mt-1.5 flex min-h-9 items-center rounded-button bg-teal px-3 text-small text-white hover:opacity-90" data-tour="submit-fix">
+                {why.fix.label}
+              </button>
+            )}
+          </span>
+        </div>
+      )}
+      {!why && <p className="mt-2 text-xs text-ink-muted">Submitting confirms you checked these values.</p>}
+      {ds.submit.status === "failed" && <p className="mt-2 text-xs text-tone-danger-fg">{ds.submit.error} Retry is safe.</p>}
+    </section>
+  );
+
   return (
-    <SirionChrome crumb={`Requests / Draft ${dealId}`}>
+    <SirionChrome crumb={`Requests / Draft ${dealId}`} footer={mobile ? submitPanel : undefined}>
       <div className="mx-auto max-w-[1120px]">
-        <div className="mb-3 flex items-center gap-3 px-1 py-2">
+        <YouAreInSirion />
+        <div className="mb-3 flex items-center gap-3 px-1 py-1">
           <div className="min-w-0 flex-1">
-            <h1 className="text-h1 text-ink">New intake request</h1>
-            <p className="text-small text-ink-muted">Filled in from your emails. Every value is quoted: click its source to read the sentence.</p>
+            <h1 className="text-[22px] leading-7 text-ink md:text-h1">New intake request</h1>
+            <p className="text-small text-ink-muted">Filled in from your emails. Click a source to read the sentence, or the pencil to edit a value.</p>
           </div>
-          <Button variant="secondary" onClick={() => actions.setView("inbox")}>
-            Cancel
-          </Button>
+          {!mobile && (
+            <Button variant="secondary" onClick={() => actions.setView("inbox")}>
+              Cancel
+            </Button>
+          )}
         </div>
 
         <div className="grid items-start gap-4 lg:grid-cols-[1fr_320px]">
@@ -231,37 +367,7 @@ export function SirionRequest() {
               </div>
             </section>
 
-            <section className="rounded-card bg-white p-4 shadow-card" data-tour="summary" aria-label="Submit">
-              <p className="text-small text-ink">
-                {missing.length ? "Not ready yet." : "Ready to submit."}{" "}
-                <span className="text-ink-muted">Every value links to the email it came from.</span>
-              </p>
-              <Button
-                variant="primary"
-                className="mt-3 w-full"
-                disabled={blocked || ds.submit.status === "pending"}
-                onClick={() => actions.confirmAndSubmit()}
-                data-tour="submit"
-                aria-describedby={why ? "submit-why" : undefined}
-              >
-                {ds.submit.status === "pending" ? "Submitting" : "Submit request"}
-              </Button>
-              {why && (
-                <div id="submit-why" className="mt-2.5 flex items-start gap-2 rounded-chip bg-tone-info-bg px-3 py-2 text-small text-tone-info-fg" data-tour="submit-why" role="status">
-                  <Info size={15} strokeWidth={1.75} className="mt-[3px] shrink-0" aria-hidden />
-                  <span className="min-w-0">
-                    {why.text}
-                    {why.fix && (
-                      <button onClick={why.fix.run} className="mt-1.5 flex min-h-9 items-center rounded-button bg-teal px-3 text-small text-white hover:opacity-90" data-tour="submit-fix">
-                        {why.fix.label}
-                      </button>
-                    )}
-                  </span>
-                </div>
-              )}
-              {!why && <p className="mt-2 text-xs text-ink-muted">Submitting confirms you checked these values.</p>}
-              {ds.submit.status === "failed" && <p className="mt-2 text-xs text-tone-danger-fg">{ds.submit.error} Retry is safe.</p>}
-            </section>
+            {!mobile && submitPanel}
           </div>
         </div>
       </div>

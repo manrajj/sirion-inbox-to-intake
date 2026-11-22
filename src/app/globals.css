@@ -174,3 +174,33 @@ textarea {
 @media (prefers-reduced-motion: reduce) {
   .assess-shimmer { animation: none; color: var(--ink-muted); background: none; }
 }
+
+/* Outlook hands over to Sirion: a short branded beat, then the request. */
+.opening-sirion {
+  animation: opening-sirion 0.9s ease forwards;
+}
+@keyframes opening-sirion {
+  0% { opacity: 0; }
+  15% { opacity: 1; }
+  65% { opacity: 1; }
+  100% { opacity: 0; }
+}
+/* Outlook mobile opens an add-in as a sheet that slides up. */
+.sheet-up {
+  animation: sheet-up 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes sheet-up {
+  from { transform: translateY(24px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+.callout-in {
+  animation: callout-in 0.25s ease;
+}
+@keyframes callout-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .opening-sirion { animation-duration: 0.3s; }
+  .sheet-up, .callout-in { animation: none; }
+}

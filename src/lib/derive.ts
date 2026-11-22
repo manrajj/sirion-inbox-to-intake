@@ -72,6 +72,8 @@ export interface CoreFieldView {
   group: "supplier" | "internal";
   value: string | null;
   evidence: { messageId: string; quote: string }[];
+  /** What the emails said, kept when the owner edits the value. */
+  aiEvidence?: { messageId: string; quote: string }[];
   source: "ai" | "draft" | "typed" | "picked" | "missing";
   confirmed: boolean;
   conflictOptions?: string[];
@@ -320,6 +322,7 @@ export function deriveDeal(deal: Deal, ai: ExampleOutput, added: AddedItem[], de
       group: f.group,
       value,
       evidence: source === "typed" ? [] : evidence,
+      aiEvidence: evidence,
       source,
       confirmed: !!decisions.confirmedCore[f.key] && value !== null,
       conflictOptions,
