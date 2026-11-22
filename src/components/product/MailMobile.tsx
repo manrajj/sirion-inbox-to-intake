@@ -73,7 +73,7 @@ function InboxList() {
             <ListFilter size={16} strokeWidth={1.75} /> Filter
           </span>
         </div>
-        <InboxContext className="mt-2 flex" wrap />
+        <InboxContext className="mt-2" compact />
       </header>
       <ul className="thin-scroll min-h-0 flex-1 overflow-y-auto" aria-label="Messages">
         {rows.map(({ t, latest, count, hasAttachment, unread }) => (
