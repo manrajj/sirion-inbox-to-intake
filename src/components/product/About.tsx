@@ -106,7 +106,7 @@ export function AboutPage() {
             <Part id="who" n={2} title="Who it is for">
               <div className="grid gap-3 md:grid-cols-3">
                 <Card tag="Main user" title="The procurement manager" accent>
-                  They turn the email trail into a Sirion request. That handoff is where intake breaks. A customer we interviewed said these users live in Outlook and Word, not in Sirion.
+                  They turn the email trail into a Sirion request. That handoff is where intake breaks. An employee we interviewed said these users live in Outlook and Word, not in Sirion.
                 </Card>
                 <Card tag="Second user" title="Legal">
                   They receive the request. A complete request, with a source for every value, means fewer questions back.
@@ -132,7 +132,7 @@ export function AboutPage() {
                 <blockquote className="mt-2 text-lead">
                   Most procurement contract managers live in Outlook and Word, and raising a ticket in Sirion takes them a lot of effort. Even when they do, details are missing, which adds time on the Legal side.
                 </blockquote>
-                <figcaption className="mt-3 text-small text-ink-muted">A customer we interviewed</figcaption>
+                <figcaption className="mt-3 text-small text-ink-muted">An employee we interviewed</figcaption>
               </figure>
               <div className="mt-3 rounded-card bg-white p-5 shadow-card">
                 <p className="flex items-center gap-2 text-small font-medium text-teal">
