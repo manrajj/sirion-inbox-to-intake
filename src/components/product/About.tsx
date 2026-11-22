@@ -286,7 +286,7 @@ export function AboutPage() {
                 {[
                   ["People edit more than 20% of auto-filled values after 4 weeks.", "Rethink how values are pulled from emails."],
                   ["Legal sends back more than 25% of requests for missing information.", "The form isn't capturing the right fields. Redesign it with Legal."],
-                  ["Fewer than 40% of eligible deals use the add-in by week 6.", "The add-in isn't where the work happens. Try forwarding emails to Sirion instead."],
+                  ["Fewer than 40% of eligible deals use the add-in by week 6.", "The add-in isn't where the work happens. Find out where managers actually raise requests, and rethink the entry point."],
                 ].map(([ifx, then]) => (
                   <div key={ifx} className="rounded-card bg-white p-5 shadow-card">
                     <p className="flex items-center gap-1.5 text-xs text-ink-muted">

@@ -15,6 +15,8 @@ export interface Step {
   /** A DOM click on the target, for local UI state only. */
   click?: boolean;
   visual?: boolean;
+  /** How long the pointer rests on a target before clicking it, so the viewer can read it first. */
+  lead?: number;
   ms: number;
 }
 
@@ -62,7 +64,7 @@ const SCRIPT: Chapter[] = [
     title: "Open Sirion",
     caption: "Sirion sits beside the email. There is no intake request for this thread yet.",
     steps: [
-      { target: "open-sidebar", do: () => actions.toggleSidebar(true), say: "Open the Sirion add-in from the email.", ms: 2600 },
+      { target: "open-sidebar", do: () => actions.toggleSidebar(true), say: "Open the Sirion add-in from the email.", lead: 2000, ms: 4000 },
       { target: "deal-chip", say: "Sirion sits beside the email. There is no intake request for this thread yet.", ms: 3400 },
     ],
   },
@@ -71,7 +73,7 @@ const SCRIPT: Chapter[] = [
     title: "Start the request",
     caption: "One click starts a draft request from this thread.",
     steps: [
-      { target: "create-deal", do: () => actions.createDeal(), say: "One click starts a draft request from this thread.", ms: 2600 },
+      { target: "create-deal", do: () => actions.createDeal(), say: "One click starts a draft request from this thread.", lead: 2000, ms: 4400 },
       { target: "reading", do: () => actions.setReading(2), say: "Sirion reads the emails and the quote.", ms: 1500 },
       { target: "reading", do: () => actions.setReading(3), say: "Sirion reads the emails and the quote.", ms: 1300 },
       { target: "toast", do: () => actions.finishReading(), say: "The draft is saved. Nothing is submitted yet.", ms: 3200 },
@@ -82,9 +84,9 @@ const SCRIPT: Chapter[] = [
     title: "Check what's agreed",
     caption: "Ask what's agreed. Every term comes with the sentence it came from.",
     steps: [
-      { target: "card-agreed", do: () => actions.setPanel("agreed"), say: "Ask what's agreed so far.", ms: 2000 },
+      { target: "card-agreed", do: () => actions.setPanel("agreed"), say: "Ask what's agreed so far.", lead: 2000, ms: 3600 },
       { target: "agreed-list", say: "Each agreed term, with a quote button beside it.", ms: 2600 },
-      { target: "cite-mark", do: () => actions.cite("bl-06", UPLIFT_CONFIRM), say: "The quote button shows the exact sentence in the email.", ms: 3400 },
+      { target: "cite-mark", do: () => actions.cite("bl-06", UPLIFT_CONFIRM), say: "The quote button shows the exact sentence in the email.", lead: 2000, ms: 4600 },
     ],
   },
   {
@@ -99,7 +101,7 @@ const SCRIPT: Chapter[] = [
           actions.setPanel("agreed");
         },
         say: "Now click Review and submit in Sirion.",
-        ms: 2400,
+        lead: 2000, ms: 3800,
       },
       { target: "opening-sirion", do: () => actions.setView("sirion"), say: "The Sirion app opens.", ms: 1500 },
       { target: "sirion-here", say: "This is the Sirion app. The draft request is already filled in.", ms: 3600 },
@@ -123,7 +125,7 @@ const SCRIPT: Chapter[] = [
     title: "Submit",
     caption: "Submit. Nothing was typed by hand.",
     steps: [
-      { target: "submit", do: () => actions.confirmAndSubmit(), say: "Click Submit. Nothing was typed by hand.", ms: 2400 },
+      { target: "submit", do: () => actions.confirmAndSubmit(), say: "Click Submit. Nothing was typed by hand.", lead: 2000, ms: 3600 },
       { target: "receipt", say: "The intake request is in Sirion and on its way to Legal.", ms: 3600 },
     ],
   },

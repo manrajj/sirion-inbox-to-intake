@@ -26,6 +26,9 @@ function useReducedMotion() {
   return reduced;
 }
 
+/** The lead before a click is stretched like every step. */
+const PACE_LEAD = 1.2;
+
 const sel = (t: string) => `[data-tour="${t}"]`;
 
 function findVisible(target: string): HTMLElement | null {
@@ -257,7 +260,8 @@ export function Film() {
             targetName.current = step.target ?? null;
             setHasTarget(true);
           }
-          if (!(await sleep(reduced ? 80 : 900, id))) return;
+          const lead = reduced ? 80 : (step.lead ?? 900) * PACE_LEAD;
+          if (!(await sleep(lead, id))) return;
           if (!pos.current.actionDone) {
             if (step.click && el) {
               setDown(true);
@@ -267,7 +271,7 @@ export function Film() {
             pos.current.actionDone = true;
             setTimeout(() => setDown(false), 180);
           }
-          if (!(await sleep(Math.max(300, step.ms - 900), id))) return;
+          if (!(await sleep(Math.max(1200, step.ms - lead), id))) return;
         }
       }
       if (runId.current === id) {
